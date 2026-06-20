@@ -14,7 +14,7 @@ import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
 import com.mrlaughing.moyuan.data.repository.WereadRepository
 import com.mrlaughing.moyuan.engine.DailyReadInput
-
+import com.mrlaughing.moyuan.engine.GardenEngine
 import com.mrlaughing.moyuan.engine.GardenUpdateResult
 import com.mrlaughing.moyuan.sync.SnapshotManager
 import dagger.hilt.android.EntryPointAccessors
@@ -112,7 +112,11 @@ class SyncWorker(
         readData: ReadDataResponse,
         shelfData: ShelfResponse?
     ): WereadSyncData {
-        val todayMinutes = (readData.data.readTime / 60).toInt()
+        val dto = readData.data ?: return WereadSyncData(
+            totalReadTime = 0, todayReadTime = 0, streakDays = 0,
+            books = emptyList(), syncTimestamp = System.currentTimeMillis()
+        )
+        val todayMinutes = (dto.readTime / 60).toInt()
         val books = shelfData?.data?.books?.map { book ->
             WereadBookData(
                 bookId = book.bookId,
@@ -125,9 +129,9 @@ class SyncWorker(
         } ?: emptyList()
 
         return WereadSyncData(
-            totalReadTime = readData.data.readTime,
-            todayReadTime = todayMinutes.toLong() * 60, // 需要从 API 获取今日增量
-            streakDays = readData.data.currentStreakDays,
+            totalReadTime = dto.readTime,
+            todayReadTime = todayMinutes.toLong() * 60,
+            streakDays = dto.currentStreakDays,
             books = books,
             syncTimestamp = System.currentTimeMillis()
         )

@@ -6,7 +6,7 @@ import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.data.model.Weather
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
-import com.mrlaughing.moyuan.engine.SeasonEngine
+import com.mrlaughing.moyuan.engine.season.SeasonEngine
 import com.mrlaughing.moyuan.util.Constants
 import com.mrlaughing.moyuan.util.formatCN
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,7 +60,7 @@ class GardenViewModel @Inject constructor(
                     .mapIndexed { index, entity ->
                         val pathType = pathToConstant(entity.path)
                         PlantUiItem(
-                            id = entity.id.toLong(),
+                            plantId = entity.id.toLong(),
                             name = getPlantName(entity.plantId),
                             level = entity.level,
                             witherStage = entity.witherStage,
