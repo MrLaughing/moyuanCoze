@@ -11,6 +11,10 @@ import com.mrlaughing.moyuan.data.local.db.dao.PlantStateDao
 import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
 import com.mrlaughing.moyuan.data.remote.WereadApi
 import com.mrlaughing.moyuan.data.remote.WereadApiClient
+import com.mrlaughing.moyuan.data.repository.GardenRepository
+import com.mrlaughing.moyuan.data.repository.PlantRepository
+import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
+import com.mrlaughing.moyuan.data.repository.WereadRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,6 +29,7 @@ import javax.inject.Singleton
  * - Room Database 及所有 DAO
  * - UserPrefs (DataStore)
  * - WereadApi (Retrofit)
+ * - 所有 Repository（Hilt 自动注入，WereadApiClient 已有 @Singleton @Inject）
  */
 @Module
 @InstallIn(SingletonComponent::class)

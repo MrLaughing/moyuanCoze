@@ -1,9 +1,11 @@
 package com.mrlaughing.moyuan.ui.profile
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -59,6 +61,16 @@ class ProfileFragment : Fragment() {
             showRefreshModeDialog()
         }
 
+        // 微信读书卡片点击事件
+        view.findViewById<View>(R.id.card_weread)?.setOnClickListener {
+            val state = viewModel.uiState.value
+            if (state.wereadAuthorized) {
+                showDeauthorizeConfirmDialog()
+            } else {
+                showTokenInputDialog()
+            }
+        }
+
         aboutButton.setOnClickListener {
             showAboutDialog()
         }
@@ -77,10 +89,57 @@ class ProfileFragment : Fragment() {
         gardenNameText.text = state.gardenName
         plantCountText.text = "${state.plantCount} 株植物"
         unlockProgressText.text = "${state.unlockedCount}/${state.totalCount} 已解锁"
+        
+        // 微信读书授权状态：已授权绿色，未授权灰色
         wereadStatusText.text = if (state.wereadAuthorized) "已授权" else "未授权"
+        wereadStatusText.setTextColor(
+            if (state.wereadAuthorized) Color.parseColor("#4CAF50") // 绿色
+            else Color.parseColor("#9E9E9E") // 灰色
+        )
+        
         lastSyncText.text = "上次同步：${state.lastSyncTime}"
         syncTimeText.text = String.format("%02d:%02d", state.syncHour, state.syncMinute)
         refreshModeText.text = state.refreshMode
+    }
+
+    /**
+     * 显示 Token 输入对话框
+     */
+    private fun showTokenInputDialog() {
+        val editText = EditText(requireContext()).apply {
+            hint = "请输入微信读书 Token"
+            setPadding(48, 24, 48, 24)
+        }
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("微信读书授权")
+            .setMessage("请在微信读书网页版登录后，从浏览器 Cookie 中获取 Token")
+            .setView(editText)
+            .setPositiveButton("授权") { _, _ ->
+                val token = editText.text.toString().trim()
+                if (token.isNotBlank()) {
+                    viewModel.authorize(token)
+                    Toast.makeText(context, "授权成功", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Token 不能为空", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    /**
+     * 显示取消授权确认对话框
+     */
+    private fun showDeauthorizeConfirmDialog() {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("取消授权")
+            .setMessage("确定要取消微信读书授权吗？取消后将无法自动同步阅读数据。")
+            .setPositiveButton("确定") { _, _ ->
+                viewModel.deauthorize()
+                Toast.makeText(context, "已取消授权", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showSyncTimePicker() {

@@ -2,28 +2,34 @@ package com.mrlaughing.moyuan.ui.garden
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.model.Season
+import com.mrlaughing.moyuan.data.model.Weather
+import com.mrlaughing.moyuan.data.repository.GardenRepository
+import com.mrlaughing.moyuan.data.repository.PlantRepository
+import com.mrlaughing.moyuan.engine.SeasonEngine
+import com.mrlaughing.moyuan.util.Constants
+import com.mrlaughing.moyuan.util.formatCN
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import com.mrlaughing.moyuan.util.Constants
-import com.mrlaughing.moyuan.data.model.Season
-import com.mrlaughing.moyuan.data.model.Weather
-import com.mrlaughing.moyuan.util.formatCN
-import kotlin.random.Random
 import javax.inject.Inject
 
 /**
  * 花园 ViewModel：管理花园界面数据
+ * 
+ * 从 Repository 加载真实数据：
+ * - GardenRepository.observeGardenState() 获取花园状态
+ * - PlantRepository.observePlants() 获取植物列表
+ * 
+ * 只显示已解锁的植物（unlockDate != null）
  */
 @HiltViewModel
 class GardenViewModel @Inject constructor(
-    // 注入 GardenRepository, GardenEngine（待实现）
-    // private val gardenRepository: GardenRepository,
-    // private val gardenEngine: GardenEngine
+    private val gardenRepository: GardenRepository,
+    private val plantRepository: PlantRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GardenUiState())
@@ -33,24 +39,45 @@ class GardenViewModel @Inject constructor(
         loadGardenData()
     }
 
+    /**
+     * 从 Repository 加载真实花园数据
+     */
     private fun loadGardenData() {
         viewModelScope.launch {
-            // TODO: 从 Repository 加载真实数据
-            // 目前使用模拟数据
-            val season = determineSeason()
-            val weather = determineWeather()
-            val todayReadMinutes = 45  // 模拟数据
-            val streakDays = 7
+            gardenRepository.observeGardenState().collect { gardenState ->
+                val season = determineSeason()
+                val weather = determineWeather()
+                
+                // 从 GardenState 获取 meta 信息
+                val meta = gardenState.meta
+                val todayReadMinutes = meta?.accumulatedMinutes ?: 0
+                val streakDays = meta?.streakDays ?: 0
+                
+                // 从 PlantState 映射到 PlantUiItem
+                // 只显示已解锁的植物（unlockDate != null）
+                val plants = gardenState.plants
+                    .filter { !it.unlockDate.isNullOrEmpty() } // 只显示已解锁的
+                    .mapIndexed { index, entity ->
+                        val pathType = pathToConstant(entity.path)
+                        PlantUiItem(
+                            id = entity.id.toLong(),
+                            name = getPlantName(entity.plantId),
+                            level = entity.level,
+                            witherStage = entity.witherStage,
+                            pathType = pathType
+                        )
+                    }
 
-            _uiState.value = GardenUiState(
-                plants = generateMockPlants(),
-                season = season,
-                weather = weather,
-                todayReadMinutes = todayReadMinutes,
-                streakDays = streakDays,
-                bonusMultiplier = calculateBonus(streakDays, weather),
-                dateText = LocalDate.now().formatCN()
-            )
+                _uiState.value = GardenUiState(
+                    plants = plants,
+                    season = season,
+                    weather = weather,
+                    todayReadMinutes = todayReadMinutes,
+                    streakDays = streakDays,
+                    bonusMultiplier = calculateBonus(streakDays, weather),
+                    dateText = LocalDate.now().formatCN()
+                )
+            }
         }
     }
 
@@ -58,26 +85,17 @@ class GardenViewModel @Inject constructor(
      * 根据月份判断季节
      */
     private fun determineSeason(): Season {
-        val month = LocalDate.now().monthValue
-        return when (month) {
-            3, 4, 5 -> Season.SPRING
-            6, 7, 8 -> Season.SUMMER
-            9, 10, 11 -> Season.AUTUMN
-            else -> Season.WINTER
-        }
+        return SeasonEngine.getSeason(LocalDate.now())
     }
 
     /**
      * 根据概率决定天气
      */
     private fun determineWeather(): Weather {
-        val rand = Random.nextFloat()
-        var cumulative = 0f
-        for (weather in Weather.entries) {
-            cumulative += weather.probability
-            if (rand < cumulative) return weather
-        }
-        return Weather.CLEAR
+        val today = LocalDate.now()
+        val season = SeasonEngine.getSeason(today)
+        val isNight = SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
+        return SeasonEngine.rollWeather(season, isNight)
     }
 
     /**
@@ -95,16 +113,53 @@ class GardenViewModel @Inject constructor(
     }
 
     /**
-     * 生成模拟植物数据
+     * 将路径字符串转换为常量
      */
-    private fun generateMockPlants(): List<PlantUiItem> {
-        return listOf(
-            PlantUiItem(1L, "墨兰", 3, 0, Constants.PATH_JIMO),
-            PlantUiItem(2L, "青竹", 5, 0, Constants.PATH_SUIHAN),
-            PlantUiItem(3L, "紫藤", 2, 1, Constants.PATH_XUNFANG),
-            PlantUiItem(4L, "白莲", 1, 0, Constants.PATH_BINGZHU),
-            PlantUiItem(5L, "苍松", 4, 0, Constants.PATH_SUIHAN)
-        )
+    private fun pathToConstant(path: String): Int {
+        return when (path) {
+            "JIMO" -> Constants.PATH_JIMO
+            "BINGZHU" -> Constants.PATH_BINGZHU
+            "SUIHAN" -> Constants.PATH_SUIHAN
+            "XUNFANG" -> Constants.PATH_XUNFANG
+            "HIDDEN" -> Constants.PATH_HIDDEN
+            else -> Constants.PATH_JIMO
+        }
+    }
+
+    /**
+     * 获取植物名称
+     */
+    private fun getPlantName(plantId: String): String {
+        return when (plantId) {
+            "changpu" -> "菖蒲"
+            "wenzhu" -> "文竹"
+            "orchid" -> "兰草"
+            "bajiao" -> "芭蕉"
+            "shuixian" -> "水仙"
+            "mozhu" -> "墨竹"
+            "yelaixiang" -> "夜来香"
+            "guihua" -> "桂花"
+            "yehehua" -> "夜荷花"
+            "lamei" -> "蜡梅"
+            "tanhua" -> "昙花"
+            "yuejiancao" -> "月见草"
+            "pine" -> "青松"
+            "cypress" -> "翠柏"
+            "plum" -> "寒梅"
+            "bamboo" -> "修竹"
+            "ginkgo" -> "银杏"
+            "guteng" -> "古藤"
+            "chrysanthemum" -> "墨菊"
+            "ziteng" -> "紫藤"
+            "lotus" -> "青莲"
+            "haitang" -> "海棠"
+            "peony" -> "墨牡丹"
+            "bodhi" -> "菩提"
+            "lingzhi" -> "灵芝"
+            "bianhua" -> "彼岸花"
+            "bingtilian" -> "并蒂莲"
+            else -> plantId
+        }
     }
 
     /**

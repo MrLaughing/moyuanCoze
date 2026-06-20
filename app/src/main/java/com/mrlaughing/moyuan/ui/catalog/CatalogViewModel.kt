@@ -1,23 +1,33 @@
 package com.mrlaughing.moyuan.ui.catalog
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.model.Plant
+import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.model.PlantPath
+import com.mrlaughing.moyuan.data.model.PlantRarity
+import com.mrlaughing.moyuan.data.repository.PlantRepository
+import com.mrlaughing.moyuan.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.mrlaughing.moyuan.util.Constants
 
 /**
  * 图鉴 ViewModel
+ * 
+ * 从 Repository 加载真实数据：
+ * - PlantRepository.observePlants() 获取已解锁植物
+ * - PlantDefinitions.all 获取全部 27 种植物定义
+ * - 未解锁植物显示锁定状态
+ * 
+ * 注意：unlockDate 为 null 表示未解锁，非 null 表示已解锁
  */
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
-    // 注入 PlantRepository, UnlockEngine（待实现）
-    // private val plantRepository: PlantRepository,
-    // private val unlockEngine: UnlockEngine
+    private val plantRepository: PlantRepository
 ) : ViewModel() {
 
     private val _pathFilter = MutableStateFlow(Constants.PATH_ALL)
@@ -26,19 +36,6 @@ class CatalogViewModel @Inject constructor(
     private val _allPlants = MutableStateFlow<List<CatalogPlantItem>>(emptyList())
     val allPlants: StateFlow<List<CatalogPlantItem>> = _allPlants.asStateFlow()
 
-    /** 根据路径筛选后的植物列表 */
-    val filteredPlants: StateFlow<List<CatalogPlantItem>> = combine(
-        _allPlants,
-        _pathFilter
-    ) { plants, filter ->
-        if (filter == Constants.PATH_ALL) plants
-        else plants.filter { it.pathType == filter }
-    }.let { flow ->
-        val stateFlow = MutableStateFlow<List<CatalogPlantItem>>(emptyList())
-        // 简化：直接收集
-        stateFlow
-    }
-
     private val _filteredPlants = MutableStateFlow<List<CatalogPlantItem>>(emptyList())
     val filtered: StateFlow<List<CatalogPlantItem>> = _filteredPlants.asStateFlow()
 
@@ -46,23 +43,57 @@ class CatalogViewModel @Inject constructor(
         loadPlants()
     }
 
+    /**
+     * 从 Repository 加载植物数据
+     * 
+     * DB 里只有已解锁的植物（unlockDate != null），需要结合 PlantDefinitions 的全部 27 种
+     * 已解锁的显示真实等级，未解锁的显示锁定状态
+     */
     private fun loadPlants() {
-        // TODO: 从 Repository 加载
-        // 模拟数据
-        val mockPlants = listOf(
-            CatalogPlantItem(1L, "墨兰", 3, 1, Constants.PATH_JIMO, true, "累计阅读200分钟"),
-            CatalogPlantItem(2L, "青竹", 5, 2, Constants.PATH_SUIHAN, true, "累计阅读500分钟"),
-            CatalogPlantItem(3L, "紫藤", 2, 1, Constants.PATH_XUNFANG, true, "累计阅读60分钟"),
-            CatalogPlantItem(4L, "白莲", 1, 3, Constants.PATH_BINGZHU, true, "累计阅读0分钟"),
-            CatalogPlantItem(5L, "苍松", 4, 2, Constants.PATH_SUIHAN, true, "累计阅读300分钟"),
-            CatalogPlantItem(6L, "幽兰", 1, 4, Constants.PATH_JIMO, false, "累计阅读1000分钟"),
-            CatalogPlantItem(7L, "寒梅", 1, 5, Constants.PATH_SUIHAN, false, "连续阅读30天"),
-            CatalogPlantItem(8L, "荷韵", 1, 3, Constants.PATH_BINGZHU, false, "累计阅读800分钟"),
-            CatalogPlantItem(9L, "藤萝", 1, 2, Constants.PATH_XUNFANG, false, "累计阅读400分钟"),
-            CatalogPlantItem(10L, "蒲草", 1, 1, Constants.PATH_JIMO, false, "累计阅读100分钟")
-        )
-        _allPlants.value = mockPlants
-        _filteredPlants.value = mockPlants
+        viewModelScope.launch {
+            // 监听已解锁的植物
+            plantRepository.observePlants().collect { unlockedPlants ->
+                // 构建解锁植物的 Map（unlockDate 非 null 的才是已解锁）
+                val unlockedMap = unlockedPlants.associateBy { it.plantId }
+
+                // 合并 PlantDefinitions 的全部 27 种植物
+                val allCatalogItems = PlantDefinitions.all.map { plantDef ->
+                    val dbPlant = unlockedMap[plantDef.id]
+                    // unlockDate != null 表示已解锁
+                    val isUnlocked = dbPlant?.unlockDate != null
+
+                    // 获取解锁条件描述
+                    val unlockCondition = getUnlockCondition(plantDef)
+
+                    // 获取路径类型
+                    val pathType = pathToConstant(plantDef.path)
+
+                    CatalogPlantItem(
+                        plantId = PlantDefinitions.all.indexOf(plantDef) + 1L,
+                        name = plantDef.name,
+                        level = if (isUnlocked) dbPlant?.level ?: 1 else 0,
+                        rarity = rarityToInt(plantDef.rarity),
+                        pathType = pathType,
+                        isUnlocked = isUnlocked,
+                        unlockCondition = unlockCondition
+                    )
+                }
+
+                _allPlants.value = allCatalogItems
+                applyFilter(allCatalogItems, _pathFilter.value)
+            }
+        }
+    }
+
+    /**
+     * 应用路径筛选
+     */
+    private fun applyFilter(plants: List<CatalogPlantItem>, filter: Int) {
+        _filteredPlants.value = if (filter == Constants.PATH_ALL) {
+            plants
+        } else {
+            plants.filter { it.pathType == filter }
+        }
     }
 
     /**
@@ -70,10 +101,44 @@ class CatalogViewModel @Inject constructor(
      */
     fun setPathFilter(filter: Int) {
         _pathFilter.value = filter
-        _filteredPlants.value = if (filter == Constants.PATH_ALL) {
-            _allPlants.value
-        } else {
-            _allPlants.value.filter { it.pathType == filter }
+        applyFilter(_allPlants.value, filter)
+    }
+
+    /**
+     * 将 PlantPath 转换为 Constants 中的路径常量
+     */
+    private fun pathToConstant(path: PlantPath): Int {
+        return when (path) {
+            PlantPath.JIMO -> Constants.PATH_JIMO
+            PlantPath.BINGZHU -> Constants.PATH_BINGZHU
+            PlantPath.SUIHAN -> Constants.PATH_SUIHAN
+            PlantPath.XUNFANG -> Constants.PATH_XUNFANG
+            PlantPath.HIDDEN -> Constants.PATH_HIDDEN
+        }
+    }
+
+    /**
+     * 将 PlantRarity 转换为数字
+     */
+    private fun rarityToInt(rarity: PlantRarity): Int {
+        return when (rarity) {
+            PlantRarity.COMMON -> 1
+            PlantRarity.RARE -> 2
+            PlantRarity.LEGENDARY -> 3
+            PlantRarity.HIDDEN -> 4
+        }
+    }
+
+    /**
+     * 获取解锁条件描述
+     */
+    private fun getUnlockCondition(plant: Plant): String {
+        return when (plant.path) {
+            PlantPath.JIMO -> "累计阅读 ${plant.unlockThreshold} 分钟"
+            PlantPath.BINGZHU -> "累计夜读 ${plant.unlockThreshold} 天"
+            PlantPath.SUIHAN -> "连续阅读 ${plant.unlockThreshold} 天"
+            PlantPath.XUNFANG -> "阅读 ${plant.unlockThreshold} 本书"
+            PlantPath.HIDDEN -> "特殊条件解锁"
         }
     }
 }
@@ -85,7 +150,7 @@ data class CatalogPlantItem(
     val plantId: Long,
     val name: String,
     val level: Int,
-    val rarity: Int,         // 1-5 星
+    val rarity: Int,         // 1-4 星
     val pathType: Int,
     val isUnlocked: Boolean,
     val unlockCondition: String  // 解锁条件描述

@@ -1,22 +1,35 @@
 package com.mrlaughing.moyuan.ui.profile
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
+import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.repository.GardenRepository
+import com.mrlaughing.moyuan.data.repository.WereadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 /**
  * 个人中心 ViewModel
+ * 
+ * 从 Repository 加载真实数据：
+ * - WereadRepository.isAuthorized() 获取授权状态
+ * - GardenRepository.observeGardenState() 获取花园信息
+ * - UserPrefs 获取同步配置
+ * 
+ * 已解锁植物数：unlockDate != null 的植物数量
  */
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    // 注入 GardenRepository, UserPrefs, WereadRepository（待实现）
+    private val wereadRepository: WereadRepository,
+    private val gardenRepository: GardenRepository,
+    private val userPrefs: UserPrefs
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -26,29 +39,89 @@ class ProfileViewModel @Inject constructor(
         loadProfile()
     }
 
+    /**
+     * 从 Repository 加载真实个人数据
+     */
     private fun loadProfile() {
         viewModelScope.launch {
-            // TODO: 从 Repository 加载
-            _uiState.value = ProfileUiState(
-                gardenName = "墨园",
-                plantCount = 5,
-                unlockedCount = 5,
-                totalCount = 10,
-                wereadAuthorized = true,
-                lastSyncTime = "今天 08:00",
-                syncHour = 8,
-                syncMinute = 0,
-                refreshMode = "局部刷新"
-            )
+            // 组合多个数据流
+            combine(
+                gardenRepository.observeGardenState(),
+                userPrefs.syncHour,
+                userPrefs.syncMinute
+            ) { gardenState, syncHour, syncMinute ->
+                // 获取授权状态
+                val isAuthorized = wereadRepository.isAuthorized()
+
+                // 获取已解锁植物数（unlockDate != null）
+                val unlockedCount = gardenState.plants.count {
+                    !it.unlockDate.isNullOrEmpty()
+                }
+
+                // 获取元数据信息
+                val meta = gardenState.meta
+
+                ProfileUiState(
+                    gardenName = "墨园",
+                    plantCount = gardenState.alivePlantCount,
+                    unlockedCount = unlockedCount,
+                    totalCount = PlantDefinitions.all.size,
+                    wereadAuthorized = isAuthorized,
+                    lastSyncTime = meta?.lastSyncDate ?: "从未同步",
+                    syncHour = syncHour,
+                    syncMinute = syncMinute,
+                    refreshMode = "局部刷新"
+                )
+            }.collect { state ->
+                _uiState.value = state
+            }
         }
     }
 
+    /**
+     * 更新同步时间
+     */
     fun updateSyncTime(hour: Int, minute: Int) {
-        _uiState.value = _uiState.value.copy(syncHour = hour, syncMinute = minute)
+        viewModelScope.launch {
+            userPrefs.setSyncHour(hour)
+            userPrefs.setSyncMinute(minute)
+            // 同时更新 GardenMeta
+            gardenRepository.observeMeta().first()?.let { meta ->
+                gardenRepository.updateMeta(meta.copy(syncHour = hour, syncMinute = minute))
+            }
+        }
     }
 
+    /**
+     * 更新刷新模式
+     */
     fun updateRefreshMode(mode: String) {
-        _uiState.value = _uiState.value.copy(refreshMode = mode)
+        viewModelScope.launch {
+            userPrefs.setRefreshMode(mode)
+            _uiState.value = _uiState.value.copy(refreshMode = mode)
+        }
+    }
+
+    /**
+     * 授权微信读书
+     */
+    fun authorize(token: String) {
+        viewModelScope.launch {
+            wereadRepository.authorize(token)
+            // 重新加载状态
+            loadProfile()
+        }
+    }
+
+    /**
+     * 取消授权
+     */
+    fun deauthorize() {
+        viewModelScope.launch {
+            wereadRepository.deauthorize()
+            // 重新加载状态
+            loadProfile()
+        }
     }
 }
 

@@ -1,23 +1,31 @@
 package com.mrlaughing.moyuan.ui.study
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.repository.GardenRepository
+import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
+import com.mrlaughing.moyuan.util.formatMinutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 import java.time.LocalDate
-import com.mrlaughing.moyuan.util.formatMinutes
 import javax.inject.Inject
 
 /**
  * 阅读 ViewModel
+ * 
+ * 从 Repository 加载真实数据：
+ * - ReadStatsRepository.observeReadStats() 获取阅读统计
+ * - ReadStatsRepository.observeWeeklyRecords() 获取每周记录
+ * - ReadStatsRepository.observeRecentBooks() 获取最近书目
  */
 @HiltViewModel
 class StudyViewModel @Inject constructor(
-    // 注入 ReadStatsRepository（待实现）
-    // private val readStatsRepository: ReadStatsRepository
+    private val readStatsRepository: ReadStatsRepository,
+    private val gardenRepository: GardenRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StudyUiState())
@@ -27,40 +35,62 @@ class StudyViewModel @Inject constructor(
         loadStats()
     }
 
+    /**
+     * 从 Repository 加载真实阅读数据
+     */
     private fun loadStats() {
         viewModelScope.launch {
-            // TODO: 从 Repository 加载真实数据
-            _uiState.value = StudyUiState(
-                todayReadMinutes = 45,
-                streakDays = 7,
-                totalReadMinutes = 3200,
-                booksRead = 12,
-                weeklyRecords = generateMockWeeklyRecords(),
-                recentBooks = generateMockBooks()
-            )
+            // 组合多个数据流
+            combine(
+                readStatsRepository.observeReadStats(),
+                readStatsRepository.observeWeeklyRecords(),
+                readStatsRepository.observeRecentBooks(),
+                gardenRepository.observeMeta()
+            ) { stats, weeklyRecords, recentBooks, meta ->
+                // 构建 WeeklyRecords
+                val weekly = weeklyRecords.map { entity ->
+                    DailyRecord(
+                        date = java.time.LocalDate.parse(entity.date),
+                        readMinutes = entity.readMinutes,
+                        hasRead = entity.readMinutes > 0
+                    )
+                }
+
+                // 构建 RecentBooks
+                val books = recentBooks.map { entity ->
+                    BookItem(
+                        title = entity.title,
+                        totalReadMinutes = entity.readMinutes
+                    )
+                }
+
+                // 今日阅读分钟数（从今天的记录获取）
+                val today = LocalDate.now().toString()
+                val todayRecord = weeklyRecords.find { it.date == today }
+                val todayMinutes = todayRecord?.readMinutes ?: 0
+
+                // 连续天数从 meta 获取
+                val streakDays = meta?.streakDays ?: 0
+
+                StudyUiState(
+                    todayReadMinutes = todayMinutes,
+                    streakDays = streakDays,
+                    totalReadMinutes = stats.totalReadMinutes,
+                    booksRead = stats.booksRead,
+                    weeklyRecords = weekly,
+                    recentBooks = books
+                )
+            }.collect { state ->
+                _uiState.value = state
+            }
         }
     }
 
-    private fun generateMockWeeklyRecords(): List<DailyRecord> {
-        val today = LocalDate.now()
-        return (0 until 7).map { i ->
-            val date = today.minusDays(i.toLong())
-            DailyRecord(
-                date = date,
-                readMinutes = (10..120).random(),
-                hasRead = true
-            )
-        }.reversed()
-    }
-
-    private fun generateMockBooks(): List<BookItem> {
-        return listOf(
-            BookItem("百年孤独", 185),
-            BookItem("三体", 320),
-            BookItem("人类简史", 210),
-            BookItem("小王子", 45),
-            BookItem("活着", 90)
-        )
+    /**
+     * 刷新数据
+     */
+    fun refresh() {
+        loadStats()
     }
 }
 

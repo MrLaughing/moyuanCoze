@@ -69,22 +69,45 @@ class PlantRepository @Inject constructor(
 
     /**
      * 解锁新植物
+     * 
+     * @param plantId 植物ID
+     * @param path 所属路径
+     * @param unlockDate 解锁日期
      */
     suspend fun unlockPlant(plantId: String, path: String, unlockDate: String) {
-        plantStateDao.insertPlant(
-            PlantStateEntity(
-                plantId = plantId,
-                path = path,
-                level = 1,
-                accumulatedMinutes = 0,
-                witherStage = 0,
-                witherStartDate = null,
-                lastReadDate = unlockDate,
-                unlockDate = unlockDate,
-                justRevived = false,
-                reviveDate = null
+        // 检查是否已存在
+        val existing = plantStateDao.getPlantById(plantId).firstOrNull()
+        if (existing != null) {
+            // 更新为解锁状态
+            plantStateDao.updatePlant(
+                existing.copy(
+                    level = 1,
+                    accumulatedMinutes = 0,
+                    witherStage = 0,
+                    witherStartDate = null,
+                    lastReadDate = unlockDate,
+                    unlockDate = unlockDate, // 已解锁，设置日期
+                    justRevived = false,
+                    reviveDate = null
+                )
             )
-        )
+        } else {
+            // 插入新记录
+            plantStateDao.insertPlant(
+                PlantStateEntity(
+                    plantId = plantId,
+                    path = path,
+                    level = 1,
+                    accumulatedMinutes = 0,
+                    witherStage = 0,
+                    witherStartDate = null,
+                    lastReadDate = unlockDate,
+                    unlockDate = unlockDate, // 已解锁，设置日期
+                    justRevived = false,
+                    reviveDate = null
+                )
+            )
+        }
     }
 
     /**

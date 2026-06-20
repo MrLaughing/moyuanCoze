@@ -61,6 +61,7 @@
 
         <!-- 微信读书授权状态卡片 -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_weread"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"

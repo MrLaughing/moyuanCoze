@@ -12,8 +12,12 @@ import java.time.LocalDate
  * DB Entity ↔ Engine Entity 映射器
  *
  * 职责：在 Room 持久化层和引擎计算层之间转换数据类型
- * - DB Entity 使用基本类型（String/Int），适合持久化
+ * - DB Entity 使用基本类型（String/Int/Null），适合持久化
  * - Engine Entity 使用枚举和 LocalDate，适合业务计算
+ * 
+ * 注意：PlantStateEntity.unlockDate 允许为 null
+ * - null 表示植物未解锁
+ * - 非 null 表示已解锁，解锁日期为该值
  */
 object EntityMapper {
 
@@ -49,11 +53,19 @@ object EntityMapper {
 
     // ─── PlantState: DB → Engine ────────────────────────────
 
+    /**
+     * 将 DB Entity 转换为 Engine Entity
+     * 
+     * 解锁判定：
+     * - unlockDate != null → isUnlocked = true
+     * - unlockDate == null → isUnlocked = false
+     */
     fun toEnginePlant(db: PlantStateEntity): EnginePlantState {
+        val isUnlocked = !db.unlockDate.isNullOrEmpty()
         return EnginePlantState(
             plantId = db.plantId,
             path = db.path,
-            isUnlocked = true,
+            isUnlocked = isUnlocked,
             accumulatedMinutes = db.accumulatedMinutes,
             growthLevel = growthLevelFromInt(db.level),
             witherStage = witherStageFromInt(db.witherStage),
@@ -67,6 +79,13 @@ object EntityMapper {
 
     // ─── PlantState: Engine → DB ────────────────────────────
 
+    /**
+     * 将 Engine Entity 转换为 DB Entity
+     * 
+     * 解锁状态转换：
+     * - isUnlocked = true → unlockDate = unlockDate?.toString() ?: lastWateredDate.toString()
+     * - isUnlocked = false → unlockDate = null
+     */
     fun toDbPlant(engine: EnginePlantState, existingId: Int = 0): PlantStateEntity {
         return PlantStateEntity(
             id = existingId,
@@ -77,7 +96,12 @@ object EntityMapper {
             witherStage = engine.witherStage.stage,
             witherStartDate = engine.witherStartDate?.toString(),
             lastReadDate = engine.lastWateredDate.toString(),
-            unlockDate = engine.unlockDate?.toString() ?: engine.lastWateredDate.toString(),
+            // 解锁状态：如果是解锁的，保存解锁日期；否则为 null
+            unlockDate = if (engine.isUnlocked) {
+                engine.unlockDate?.toString() ?: engine.lastWateredDate.toString()
+            } else {
+                null
+            },
             justRevived = engine.justRevived,
             reviveDate = engine.reviveDate?.toString()
         )

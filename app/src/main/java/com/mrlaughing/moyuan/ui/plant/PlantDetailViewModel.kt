@@ -1,21 +1,31 @@
 package com.mrlaughing.moyuan.ui.plant
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.model.PlantPath
+import com.mrlaughing.moyuan.data.model.PlantRarity
+import com.mrlaughing.moyuan.data.repository.PlantRepository
+import com.mrlaughing.moyuan.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
-import com.mrlaughing.moyuan.util.Constants
 import javax.inject.Inject
 
 /**
  * 植物详情 ViewModel
+ * 
+ * 从 Repository 加载真实数据：
+ * - PlantRepository.observePlant(plantId) 获取植物详情
+ * - PlantDefinitions.getById() 获取植物定义信息
+ * 
+ * unlockDate != null 表示已解锁
  */
 @HiltViewModel
 class PlantDetailViewModel @Inject constructor(
-    // 注入 PlantRepository（待实现）
+    private val plantRepository: PlantRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlantDetailUiState())
@@ -26,23 +36,62 @@ class PlantDetailViewModel @Inject constructor(
      */
     fun loadPlant(plantId: Long) {
         viewModelScope.launch {
-            // TODO: 从 Repository 加载真实数据
-            _uiState.value = PlantDetailUiState(
-                plantId = plantId,
-                name = "墨兰",
-                level = 3,
-                maxLevel = Constants.MAX_LEVEL,
-                totalReadMinutes = 280,
-                levelProgress = calculateLevelProgress(280, 3),
-                description = "墨兰，生于幽谷，不争不抢。需要细心的浇灌才能绽放。",
-                witherStage = 0,
-                witherCountdownDays = -1,
-                pathName = "草本",
-                rarity = 1
-            )
+            // 将 Long ID 转换为 String plantId
+            // plantId 从 1 开始，PlantDefinitions.all 的 index + 1
+            val allPlants = PlantDefinitions.all
+            if (plantId < 1 || plantId > allPlants.size) {
+                _uiState.value = PlantDetailUiState(plantId = plantId)
+                return@launch
+            }
+
+            val plantDef = allPlants[plantId.toInt() - 1]
+            val plantIdStr = plantDef.id
+
+            // 观察该植物的状态
+            plantRepository.observePlant(plantIdStr).collect { entity ->
+                if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
+                    // 已解锁，显示真实数据
+                    val levelProgress = calculateLevelProgress(
+                        entity.accumulatedMinutes,
+                        entity.level
+                    )
+
+                    _uiState.value = PlantDetailUiState(
+                        plantId = plantId,
+                        name = plantDef.name,
+                        level = entity.level,
+                        maxLevel = Constants.MAX_LEVEL,
+                        totalReadMinutes = entity.accumulatedMinutes,
+                        levelProgress = levelProgress,
+                        description = plantDef.description,
+                        witherStage = entity.witherStage,
+                        witherCountdownDays = -1, // TODO: 计算枯萎倒计时
+                        pathName = pathToName(plantDef.path),
+                        rarity = rarityToInt(plantDef.rarity)
+                    )
+                } else {
+                    // 未解锁，显示植物定义信息
+                    _uiState.value = PlantDetailUiState(
+                        plantId = plantId,
+                        name = plantDef.name,
+                        level = 0,
+                        maxLevel = Constants.MAX_LEVEL,
+                        totalReadMinutes = 0,
+                        levelProgress = 0f,
+                        description = plantDef.description,
+                        witherStage = 0,
+                        witherCountdownDays = -1,
+                        pathName = pathToName(plantDef.path),
+                        rarity = rarityToInt(plantDef.rarity)
+                    )
+                }
+            }
         }
     }
 
+    /**
+     * 计算等级进度
+     */
     private fun calculateLevelProgress(currentMinutes: Int, currentLevel: Int): Float {
         if (currentLevel >= Constants.MAX_LEVEL) return 1.0f
         val currentThreshold = Constants.LEVEL_THRESHOLDS[currentLevel - 1]
@@ -50,6 +99,31 @@ class PlantDetailViewModel @Inject constructor(
         if (nextThreshold <= currentThreshold) return 1.0f
         return ((currentMinutes - currentThreshold).toFloat() /
                 (nextThreshold - currentThreshold)).coerceIn(0f, 1f)
+    }
+
+    /**
+     * 将 PlantPath 转换为中文名称
+     */
+    private fun pathToName(path: PlantPath): String {
+        return when (path) {
+            PlantPath.JIMO -> "积墨"
+            PlantPath.BINGZHU -> "秉烛"
+            PlantPath.SUIHAN -> "岁寒"
+            PlantPath.XUNFANG -> "寻芳"
+            PlantPath.HIDDEN -> "隐藏"
+        }
+    }
+
+    /**
+     * 将 PlantRarity 转换为数字
+     */
+    private fun rarityToInt(rarity: PlantRarity): Int {
+        return when (rarity) {
+            PlantRarity.COMMON -> 1
+            PlantRarity.RARE -> 2
+            PlantRarity.LEGENDARY -> 3
+            PlantRarity.HIDDEN -> 4
+        }
     }
 }
 
