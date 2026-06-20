@@ -14,14 +14,7 @@ data class GardenUiState(
     val todayReadMinutes: Int = 0,
     val streakDays: Int = 0,
     val bonusMultiplier: Float = 1.0f,
-    val dateText: String = ""
-)
-
-data class PlantUiItem(
-    val plantId: Long,
-    val name: String,
-    val level: Int,
-    val witherStage: Int,
-    val pathType: Int,
-    val bitmap: Bitmap? = null
+    val dateText: String = "",
+    val irrigationHours: Int = 0,
+    val irrigationGoal: Int = 40
 )

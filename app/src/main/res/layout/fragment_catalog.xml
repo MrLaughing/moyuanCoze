@@ -5,21 +5,139 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/page_background">
+    android:background="@color/xuan_paper">
 
-    <!-- 路径筛选 Tab -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
+    <!-- 标题行：图鉴 + 已解锁数量 -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:background="@color/white">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/nav_catalog"
+            android:textColor="@color/pure_black"
+            android:textSize="24sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_unlocked_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/medium_gray"
+            android:textSize="14sp"
+            android:fontFamily="@font/lxgw_wenkai" />
+
+    </LinearLayout>
+
+    <!-- 路径筛选：横向滚动标签 -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
         android:background="@color/white"
-        app:tabMode="scrollable"
-        app:tabTextColor="@color/deep_gray"
-        app:tabSelectedTextColor="@color/pure_black"
-        app:tabIndicatorColor="@color/pure_black"
-        app:tabIndicatorHeight="2dp"
-        app:tabRippleColor="@android:color/transparent"
-        app:tabTextAppearance="@style/TabTextAppearance" />
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_path"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:singleSelection="true"
+            app:chipSpacingHorizontal="8dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_all"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_all"
+                android:textColor="@color/pure_black"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_herb"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_herb"
+                android:textColor="@color/deep_gray"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_woody"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_woody"
+                android:textColor="@color/deep_gray"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_vine"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_vine"
+                android:textColor="@color/deep_gray"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_aquatic"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_aquatic"
+                android:textColor="@color/deep_gray"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_accumulate"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/label_path_accumulate"
+                android:textColor="@color/deep_gray"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/white"
+                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </HorizontalScrollView>
 
     <!-- 植物卡片网格 -->
     <androidx.recyclerview.widget.RecyclerView
@@ -28,7 +146,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="8dp"
-        android:clipToPadding="false"
-        android:background="@color/page_background" />
+        android:clipToPadding="false" />
 
 </LinearLayout>

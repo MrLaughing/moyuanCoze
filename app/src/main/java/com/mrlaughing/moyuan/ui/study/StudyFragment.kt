@@ -16,15 +16,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.util.formatMinutes
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
- * 阅读统计 Fragment
+ * 书案统计 Fragment
  */
 @AndroidEntryPoint
 class StudyFragment : Fragment() {
 
     private val viewModel: StudyViewModel by viewModels()
 
+    private lateinit var dateText: TextView
     private lateinit var todayReadText: TextView
     private lateinit var streakText: TextView
     private lateinit var totalReadText: TextView
@@ -45,6 +49,7 @@ class StudyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 绑定数据卡片
+        dateText = view.findViewById(R.id.text_date)
         todayReadText = view.findViewById(R.id.text_today_read)
         streakText = view.findViewById(R.id.text_streak)
         totalReadText = view.findViewById(R.id.text_total_read)
@@ -60,6 +65,10 @@ class StudyFragment : Fragment() {
         bookRecyclerView.adapter = bookAdapter
         bookRecyclerView.itemAnimator = null
 
+        // 设置当前日期
+        val dateFormat = SimpleDateFormat("yyyy年M月", Locale.CHINESE)
+        dateText.text = dateFormat.format(Date())
+
         // 观察数据
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -72,9 +81,9 @@ class StudyFragment : Fragment() {
 
     private fun renderState(state: StudyUiState) {
         todayReadText.text = state.todayReadMinutes.formatMinutes()
-        streakText.text = "${state.streakDays} 天"
+        streakText.text = "${state.streakDays}天"
         totalReadText.text = state.totalReadMinutes.formatMinutes()
-        booksReadText.text = "${state.booksRead} 本"
+        booksReadText.text = "${state.booksRead}本"
 
         weekOverview.setRecords(state.weeklyRecords)
         bookAdapter.submitList(state.recentBooks)

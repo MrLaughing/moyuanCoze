@@ -28,15 +28,13 @@ class ProfileFragment : Fragment() {
 
     private val viewModel: ProfileViewModel by viewModels()
 
-    private lateinit var gardenNameText: TextView
     private lateinit var plantCountText: TextView
     private lateinit var unlockProgressText: TextView
     private lateinit var wereadStatusText: TextView
     private lateinit var lastSyncText: TextView
     private lateinit var syncTimeText: TextView
     private lateinit var refreshModeText: TextView
-    private lateinit var syncStatusText: TextView
-    private lateinit var aboutButton: View
+    private lateinit var aboutVersionText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,24 +47,20 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        gardenNameText = view.findViewById(R.id.text_garden_name)
         plantCountText = view.findViewById(R.id.text_plant_count)
         unlockProgressText = view.findViewById(R.id.text_unlock_progress)
         wereadStatusText = view.findViewById(R.id.text_weread_status)
         lastSyncText = view.findViewById(R.id.text_last_sync)
         syncTimeText = view.findViewById(R.id.text_sync_time)
         refreshModeText = view.findViewById(R.id.text_refresh_mode)
-        syncStatusText = view.findViewById(R.id.text_sync_status)
-        aboutButton = view.findViewById(R.id.layout_about)
+        aboutVersionText = view.findViewById(R.id.text_about_version)
 
-        // 设置点击事件
-        view.findViewById<View>(R.id.layout_sync_now)?.setOnClickListener {
-            triggerManualSync()
-        }
+        // 同步时间设置
         view.findViewById<View>(R.id.layout_sync_time)?.setOnClickListener {
             showSyncTimePicker()
         }
 
+        // 刷新模式设置
         view.findViewById<View>(R.id.layout_refresh_mode)?.setOnClickListener {
             showRefreshModeDialog()
         }
@@ -81,7 +75,8 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        aboutButton.setOnClickListener {
+        // 关于卡片点击
+        view.findViewById<View>(R.id.layout_about)?.setOnClickListener {
             showAboutDialog()
         }
 
@@ -96,20 +91,26 @@ class ProfileFragment : Fragment() {
     }
 
     private fun renderState(state: ProfileUiState) {
-        gardenNameText.text = state.gardenName
-        plantCountText.text = "${state.plantCount} 株植物"
-        unlockProgressText.text = "${state.unlockedCount}/${state.totalCount} 已解锁"
+        plantCountText.text = "植物 ${state.plantCount}/27·枯萎${state.witheredCount}"
+        unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
         
-        // 微信读书授权状态：已授权绿色，未授权灰色
-        wereadStatusText.text = if (state.wereadAuthorized) "已授权" else "未授权"
-        wereadStatusText.setTextColor(
-            if (state.wereadAuthorized) Color.parseColor("#4CAF50") // 绿色
-            else Color.parseColor("#9E9E9E") // 灰色
-        )
+        // 微信读书授权状态
+        val statusText = if (state.wereadAuthorized) getString(R.string.label_authorized) else getString(R.string.label_unauthorized)
+        val statusColor = if (state.wereadAuthorized) Color.parseColor("#333333") else Color.parseColor("#999999")
+        wereadStatusText.text = statusText
+        wereadStatusText.setTextColor(statusColor)
         
-        lastSyncText.text = "上次同步：${state.lastSyncTime}"
+        // 上次同步
+        lastSyncText.text = "上次同步${state.lastSyncTime}"
+        
+        // 同步时间
         syncTimeText.text = String.format("%02d:%02d", state.syncHour, state.syncMinute)
+        
+        // 刷新模式
         refreshModeText.text = state.refreshMode
+        
+        // 关于版本
+        aboutVersionText.text = "v1.0.0"
     }
 
     /**
@@ -178,50 +179,9 @@ class ProfileFragment : Fragment() {
 
     private fun showAboutDialog() {
         android.app.AlertDialog.Builder(requireContext())
-            .setTitle("关于墨园")
-            .setMessage("墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。")
+            .setTitle(getString(R.string.label_about_moyuan))
+            .setMessage(getString(R.string.about_content))
             .setPositiveButton("确定", null)
             .show()
-    }
-
-    /**
-     * 手动触发同步
-     */
-    private fun triggerManualSync() {
-        val state = viewModel.uiState.value
-        if (!state.wereadAuthorized) {
-            Toast.makeText(context, "请先授权微信读书", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        syncStatusText.text = "同步中…"
-        syncStatusText.visibility = View.VISIBLE
-
-        val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
-        WorkManager.getInstance(requireContext()).enqueue(syncRequest)
-
-        // 观察同步结果
-        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(syncRequest.id)
-            .observe(viewLifecycleOwner) { workInfo ->
-                when {
-                    workInfo.state == androidx.work.WorkInfo.State.SUCCEEDED -> {
-                        syncStatusText.text = "同步完成"
-                        Toast.makeText(context, "同步完成", Toast.LENGTH_SHORT).show()
-                        // 延迟隐藏状态
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            kotlinx.coroutines.delay(3000)
-                            syncStatusText.visibility = View.GONE
-                        }
-                    }
-                    workInfo.state == androidx.work.WorkInfo.State.FAILED -> {
-                        syncStatusText.text = "同步失败"
-                        Toast.makeText(context, "同步失败，请检查网络和Token", Toast.LENGTH_SHORT).show()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            kotlinx.coroutines.delay(3000)
-                            syncStatusText.visibility = View.GONE
-                        }
-                    }
-                }
-            }
     }
 }

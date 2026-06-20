@@ -19,11 +19,11 @@ import javax.inject.Inject
 
 /**
  * 花园 ViewModel：管理花园界面数据
- * 
+ *
  * 从 Repository 加载真实数据：
  * - GardenRepository.observeGardenState() 获取花园状态
  * - PlantRepository.observePlants() 获取植物列表
- * 
+ *
  * 只显示已解锁的植物（unlockDate != null）
  */
 @HiltViewModel
@@ -34,6 +34,10 @@ class GardenViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(GardenUiState())
     val uiState: StateFlow<GardenUiState> = _uiState.asStateFlow()
+
+    companion object {
+        const val IRRIGATION_GOAL_HOURS = 40 // 灌溉目标小时数
+    }
 
     init {
         loadGardenData()
@@ -52,6 +56,10 @@ class GardenViewModel @Inject constructor(
                 val meta = gardenState.meta
                 val todayReadMinutes = meta?.accumulatedMinutes ?: 0
                 val streakDays = meta?.streakDays ?: 0
+                
+                // 计算灌溉进度（分钟转换为小时）
+                val irrigationMinutes = meta?.accumulatedMinutes ?: 0
+                val irrigationHours = irrigationMinutes / 60
                 
                 // 从 PlantState 映射到 PlantUiItem
                 // 只显示已解锁的植物（unlockDate != null）
@@ -75,7 +83,9 @@ class GardenViewModel @Inject constructor(
                     todayReadMinutes = todayReadMinutes,
                     streakDays = streakDays,
                     bonusMultiplier = calculateBonus(streakDays, weather),
-                    dateText = LocalDate.now().formatCN()
+                    dateText = LocalDate.now().formatCN(),
+                    irrigationHours = irrigationHours,
+                    irrigationGoal = IRRIGATION_GOAL_HOURS
                 )
             }
         }

@@ -5,13 +5,14 @@
     <!-- 底部导航 -->
     <string name="nav_garden">花园</string>
     <string name="nav_catalog">图鉴</string>
-    <string name="nav_study">阅读</string>
+    <string name="nav_study">书案</string>
     <string name="nav_profile">我的</string>
 
     <!-- 花园 -->
     <string name="label_today_read">今日阅读</string>
     <string name="label_streak_days">连续天数</string>
     <string name="label_bonus">加成</string>
+    <string name="label_irrigation_progress">灌溉进度</string>
 
     <!-- 图鉴 -->
     <string name="label_path_all">全部</string>
@@ -19,24 +20,28 @@
     <string name="label_path_woody">木本</string>
     <string name="label_path_vine">藤蔓</string>
     <string name="label_path_aquatic">水生</string>
+    <string name="label_path_accumulate">积墨</string>
     <string name="label_unlocked">已解锁</string>
     <string name="label_locked">未解锁</string>
     <string name="msg_unlock_condition">解锁条件：%s</string>
 
-    <!-- 阅读 -->
+    <!-- 书案 -->
     <string name="label_total_read">累计阅读</string>
     <string name="label_books_read">已读书目</string>
-    <string name="label_weekly_overview">本周概览</string>
+    <string name="label_weekly_overview">本周阅读</string>
     <string name="label_recent_books">最近阅读</string>
 
     <!-- 个人中心 -->
-    <string name="label_weread_auth">微信读书授权</string>
+    <string name="label_garden_overview">花园概况</string>
+    <string name="label_weread_auth">微信读书</string>
     <string name="label_authorized">已授权</string>
     <string name="label_unauthorized">未授权</string>
     <string name="label_last_sync">上次同步：%s</string>
     <string name="label_sync_time">同步时间</string>
     <string name="label_refresh_mode">刷新模式</string>
     <string name="label_about">关于</string>
+    <string name="label_sync_settings">同步设置</string>
+    <string name="label_about_moyuan">关于墨园</string>
 
     <!-- 植物详情 -->
     <string name="button_back">← 返回</string>
@@ -50,6 +55,7 @@
     <string name="desc_plant_image">植物图片</string>
     <string name="msg_sync_complete">同步完成</string>
     <string name="msg_sync_failed">同步失败</string>
+    <string name="label_sync_now">立即同步</string>
     <string name="about_content">墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。</string>
 
     <!-- 季节 -->

@@ -4,21 +4,53 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/page_background"
+    android:background="@color/xuan_paper"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- 4个数据卡片 -->
+        <!-- 标题行：书案 + 日期 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:baselineAligned="false">
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="12dp"
+            android:background="@color/white">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/nav_study"
+                android:textColor="@color/pure_black"
+                android:textSize="24sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/medium_gray"
+                android:textSize="14sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+        </LinearLayout>
+
+        <!-- 4个数据卡片：2×2网格 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:padding="12dp">
 
             <!-- 今日阅读 -->
             <LinearLayout
@@ -27,7 +59,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@color/white"
+                android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
 
@@ -57,7 +89,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@color/white"
+                android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
 
@@ -86,7 +118,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:baselineAligned="false">
+            android:baselineAligned="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
 
             <!-- 累计阅读 -->
             <LinearLayout
@@ -95,7 +130,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@color/white"
+                android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
 
@@ -125,7 +160,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:background="@color/white"
+                android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
 
@@ -150,11 +185,12 @@
 
         </LinearLayout>
 
-        <!-- 周概览标题 -->
+        <!-- 本周阅读标题 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="@string/label_weekly_overview"
             android:textColor="@color/pure_black"
@@ -162,18 +198,21 @@
             android:fontFamily="@font/lxgw_wenkai"
             android:textStyle="bold" />
 
-        <!-- 周概览方格图 -->
+        <!-- 本周阅读方格图 -->
         <com.mrlaughing.moyuan.ui.study.WeekOverviewView
             android:id="@+id/week_overview"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:background="@color/white"
-            android:padding="8dp" />
+            android:background="@drawable/bg_card"
+            android:padding="8dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp" />
 
         <!-- 最近阅读标题 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             android:text="@string/label_recent_books"
@@ -187,7 +226,10 @@
             android:id="@+id/recycler_books"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="16dp"
             android:nestedScrollingEnabled="false" />
 
     </LinearLayout>

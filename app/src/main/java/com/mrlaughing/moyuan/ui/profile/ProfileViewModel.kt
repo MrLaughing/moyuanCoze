@@ -17,12 +17,12 @@ import javax.inject.Inject
 
 /**
  * 个人中心 ViewModel
- * 
+ *
  * 从 Repository 加载真实数据：
  * - WereadRepository.isAuthorized() 获取授权状态
  * - GardenRepository.observeGardenState() 获取花园信息
  * - UserPrefs 获取同步配置
- * 
+ *
  * 已解锁植物数：unlockDate != null 的植物数量
  */
 @HiltViewModel
@@ -57,9 +57,15 @@ class ProfileViewModel @Inject constructor(
                 val unlockedCount = gardenState.plants.count {
                     !it.unlockDate.isNullOrEmpty()
                 }
+                
+                // 获取枯萎植物数
+                val witheredCount = gardenState.witheredPlants.size
 
                 // 获取元数据信息
                 val meta = gardenState.meta
+                
+                // 首次种植日期
+                val firstPlantDate = meta?.installDate ?: "无记录"
 
                 ProfileUiState(
                     gardenName = "墨园",
@@ -70,7 +76,9 @@ class ProfileViewModel @Inject constructor(
                     lastSyncTime = meta?.lastSyncDate ?: "从未同步",
                     syncHour = syncHour,
                     syncMinute = syncMinute,
-                    refreshMode = "局部刷新"
+                    refreshMode = "局部刷新",
+                    firstPlantDate = firstPlantDate,
+                    witheredCount = witheredCount
                 )
             }.collect { state ->
                 _uiState.value = state
@@ -134,5 +142,7 @@ data class ProfileUiState(
     val lastSyncTime: String = "",
     val syncHour: Int = 8,
     val syncMinute: Int = 0,
-    val refreshMode: String = "局部刷新"
+    val refreshMode: String = "局部刷新",
+    val firstPlantDate: String = "",
+    val witheredCount: Int = 0
 )

@@ -28,12 +28,9 @@ class GardenFragment : Fragment() {
     private val viewModel: GardenViewModel by viewModels()
 
     private lateinit var rendererView: GardenRendererView
-    private lateinit var seasonText: TextView
-    private lateinit var weatherText: TextView
-    private lateinit var dateText: TextView
-    private lateinit var todayReadText: TextView
-    private lateinit var streakText: TextView
-    private lateinit var bonusText: TextView
+    private lateinit var weatherDateText: TextView
+    private lateinit var irrigationText: TextView
+    private lateinit var infoSummaryText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,12 +44,9 @@ class GardenFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 绑定视图
-        seasonText = view.findViewById(R.id.text_season)
-        weatherText = view.findViewById(R.id.text_weather)
-        dateText = view.findViewById(R.id.text_date)
-        todayReadText = view.findViewById(R.id.text_today_read)
-        streakText = view.findViewById(R.id.text_streak)
-        bonusText = view.findViewById(R.id.text_bonus)
+        weatherDateText = view.findViewById(R.id.text_weather_date)
+        irrigationText = view.findViewById(R.id.text_irrigation)
+        infoSummaryText = view.findViewById(R.id.text_info_summary)
         rendererView = view.findViewById(R.id.garden_renderer)
 
         // 设置植物点击监听
@@ -74,19 +68,20 @@ class GardenFragment : Fragment() {
      * 根据状态渲染花园界面
      */
     private fun renderState(state: GardenUiState) {
-        // 顶栏
-        seasonText.text = state.season.label
-        weatherText.text = state.weather.label
-        dateText.text = state.dateText
+        // 右上角：天气·季节·日期（如"晴·夏·初七"）
+        val weatherDate = "${state.weather.label}·${state.season.label}·${state.dateText}"
+        weatherDateText.text = weatherDate
 
-        // 信息条
-        todayReadText.text = "今日阅读 ${state.todayReadMinutes.formatMinutes()}"
-        streakText.text = "连续 ${state.streakDays} 天"
-        bonusText.text = if (state.bonusMultiplier > 1.0f) {
-            "加成 ×${state.bonusMultiplier}"
-        } else {
-            ""
-        }
+        // 信息条：今日 XhXmin · 连续X天 · ×X.X
+        val todayReadStr = "今日 ${state.todayReadMinutes.formatMinutes()}"
+        val streakStr = "连续${state.streakDays}天"
+        val bonusStr = if (state.bonusMultiplier > 1.0f) "×${state.bonusMultiplier}" else ""
+        
+        val infoParts = listOf(todayReadStr, streakStr, bonusStr).filter { it.isNotEmpty() }
+        infoSummaryText.text = infoParts.joinToString(" · ")
+
+        // 灌溉进度
+        irrigationText.text = "${getString(R.string.label_irrigation_progress)} ${state.irrigationHours}/${state.irrigationGoal}h"
 
         // 渲染植物
         renderPlants(state.plants)
