@@ -234,18 +234,18 @@ class SyncWorker(
         intent.setPackage(applicationContext.packageName)
         applicationContext.sendBroadcast(intent)
     }
+}
 
-    /**
-     * Hilt 入口点
-     */
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface SyncWorkerEntryPoint {
-        fun wereadRepository(): WereadRepository
-        fun gardenRepository(): GardenRepository
-        fun plantRepository(): PlantRepository
-        fun readStatsRepository(): ReadStatsRepository
-    }
+/**
+ * Hilt 入口点（必须为顶层，KSP 不支持嵌套 @EntryPoint）
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface SyncWorkerEntryPoint {
+    fun wereadRepository(): WereadRepository
+    fun gardenRepository(): GardenRepository
+    fun plantRepository(): PlantRepository
+    fun readStatsRepository(): ReadStatsRepository
 }
 
 /**

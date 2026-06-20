@@ -129,16 +129,16 @@ class MoyuanApp : Application() {
 
         fun getInstance(): MoyuanApp = instance
     }
+}
 
-    /**
-     * Hilt 入口点接口
-     * 用于在 Application 中访问 Hilt 管理的依赖
-     */
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface MoyuanInitEntryPoint {
-        fun gardenRepository(): GardenRepository
-        fun plantRepository(): PlantRepository
-        fun userPrefs(): UserPrefs
-    }
+/**
+ * Hilt 入口点接口（必须为顶层，KSP 不支持嵌套 @EntryPoint）
+ * 用于在 Application 中访问 Hilt 管理的依赖
+ */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface MoyuanInitEntryPoint {
+    fun gardenRepository(): GardenRepository
+    fun plantRepository(): PlantRepository
+    fun userPrefs(): UserPrefs
 }
