@@ -14,7 +14,7 @@ import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.render.EinkHelper
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPoint
+import dagger.hilt.EntryPoint
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first

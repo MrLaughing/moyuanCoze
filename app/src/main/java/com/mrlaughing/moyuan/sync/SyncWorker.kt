@@ -19,7 +19,7 @@ import com.mrlaughing.moyuan.engine.GardenUpdateResult
 import com.mrlaughing.moyuan.sync.SnapshotManager
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPoint
+import dagger.hilt.EntryPoint
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
