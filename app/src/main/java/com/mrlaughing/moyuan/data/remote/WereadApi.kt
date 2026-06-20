@@ -1,50 +1,62 @@
 package com.mrlaughing.moyuan.data.remote
 
-import com.mrlaughing.moyuan.data.remote.dto.BookResponse
 import com.mrlaughing.moyuan.data.remote.dto.ReadDataResponse
 import com.mrlaughing.moyuan.data.remote.dto.ShelfResponse
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 /**
- * 微信读书 API 接口
- * 所有请求走统一网关 https://i.weread.qq.com/api/agent/gateway
+ * 微信读书 Agent Gateway API
+ * 统一入口: POST https://i.weread.qq.com/api/agent/gateway
+ * 鉴权: Authorization: Bearer $WEREAD_API_KEY
+ * Body: JSON, api_name 指定接口, skill_version 必带
  */
 interface WereadApi {
 
     /**
-     * 获取阅读数据概览
+     * 获取阅读统计数据
+     * mode: weekly=本周, monthly=本月, annually=本年, overall=总计
      */
-    @FormUrlEncoded
     @POST("agent/gateway")
     suspend fun getReadData(
-        @Field("token") token: String,
-        @Field("type") type: String = "read_data"
+        @Header("Authorization") auth: String,
+        @Body body: ReadDataRequest
     ): ReadDataResponse
 
     /**
      * 获取书架列表
      */
-    @FormUrlEncoded
     @POST("agent/gateway")
     suspend fun getShelf(
-        @Field("token") token: String,
-        @Field("type") type: String = "shelf"
+        @Header("Authorization") auth: String,
+        @Body body: GatewayRequest
     ): ShelfResponse
-
-    /**
-     * 获取单本书籍详情
-     */
-    @FormUrlEncoded
-    @POST("agent/gateway")
-    suspend fun getBookInfo(
-        @Field("token") token: String,
-        @Field("type") type: String = "book_info",
-        @Field("bookId") bookId: String
-    ): BookResponse
 
     companion object {
         const val BASE_URL = "https://i.weread.qq.com/api/"
+        const val SKILL_VERSION = "1.0.3"
     }
 }
+
+/**
+ * Gateway 基础请求
+ */
+@JsonClass(generateAdapter = true)
+data class GatewayRequest(
+    @Json(name = "api_name") val apiName: String,
+    @Json(name = "skill_version") val skillVersion: String = WereadApi.SKILL_VERSION
+)
+
+/**
+ * 阅读数据请求
+ */
+@JsonClass(generateAdapter = true)
+data class ReadDataRequest(
+    @Json(name = "api_name") val apiName: String = "/readdata/detail",
+    @Json(name = "mode") val mode: String = "overall",
+    @Json(name = "baseTime") val baseTime: Int = 0,
+    @Json(name = "skill_version") val skillVersion: String = WereadApi.SKILL_VERSION
+)

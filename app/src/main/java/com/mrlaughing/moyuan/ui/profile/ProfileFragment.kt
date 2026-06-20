@@ -16,13 +16,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.WorkInfo
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.sync.SyncWorker
 import kotlinx.coroutines.launch
 
-/**
- * 个人中心 Fragment
- */
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
 
@@ -54,6 +52,11 @@ class ProfileFragment : Fragment() {
         syncTimeText = view.findViewById(R.id.text_sync_time)
         refreshModeText = view.findViewById(R.id.text_refresh_mode)
         aboutVersionText = view.findViewById(R.id.text_about_version)
+
+        // 立即同步按钮
+        view.findViewById<View>(R.id.layout_sync_now)?.setOnClickListener {
+            triggerManualSync()
+        }
 
         // 同步时间设置
         view.findViewById<View>(R.id.layout_sync_time)?.setOnClickListener {
@@ -93,37 +96,46 @@ class ProfileFragment : Fragment() {
     private fun renderState(state: ProfileUiState) {
         plantCountText.text = "植物 ${state.plantCount}/27·枯萎${state.witheredCount}"
         unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
-        
-        // 微信读书授权状态
+
         val statusText = if (state.wereadAuthorized) getString(R.string.label_authorized) else getString(R.string.label_unauthorized)
         val statusColor = if (state.wereadAuthorized) Color.parseColor("#333333") else Color.parseColor("#999999")
         wereadStatusText.text = statusText
         wereadStatusText.setTextColor(statusColor)
-        
-        // 上次同步
+
         lastSyncText.text = "上次同步${state.lastSyncTime}"
-        
-        // 同步时间
         syncTimeText.text = String.format("%02d:%02d", state.syncHour, state.syncMinute)
-        
-        // 刷新模式
         refreshModeText.text = state.refreshMode
-        
-        // 关于版本
         aboutVersionText.text = "v1.0.0"
     }
 
     /**
-     * 显示 Token 输入对话框
+     * 手动触发同步
      */
+    private fun triggerManualSync() {
+        val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
+        WorkManager.getInstance(requireContext()).enqueue(syncRequest)
+
+        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(syncRequest.id)
+            .observe(viewLifecycleOwner) { workInfo ->
+                when {
+                    workInfo.state == WorkInfo.State.SUCCEEDED -> {
+                        Toast.makeText(context, "同步完成", Toast.LENGTH_SHORT).show()
+                    }
+                    workInfo.state == WorkInfo.State.FAILED -> {
+                        Toast.makeText(context, "同步失败，请检查网络和Token", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+    }
+
     private fun showTokenInputDialog() {
         val editText = EditText(requireContext()).apply {
-            hint = "请输入微信读书 Token"
+            hint = "请输入微信读书 API Key"
             setPadding(48, 24, 48, 24)
         }
         android.app.AlertDialog.Builder(requireContext())
             .setTitle("微信读书授权")
-            .setMessage("请在微信读书网页版登录后，从浏览器 Cookie 中获取 Token")
+            .setMessage("请在微信读书 App 设置中获取 API Key（格式：wrk-xxx）")
             .setView(editText)
             .setPositiveButton("授权") { _, _ ->
                 val token = editText.text.toString().trim()
@@ -131,16 +143,13 @@ class ProfileFragment : Fragment() {
                     viewModel.authorize(token)
                     Toast.makeText(context, "授权成功", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Token 不能为空", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "API Key 不能为空", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("取消", null)
             .show()
     }
 
-    /**
-     * 显示取消授权确认对话框
-     */
     private fun showDeauthorizeConfirmDialog() {
         android.app.AlertDialog.Builder(requireContext())
             .setTitle("取消授权")

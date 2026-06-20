@@ -2,7 +2,10 @@ package com.mrlaughing.moyuan.data.repository
 
 import com.mrlaughing.moyuan.data.local.db.dao.GardenMetaDao
 import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
+import com.mrlaughing.moyuan.data.remote.GatewayRequest
+import com.mrlaughing.moyuan.data.remote.ReadDataRequest
 import com.mrlaughing.moyuan.data.remote.WereadApiClient
+import com.mrlaughing.moyuan.data.remote.dto.BookProgressResponse
 import com.mrlaughing.moyuan.data.remote.dto.BookResponse
 import com.mrlaughing.moyuan.data.remote.dto.ReadDataResponse
 import com.mrlaughing.moyuan.data.remote.dto.ShelfResponse
@@ -11,10 +14,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * 微信读书数据仓库
- * 封装 API 调用与本地 Token 管理
- */
 @Singleton
 class WereadRepository @Inject constructor(
     private val wereadApiClient: WereadApiClient,
@@ -24,91 +23,98 @@ class WereadRepository @Inject constructor(
 
     private val api get() = wereadApiClient.wereadApi
 
-    /**
-     * 获取当前 Token
-     */
-    private suspend fun getToken(): String? {
-        return userPrefs.wereadToken.first()
-    }
+    private suspend fun getToken(): String? = userPrefs.wereadToken.first()
 
-    /**
-     * 判断是否已授权
-     */
-    suspend fun isAuthorized(): Boolean {
-        return !getToken().isNullOrBlank()
-    }
+    suspend fun isAuthorized(): Boolean = !getToken().isNullOrBlank()
 
-    /**
-     * 授权：保存 Token
-     */
     suspend fun authorize(token: String) {
         userPrefs.setWereadToken(token)
-        // 同步更新 GardenMeta 中的 Token
         gardenMetaDao.updateWereadToken(token)
     }
 
-    /**
-     * 取消授权
-     */
     suspend fun deauthorize() {
         userPrefs.setWereadToken(null)
         gardenMetaDao.updateWereadToken(null)
     }
 
-    /**
-     * 获取阅读数据概览
-     */
-    suspend fun fetchReadData(): Result<ReadDataResponse> {
+    suspend fun fetchReadDataOverall(): Result<ReadDataResponse> =
+        fetchReadData(ReadDataRequest(mode = "overall"))
+
+    suspend fun fetchReadDataWeekly(): Result<ReadDataResponse> =
+        fetchReadData(ReadDataRequest(mode = "weekly"))
+
+    suspend fun fetchReadData(request: ReadDataRequest = ReadDataRequest()): Result<ReadDataResponse> {
         return try {
             val token = getToken()
                 ?: return Result.failure(IllegalStateException("未授权：缺少微信读书 Token"))
-
-            val response = api.getReadData(token)
-            if (response.isSuccess) {
-                Result.success(response)
-            } else {
-                Result.failure(IOException("API 返回错误: ${response.errMsg} (code=${response.errCode})"))
-            }
+            val response = api.getReadData("Bearer $token", request)
+            if (response.isSuccess) Result.success(response)
+            else Result.failure(IOException("API 错误: ${response.errMsg} (code=${response.errCode})"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    /**
-     * 获取书架列表
-     */
     suspend fun fetchShelf(): Result<ShelfResponse> {
         return try {
             val token = getToken()
                 ?: return Result.failure(IllegalStateException("未授权：缺少微信读书 Token"))
-
-            val response = api.getShelf(token)
-            if (response.isSuccess) {
-                Result.success(response)
-            } else {
-                Result.failure(IOException("API 返回错误: ${response.errMsg} (code=${response.errCode})"))
-            }
+            val response = api.getShelf("Bearer $token", GatewayRequest(apiName = "/shelf/sync"))
+            if (response.isSuccess) Result.success(response)
+            else Result.failure(IOException("API 错误: ${response.errMsg} (code=${response.errCode})"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    /**
-     * 获取单本书籍详情
-     */
     suspend fun fetchBookInfo(bookId: String): Result<BookResponse> {
         return try {
-            val token = getToken()
-                ?: return Result.failure(IllegalStateException("未授权：缺少微信读书 Token"))
-
-            val response = api.getBookInfo(token, bookId = bookId)
-            if (response.isSuccess) {
-                Result.success(response)
-            } else {
-                Result.failure(IOException("API 返回错误: ${response.errMsg} (code=${response.errCode})"))
-            }
+            val token = getToken() ?: ""
+            val request = mapOf(
+                "api_name" to "/book/info",
+                "bookId" to bookId,
+                "skill_version" to "1.0.3"
+            )
+            val response = wereadApiClient.retrofit.create(WereadBookApi::class.java)
+                .getBookInfo("Bearer $token", request)
+            if (response.errCode == 0) Result.success(response)
+            else Result.failure(IOException("API 错误: ${response.errMsg} (code=${response.errCode})"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    suspend fun fetchBookProgress(bookId: String): Result<BookProgressResponse> {
+        return try {
+            val token = getToken()
+                ?: return Result.failure(IllegalStateException("未授权"))
+            val request = mapOf(
+                "api_name" to "/book/getprogress",
+                "bookId" to bookId,
+                "skill_version" to "1.0.3"
+            )
+            val response = wereadApiClient.retrofit.create(WereadProgressApi::class.java)
+                .getProgress("Bearer $token", request)
+            if (response.errCode == 0) Result.success(response)
+            else Result.failure(IOException("API 错误: ${response.errMsg}"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+
+private interface WereadBookApi {
+    @retrofit2.http.POST("agent/gateway")
+    suspend fun getBookInfo(
+        @retrofit2.http.Header("Authorization") auth: String,
+        @retrofit2.http.Body body: Map<String, @JvmSuppressWildcards Any>
+    ): BookResponse
+}
+
+private interface WereadProgressApi {
+    @retrofit2.http.POST("agent/gateway")
+    suspend fun getProgress(
+        @retrofit2.http.Header("Authorization") auth: String,
+        @retrofit2.http.Body body: Map<String, @JvmSuppressWildcards Any>
+    ): BookProgressResponse
 }
