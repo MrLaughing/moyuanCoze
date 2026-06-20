@@ -38,7 +38,7 @@ data class ReadDataResponse(
             .toEpochSecond()
         return readTimes.entries
             .filter { it.key.toLongOrNull()?.let { k -> k >= todayStart } ?: false }
-            .values.sum()
+            .sumOf { it.value }
             .takeIf { it > 0 }
             ?: 0L
     }
