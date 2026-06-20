@@ -1,6 +1,7 @@
 package com.mrlaughing.moyuan.sync
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -30,6 +31,11 @@ class SyncWorker(
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
+    companion object {
+        private const val TAG = "SyncWorker"
+        const val KEY_ERROR_MSG = "error_msg"
+    }
+
     override suspend fun doWork(): Result {
         return try {
             val entryPoint = EntryPointAccessors.fromApplication(
@@ -41,19 +47,41 @@ class SyncWorker(
             val readStatsRepository = entryPoint.readStatsRepository()
             val weatherRepository = entryPoint.weatherRepository()
 
+            // 预检：确认 Token 存在
+            if (!wereadRepository.isAuthorized()) {
+                Log.e(TAG, "同步失败：未授权，缺少微信读书Token")
+                return Result.failure(workDataOf(KEY_ERROR_MSG to "未授权：请先在个人中心输入微信读书API Key"))
+            }
+
             // 拉取阅读数据（weekly 获取今日数据，overall 获取总览）
+            Log.d(TAG, "开始拉取阅读数据...")
             val weeklyResult = wereadRepository.fetchReadDataWeekly()
+            if (weeklyResult.isFailure) {
+                Log.e(TAG, "拉取周阅读数据失败: ${weeklyResult.exceptionOrNull()?.message}")
+            }
             val overallResult = wereadRepository.fetchReadDataOverall()
+            if (overallResult.isFailure) {
+                Log.e(TAG, "拉取总阅读数据失败: ${overallResult.exceptionOrNull()?.message}")
+            }
             val weeklyData = weeklyResult.getOrNull()
             val overallData = overallResult.getOrNull()
 
             if (overallData == null || !overallData.isSuccess) {
-                val errMsg = overallResult.exceptionOrNull()?.message ?: "unknown"
-                return Result.failure(workDataOf("error" to "fetch_failed: $errMsg"))
+                val errMsg = overallResult.exceptionOrNull()?.message
+                    ?: if (overallData != null) "API错误: ${overallData.errMsg}" else "unknown"
+                Log.e(TAG, "同步失败: $errMsg")
+                return Result.failure(workDataOf(KEY_ERROR_MSG to "数据获取失败: $errMsg"))
             }
 
+            Log.d(TAG, "阅读数据拉取成功: totalReadTime=${overallData.totalReadTime}, readDays=${overallData.readDays}")
+
             // 拉取书架
-            val shelfData = wereadRepository.fetchShelf().getOrNull()
+            val shelfResult = wereadRepository.fetchShelf()
+            if (shelfResult.isFailure) {
+                Log.w(TAG, "拉取书架失败: ${shelfResult.exceptionOrNull()?.message}")
+            }
+            val shelfData = shelfResult.getOrNull()
+            Log.d(TAG, "书架拉取: ${shelfData?.books?.size ?: 0}本书")
 
             // 计算今日阅读秒数
             val todayReadSeconds = weeklyData?.getTodayReadSeconds() ?: 0L
@@ -90,6 +118,7 @@ class SyncWorker(
             val season = com.mrlaughing.moyuan.engine.season.SeasonEngine.getSeason(LocalDate.now())
             val isNight = com.mrlaughing.moyuan.engine.season.SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
             val realWeather = weatherRepository.fetchWeather(season, isNight)
+            Log.d(TAG, "天气获取: ${realWeather.name}")
 
             val gardenUpdateResult = triggerGardenEngine(
                 gardenRepository, plantRepository, todayReadSeconds, shelfBooks.size, increment, realWeather
@@ -104,9 +133,11 @@ class SyncWorker(
             }
 
             notifyUIRefresh()
+            Log.d(TAG, "同步完成!")
             Result.success()
         } catch (e: Exception) {
-            Result.failure(workDataOf("error" to (e.message ?: "unknown")))
+            Log.e(TAG, "同步异常", e)
+            Result.failure(workDataOf(KEY_ERROR_MSG to (e.message ?: "未知异常")))
         }
     }
 

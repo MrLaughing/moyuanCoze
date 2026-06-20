@@ -17,16 +17,16 @@ data class ReadDataResponse(
     @Json(name = "baseTime") val baseTime: Long = 0,
     @Json(name = "readLongest") val readLongest: List<ReadLongestBook> = emptyList(),
     @Json(name = "readStat") val readStat: List<ReadStatItem> = emptyList(),
-    @Json(name = "preferCategory") val preferCategory: List<PreferCategory> = emptyList(),
+    @Json(name = "preferCategory") val preferCategory: List<ApiPreferCategory> = emptyList(),
     @Json(name = "preferCategoryWord") val preferCategoryWord: String? = null,
     @Json(name = "preferTimeWord") val preferTimeWord: String? = null,
-    @Json(name = "preferAuthor") val preferAuthor: List<PreferAuthor> = emptyList(),
-    @Json(name = "preferBooks") val preferBooks: List<PreferBook> = emptyList(),
-    @Json(name = "medals") val medals: List<MedalItem> = emptyList(),
+    @Json(name = "preferAuthor") val preferAuthor: List<ApiPreferAuthor> = emptyList(),
+    @Json(name = "preferBooks") val preferBooks: List<ApiPreferBook> = emptyList(),
+    @Json(name = "medals") val medals: List<ApiMedalItem> = emptyList(),
     @Json(name = "registTime") val registTime: Long = 0,
     @Json(name = "wrReadTime") val wrReadTime: Long = 0,
     @Json(name = "wrListenTime") val wrListenTime: Long = 0,
-    @Json(name = "rank") val rank: RankInfo? = null,
+    @Json(name = "rank") val rank: ApiRankInfo? = null,
     @Json(name = "errcode") val errCode: Int = 0,
     @Json(name = "errmsg") val errMsg: String? = null
 ) {
@@ -43,6 +43,51 @@ data class ReadDataResponse(
             ?: 0L
     }
 }
+
+/** API 实际返回的分类偏好结构 */
+@JsonClass(generateAdapter = true)
+data class ApiPreferCategory(
+    @Json(name = "categoryId") val categoryId: Long = 0,
+    @Json(name = "categoryTitle") val categoryTitle: String = "",
+    @Json(name = "readingCount") val readingCount: Int = 0,
+    @Json(name = "readingTime") val readingTime: Long = 0
+)
+
+/** API 实际返回的作者偏好结构 - readTime 是字符串如"8小时33分钟" */
+@JsonClass(generateAdapter = true)
+data class ApiPreferAuthor(
+    @Json(name = "authorId") val authorId: Long = 0,
+    @Json(name = "name") val name: String = "",
+    @Json(name = "count") val count: Int = 0,
+    @Json(name = "readTime") val readTime: String = ""
+)
+
+/** API 实际返回的偏好书籍结构 */
+@JsonClass(generateAdapter = true)
+data class ApiPreferBook(
+    @Json(name = "type") val type: Int = 0,
+    @Json(name = "title") val title: String = ""
+)
+
+/** API 实际返回的勋章结构 */
+@JsonClass(generateAdapter = true)
+data class ApiMedalItem(
+    @Json(name = "id") val id: String = "",
+    @Json(name = "name") val name: String = "",
+    @Json(name = "hint") val hint: String = "",
+    @Json(name = "displayText") val displayText: String = "",
+    @Json(name = "title") val title: String = "",
+    @Json(name = "type") val type: Int = 0,
+    @Json(name = "subtype") val subtype: Int = 0,
+    @Json(name = "level") val level: Int = 0
+)
+
+/** API 实际返回的排名结构 */
+@JsonClass(generateAdapter = true)
+data class ApiRankInfo(
+    @Json(name = "text") val text: String = "",
+    @Json(name = "scheme") val scheme: String? = null
+)
 
 @JsonClass(generateAdapter = true)
 data class ReadLongestBook(
@@ -67,40 +112,4 @@ data class BookInfo(
 data class ReadStatItem(
     @Json(name = "stat") val stat: String = "",
     @Json(name = "counts") val counts: String = ""
-)
-
-@JsonClass(generateAdapter = true)
-data class PreferCategory(
-    @Json(name = "category") val category: String = "",
-    @Json(name = "readTime") val readTime: Long = 0,
-    @Json(name = "count") val count: Int = 0
-)
-
-@JsonClass(generateAdapter = true)
-data class PreferAuthor(
-    @Json(name = "author") val author: String = "",
-    @Json(name = "readTime") val readTime: Long = 0,
-    @Json(name = "count") val count: Int = 0
-)
-
-@JsonClass(generateAdapter = true)
-data class PreferBook(
-    @Json(name = "type") val type: Int = 0,
-    @Json(name = "title") val title: String = "",
-    @Json(name = "bookInfo") val bookInfo: BookInfo? = null,
-    @Json(name = "reason") val reason: String? = null
-)
-
-@JsonClass(generateAdapter = true)
-data class MedalItem(
-    @Json(name = "id") val id: String = "",
-    @Json(name = "name") val name: String = "",
-    @Json(name = "hint") val hint: String = "",
-    @Json(name = "displayText") val displayText: String = ""
-)
-
-@JsonClass(generateAdapter = true)
-data class RankInfo(
-    @Json(name = "text") val text: String = "",
-    @Json(name = "scheme") val scheme: String? = null
 )

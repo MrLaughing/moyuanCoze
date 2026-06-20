@@ -110,10 +110,20 @@ class ProfileFragment : Fragment() {
 
     /**
      * 手动触发同步
+     * 显示具体错误信息，而非笼统提示
      */
     private fun triggerManualSync() {
+        // 先检查授权状态
+        val state = viewModel.uiState.value
+        if (!state.wereadAuthorized) {
+            Toast.makeText(context, "请先授权微信读书API Key", Toast.LENGTH_LONG).show()
+            return
+        }
+
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
         WorkManager.getInstance(requireContext()).enqueue(syncRequest)
+
+        Toast.makeText(context, "正在同步...", Toast.LENGTH_SHORT).show()
 
         WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(syncRequest.id)
             .observe(viewLifecycleOwner) { workInfo ->
@@ -122,7 +132,9 @@ class ProfileFragment : Fragment() {
                         Toast.makeText(context, "同步完成", Toast.LENGTH_SHORT).show()
                     }
                     workInfo.state == WorkInfo.State.FAILED -> {
-                        Toast.makeText(context, "同步失败，请检查网络和Token", Toast.LENGTH_SHORT).show()
+                        val errorMsg = workInfo.outputData.getString(SyncWorker.KEY_ERROR_MSG)
+                            ?: "未知错误"
+                        Toast.makeText(context, "同步失败: $errorMsg", Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -141,7 +153,7 @@ class ProfileFragment : Fragment() {
                 val token = editText.text.toString().trim()
                 if (token.isNotBlank()) {
                     viewModel.authorize(token)
-                    Toast.makeText(context, "授权成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "授权成功，点击立即同步拉取数据", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(context, "API Key 不能为空", Toast.LENGTH_SHORT).show()
                 }
