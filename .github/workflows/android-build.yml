@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,3 +49,33 @@ jobs:
         with:
           name: moyuan-release
           path: app/build/outputs/apk/release/*.apk
+
+      - name: Update Debug Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.0-debug
+          name: "墨园 v0.1.0 Debug Build"
+          prerelease: true
+          body: |
+            Latest debug build from commit ${{ github.sha }}
+
+            - Auto-built from push to main
+          files: app/build/outputs/apk/debug/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Release Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.0-release
+          name: "墨园 v0.1.0 Release Build"
+          prerelease: true
+          body: |
+            Latest release build from commit ${{ github.sha }}
+
+            - Auto-built from push to main
+          files: app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
