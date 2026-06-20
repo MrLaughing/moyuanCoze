@@ -14,13 +14,13 @@
     <string name="label_bonus">加成</string>
     <string name="label_irrigation_progress">灌溉进度</string>
 
-    <!-- 图鉴 -->
+    <!-- 图鉴 - 路径筛选 -->
     <string name="label_path_all">全部</string>
-    <string name="label_path_herb">草本</string>
-    <string name="label_path_woody">木本</string>
-    <string name="label_path_vine">藤蔓</string>
-    <string name="label_path_aquatic">水生</string>
-    <string name="label_path_accumulate">积墨</string>
+    <string name="label_path_jimo">积墨</string>
+    <string name="label_path_bingzhu">秉烛</string>
+    <string name="label_path_suihan">岁寒</string>
+    <string name="label_path_xunfang">寻芳</string>
+    <string name="label_path_hidden">隐藏</string>
     <string name="label_unlocked">已解锁</string>
     <string name="label_locked">未解锁</string>
     <string name="msg_unlock_condition">解锁条件：%s</string>
@@ -38,6 +38,7 @@
     <string name="label_unauthorized">未授权</string>
     <string name="label_last_sync">上次同步：%s</string>
     <string name="label_sync_time">同步时间</string>
+    <string name="label_sync_now">立即同步</string>
     <string name="label_refresh_mode">刷新模式</string>
     <string name="label_about">关于</string>
     <string name="label_sync_settings">同步设置</string>
@@ -55,7 +56,6 @@
     <string name="desc_plant_image">植物图片</string>
     <string name="msg_sync_complete">同步完成</string>
     <string name="msg_sync_failed">同步失败</string>
-    <string name="label_sync_now">立即同步</string>
     <string name="about_content">墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。</string>
 
     <!-- 季节 -->

@@ -12,6 +12,7 @@ import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
 import com.mrlaughing.moyuan.data.repository.WereadRepository
+import com.mrlaughing.moyuan.data.repository.WeatherRepository
 import com.mrlaughing.moyuan.engine.DailyReadInput
 import com.mrlaughing.moyuan.engine.GardenEngine
 import com.mrlaughing.moyuan.engine.GardenUpdateResult
@@ -38,6 +39,7 @@ class SyncWorker(
             val gardenRepository = entryPoint.gardenRepository()
             val plantRepository = entryPoint.plantRepository()
             val readStatsRepository = entryPoint.readStatsRepository()
+            val weatherRepository = entryPoint.weatherRepository()
 
             // 拉取阅读数据（weekly 获取今日数据，overall 获取总览）
             val weeklyResult = wereadRepository.fetchReadDataWeekly()
@@ -57,7 +59,10 @@ class SyncWorker(
             val todayReadSeconds = weeklyData?.getTodayReadSeconds() ?: 0L
             val totalReadSeconds = overallData.totalReadTime
 
-            val shelfBooks = shelfData?.books ?: emptyList()
+            // 获取书架书籍并按最近阅读时间降序排序
+            val shelfBooks = shelfData?.books
+                ?.sortedByDescending { it.readUpdateTime }
+                ?: emptyList()
 
             // 构建同步数据
             val wereadSyncData = WereadSyncData(
@@ -81,9 +86,13 @@ class SyncWorker(
             // 写入数据库
             saveToDatabase(readStatsRepository, increment, todayReadSeconds)
 
-            // 触发花园引擎
+            // 触发花园引擎（先获取真实天气）
+            val season = com.mrlaughing.moyuan.engine.season.SeasonEngine.getSeason(LocalDate.now())
+            val isNight = com.mrlaughing.moyuan.engine.season.SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
+            val realWeather = weatherRepository.fetchWeather(season, isNight)
+
             val gardenUpdateResult = triggerGardenEngine(
-                gardenRepository, plantRepository, todayReadSeconds, shelfBooks.size, increment
+                gardenRepository, plantRepository, todayReadSeconds, shelfBooks.size, increment, realWeather
             )
 
             gardenUpdateResult?.let {
@@ -130,7 +139,12 @@ class SyncWorker(
             syncedAt = System.currentTimeMillis()
         ))
 
-        increment.books.forEach { book ->
+        // 按最近阅读时间排序后取前10本保存
+        val recentBooks = increment.books
+            .sortedByDescending { it.lastReadDate }
+            .take(10)
+
+        recentBooks.forEach { book ->
             readStatsRepository.upsertBookTracking(BookTrackingEntity(
                 bookId = book.bookId,
                 title = book.title,
@@ -148,7 +162,8 @@ class SyncWorker(
         plantRepository: PlantRepository,
         todayReadSeconds: Long,
         booksCount: Int,
-        increment: IncrementData
+        increment: IncrementData,
+        weather: com.mrlaughing.moyuan.data.model.Weather?
     ): GardenUpdateResult? {
         val today = LocalDate.now()
         val todayMinutes = (todayReadSeconds / 60).toInt()
@@ -172,7 +187,8 @@ class SyncWorker(
             meta = engineMeta,
             plantStates = enginePlants,
             dailyInput = dailyInput,
-            today = today
+            today = today,
+            weather = weather
         )
 
         gardenRepository.updateMeta(EntityMapper.toDbMeta(updateResult.meta, metaEntity))
@@ -199,6 +215,7 @@ interface SyncWorkerEntryPoint {
     fun gardenRepository(): GardenRepository
     fun plantRepository(): PlantRepository
     fun readStatsRepository(): ReadStatsRepository
+    fun weatherRepository(): WeatherRepository
 }
 
 data class WereadSyncData(

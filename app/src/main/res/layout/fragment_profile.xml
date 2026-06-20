@@ -158,6 +158,38 @@
 
             </LinearLayout>
 
+            <!-- 立即同步按钮 -->
+            <LinearLayout
+                android:id="@+id/layout_sync_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:paddingVertical="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_sync_now"
+                    android:textColor="@color/pure_black"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="→"
+                    android:textColor="@color/medium_gray"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- 4. 刷新模式卡片 -->
@@ -240,7 +272,7 @@
 
         </LinearLayout>
 
-        <!-- 隐藏的旧视图 -->
+        <!-- 隐藏的旧视图（保留用于兼容性） -->
         <TextView
             android:id="@+id/text_garden_name"
             android:layout_width="wrap_content"
@@ -248,11 +280,6 @@
             android:visibility="gone" />
         <TextView
             android:id="@+id/text_sync_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-        <View
-            android:id="@+id/layout_sync_now"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />

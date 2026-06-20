@@ -36,20 +36,22 @@ object GardenEngine {
      * @param plantStates 当前所有植物状态（引擎层）
      * @param dailyInput 当日阅读输入
      * @param today 当前日期
+     * @param weather 外部提供的天气（如来自 API），为 null 时概率抽取
      * @return GardenUpdateResult
      */
     fun recalculate(
         meta: EngineMeta,
         plantStates: List<EnginePlantState>,
         dailyInput: DailyReadInput,
-        today: LocalDate
+        today: LocalDate,
+        weather: Weather? = null
     ): GardenUpdateResult {
 
         // ── Phase 1: 环境 ──────────────────────────────────────
         val season = SeasonEngine.getSeason(today)
         val isNight = SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
-        val weather = SeasonEngine.rollWeather(season, isNight)
-        val multiplier = SeasonEngine.calculateMultiplier(season, weather)
+        val resolvedWeather = weather ?: SeasonEngine.rollWeather(season, isNight)
+        val multiplier = SeasonEngine.calculateMultiplier(season, resolvedWeather)
 
         // ── Phase 2: 路径 ──────────────────────────────────────
         val readStats = ReadStats(
@@ -70,7 +72,7 @@ object GardenEngine {
             plantStates = plantStates,
             dailyInput = dailyInput,
             season = season,
-            weather = weather,
+            weather = resolvedWeather,
             userPaths = userPaths,
             today = today
         )
@@ -114,7 +116,7 @@ object GardenEngine {
             meta = updatedMeta,
             plants = trulyFinalPlants,
             season = season,
-            weather = weather,
+            weather = resolvedWeather,
             multiplier = multiplier,
             newlyUnlocked = finalNewlyUnlocked
         )

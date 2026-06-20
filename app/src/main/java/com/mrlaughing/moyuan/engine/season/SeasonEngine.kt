@@ -100,4 +100,67 @@ object SeasonEngine {
     ): WitherCountdown {
         return WitherEngine.calculateWitherCountdown(plant, lastReadDate, today)
     }
+
+    /**
+     * 将 WMO weather_code 映射为墨园天气
+     *
+     * WMO 代码参考：https://open-meteo.com/en/docs#weathervariables
+     * 0:  晴空 → CLEAR
+     * 1:  主晴 → CLEAR
+     * 2:  多云 → OVERCAST
+     * 3:  阴天 → OVERCAST
+     * 45,48: 雾 → FOGGY
+     * 51,53,55: 毛毛雨 → SPRING_RAIN
+     * 56,57: 冻毛毛雨 → FOGGY（少见，归为雾）
+     * 61,63,65: 雨 → SPRING_RAIN
+     * 66,67: 冻雨 → FOGGY
+     * 71,73,75: 雪 → FIRST_SNOW
+     * 77:  雪粒 → FIRST_SNOW
+     * 80,81,82: 阵雨 → SPRING_RAIN
+     * 85,86: 阵雪 → FIRST_SNOW
+     * 95:  雷暴 → SPRING_RAIN
+     * 96,99: 雷暴+冰雹 → SPRING_RAIN
+     *
+     * 特殊规则：
+     * - 夜间 + 晴空 → MOONLIT（仅夏季）
+     * - 春雨和初雪受季节限制
+     * - 非对应季节的雨/雪降级为 OVERCAST
+     */
+    fun mapWmoCodeToWeather(wmoCode: Int, season: Season, isNight: Boolean): Weather {
+        return when (wmoCode) {
+            0 -> {
+                // 晴空：夏季夜间 → 月夜，否则 → 晴
+                if (isNight && season == Season.SUMMER) Weather.MOONLIT
+                else Weather.CLEAR
+            }
+            1 -> {
+                // 主晴：夏季夜间 → 月夜
+                if (isNight && season == Season.SUMMER) Weather.MOONLIT
+                else Weather.CLEAR
+            }
+            2 -> Weather.OVERCAST  // 多云
+            3 -> Weather.OVERCAST  // 阴天
+            45, 48 -> Weather.FOGGY  // 雾
+            56, 57 -> Weather.FOGGY  // 冻毛毛雨 → 归为雾
+            66, 67 -> Weather.FOGGY  // 冻雨 → 归为雾
+            51, 53, 55,  // 毛毛雨
+            61, 63, 65,  // 雨
+            80, 81, 82,  // 阵雨
+            95, 96, 99   // 雷暴
+            -> {
+                // 雨类：春季 → 春雨，其他季节 → 阴（墨园春雨仅限春季）
+                if (season == Season.SPRING) Weather.SPRING_RAIN
+                else Weather.OVERCAST
+            }
+            71, 73, 75,  // 雪
+            77,          // 雪粒
+            85, 86       // 阵雪
+            -> {
+                // 雪类：冬季 → 初雪，其他季节 → 阴（墨园初雪仅限冬季）
+                if (season == Season.WINTER) Weather.FIRST_SNOW
+                else Weather.OVERCAST
+            }
+            else -> Weather.CLEAR  // 未知代码默认晴
+        }
+    }
 }
