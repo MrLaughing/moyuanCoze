@@ -121,7 +121,7 @@ class SyncWorker(
             WereadBookData(
                 bookId = book.bookId,
                 title = book.title,
-                author = book.author,
+                author = book.author ?: "",
                 totalReadTime = book.readTime,
                 lastReadDate = book.lastReadDate ?: LocalDate.now().toString(),
                 coverUrl = book.cover
