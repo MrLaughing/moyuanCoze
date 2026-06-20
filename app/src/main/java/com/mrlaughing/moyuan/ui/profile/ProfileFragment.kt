@@ -14,7 +14,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.sync.SyncWorker
 import kotlinx.coroutines.launch
 
 /**
@@ -32,6 +35,7 @@ class ProfileFragment : Fragment() {
     private lateinit var lastSyncText: TextView
     private lateinit var syncTimeText: TextView
     private lateinit var refreshModeText: TextView
+    private lateinit var syncStatusText: TextView
     private lateinit var aboutButton: View
 
     override fun onCreateView(
@@ -52,9 +56,13 @@ class ProfileFragment : Fragment() {
         lastSyncText = view.findViewById(R.id.text_last_sync)
         syncTimeText = view.findViewById(R.id.text_sync_time)
         refreshModeText = view.findViewById(R.id.text_refresh_mode)
+        syncStatusText = view.findViewById(R.id.text_sync_status)
         aboutButton = view.findViewById(R.id.layout_about)
 
         // 设置点击事件
+        view.findViewById<View>(R.id.layout_sync_now)?.setOnClickListener {
+            triggerManualSync()
+        }
         view.findViewById<View>(R.id.layout_sync_time)?.setOnClickListener {
             showSyncTimePicker()
         }
@@ -174,5 +182,46 @@ class ProfileFragment : Fragment() {
             .setMessage("墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。")
             .setPositiveButton("确定", null)
             .show()
+    }
+
+    /**
+     * 手动触发同步
+     */
+    private fun triggerManualSync() {
+        val state = viewModel.uiState.value
+        if (!state.wereadAuthorized) {
+            Toast.makeText(context, "请先授权微信读书", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        syncStatusText.text = "同步中…"
+        syncStatusText.visibility = View.VISIBLE
+
+        val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
+        WorkManager.getInstance(requireContext()).enqueue(syncRequest)
+
+        // 观察同步结果
+        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(syncRequest.id)
+            .observe(viewLifecycleOwner) { workInfo ->
+                when {
+                    workInfo.state == androidx.work.WorkInfo.State.SUCCEEDED -> {
+                        syncStatusText.text = "同步完成"
+                        Toast.makeText(context, "同步完成", Toast.LENGTH_SHORT).show()
+                        // 延迟隐藏状态
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            kotlinx.coroutines.delay(3000)
+                            syncStatusText.visibility = View.GONE
+                        }
+                    }
+                    workInfo.state == androidx.work.WorkInfo.State.FAILED -> {
+                        syncStatusText.text = "同步失败"
+                        Toast.makeText(context, "同步失败，请检查网络和Token", Toast.LENGTH_SHORT).show()
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            kotlinx.coroutines.delay(3000)
+                            syncStatusText.visibility = View.GONE
+                        }
+                    }
+                }
+            }
     }
 }

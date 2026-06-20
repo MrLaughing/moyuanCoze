@@ -125,6 +125,44 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- 立即同步 -->
+                <LinearLayout
+                    android:id="@+id/layout_sync_now"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="立即同步"
+                        android:textColor="@color/pure_black"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/lxgw_wenkai" />
+
+                    <TextView
+                        android:id="@+id/text_sync_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/medium_gray"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/lxgw_wenkai"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@color/super_light_gray" />
+
                 <!-- 同步时间 -->
                 <LinearLayout
                     android:id="@+id/layout_sync_time"
