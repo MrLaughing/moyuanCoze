@@ -50,10 +50,10 @@ class GardenViewModel @Inject constructor(
         viewModelScope.launch {
             gardenRepository.observeGardenState().collect { gardenState ->
                 val season = determineSeason()
+                val meta = gardenState.meta
                 val weather = determineWeather(meta)
                 
                 // 从 GardenState 获取 meta 信息
-                val meta = gardenState.meta
                 val todayReadMinutes = meta?.accumulatedMinutes ?: 0
                 val streakDays = meta?.streakDays ?: 0
                 
