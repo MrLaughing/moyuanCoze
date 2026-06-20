@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">墨园</string>
+
+    <!-- 底部导航 -->
+    <string name="nav_garden">花园</string>
+    <string name="nav_catalog">图鉴</string>
+    <string name="nav_study">阅读</string>
+    <string name="nav_profile">我的</string>
+
+    <!-- 花园 -->
+    <string name="label_today_read">今日阅读</string>
+    <string name="label_streak_days">连续天数</string>
+    <string name="label_bonus">加成</string>
+
+    <!-- 图鉴 -->
+    <string name="label_path_all">全部</string>
+    <string name="label_path_herb">草本</string>
+    <string name="label_path_woody">木本</string>
+    <string name="label_path_vine">藤蔓</string>
+    <string name="label_path_aquatic">水生</string>
+    <string name="label_unlocked">已解锁</string>
+    <string name="label_locked">未解锁</string>
+    <string name="msg_unlock_condition">解锁条件：%s</string>
+
+    <!-- 阅读 -->
+    <string name="label_total_read">累计阅读</string>
+    <string name="label_books_read">已读书目</string>
+    <string name="label_weekly_overview">本周概览</string>
+    <string name="label_recent_books">最近阅读</string>
+
+    <!-- 个人中心 -->
+    <string name="label_weread_auth">微信读书授权</string>
+    <string name="label_authorized">已授权</string>
+    <string name="label_unauthorized">未授权</string>
+    <string name="label_last_sync">上次同步：%s</string>
+    <string name="label_sync_time">同步时间</string>
+    <string name="label_refresh_mode">刷新模式</string>
+    <string name="label_about">关于</string>
+
+    <!-- 植物详情 -->
+    <string name="button_back">← 返回</string>
+    <string name="label_level_progress">升级进度</string>
+    <string name="label_wither_warning">枯萎预警</string>
+    <string name="msg_wither_light">植物轻度枯萎，还有%d天</string>
+    <string name="msg_wither_severe">植物严重枯萎，请尽快阅读！</string>
+    <string name="msg_wither_countdown">还有%d天未阅读将枯萎</string>
+
+    <!-- 通用 -->
+    <string name="desc_plant_image">植物图片</string>
+    <string name="msg_sync_complete">同步完成</string>
+    <string name="msg_sync_failed">同步失败</string>
+    <string name="about_content">墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。</string>
+
+    <!-- 季节 -->
+    <string name="season_spring">春</string>
+    <string name="season_summer">夏</string>
+    <string name="season_autumn">秋</string>
+    <string name="season_winter">冬</string>
+
+    <!-- 天气 -->
+    <string name="weather_sunny">晴</string>
+    <string name="weather_rainy">雨</string>
+    <string name="weather_snowy">雪</string>
+    <string name="weather_foggy">雾</string>
+</resources>

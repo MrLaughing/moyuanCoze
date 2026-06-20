@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="@color/white">
+
+    <!-- 书名 -->
+    <TextView
+        android:id="@+id/text_book_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/pure_black"
+        android:textSize="14sp"
+        android:fontFamily="@font/lxgw_wenkai"
+        android:ellipsize="end"
+        android:maxLines="1" />
+
+    <!-- 累计时长 -->
+    <TextView
+        android:id="@+id/text_book_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/medium_gray"
+        android:textSize="12sp"
+        android:fontFamily="@font/lxgw_wenkai" />
+
+</LinearLayout>

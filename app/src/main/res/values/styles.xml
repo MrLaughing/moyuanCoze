@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 墨园主题：NoActionBar、霞鹜文楷字体、无动画、高对比度 -->
+
+    <!-- 基础应用主题 -->
+    <style name="Theme.Moyuan" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/pure_black</item>
+        <item name="colorPrimaryDark">@color/pure_black</item>
+        <item name="colorAccent">@color/pure_black</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSurface">@color/pure_black</item>
+        <item name="android:windowBackground">@color/page_background</item>
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowContentTransitions">false</item>
+        <item name="android:windowAllowEnterTransitionOverlap">false</item>
+        <item name="android:windowAllowReturnTransitionOverlap">false</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+    <!-- 无动画 Activity 主题 -->
+    <style name="Theme.Moyuan.NoAnimation" parent="Theme.Moyuan">
+        <item name="android:windowAnimationStyle">@style/NoAnimation</item>
+    </style>
+
+    <!-- 无动画样式 -->
+    <style name="NoAnimation">
+        <item name="android:activityOpenEnterAnimation">@null</item>
+        <item name="android:activityOpenExitAnimation">@null</item>
+        <item name="android:activityCloseEnterAnimation">@null</item>
+        <item name="android:activityCloseExitAnimation">@null</item>
+        <item name="android:taskOpenEnterAnimation">@null</item>
+        <item name="android:taskOpenExitAnimation">@null</item>
+        <item name="android:taskCloseEnterAnimation">@null</item>
+        <item name="android:taskCloseExitAnimation">@null</item>
+    </style>
+
+    <!-- Tab 文字样式 -->
+    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textSize">14sp</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
+    <!-- 卡片样式 -->
+    <style name="EinkCardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">0dp</item>
+        <item name="cardCornerRadius">4dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="rippleColor">@android:color/transparent</item>
+    </style>
+
+    <!-- 高对比度文字样式 -->
+    <style name="EinkTitleText">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/pure_black</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="EinkBodyText">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/deep_gray</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="EinkCaptionText">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/medium_gray</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+</resources>

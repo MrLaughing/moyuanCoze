@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/page_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 4个数据卡片 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <!-- 今日阅读 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@color/white"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_today_read"
+                    android:textColor="@color/medium_gray"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_today_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/pure_black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- 连续天数 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@color/white"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_streak_days"
+                    android:textColor="@color/medium_gray"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_streak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/pure_black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <!-- 累计阅读 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@color/white"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_total_read"
+                    android:textColor="@color/medium_gray"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_total_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/pure_black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- 已读书目 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@color/white"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_books_read"
+                    android:textColor="@color/medium_gray"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_books_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/pure_black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 周概览标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/label_weekly_overview"
+            android:textColor="@color/pure_black"
+            android:textSize="16sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:textStyle="bold" />
+
+        <!-- 周概览方格图 -->
+        <com.mrlaughing.moyuan.ui.study.WeekOverviewView
+            android:id="@+id/week_overview"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@color/white"
+            android:padding="8dp" />
+
+        <!-- 最近阅读标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/label_recent_books"
+            android:textColor="@color/pure_black"
+            android:textSize="16sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:textStyle="bold" />
+
+        <!-- 最近阅读书目列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_books"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:nestedScrollingEnabled="false" />
+
+    </LinearLayout>
+
+</ScrollView>

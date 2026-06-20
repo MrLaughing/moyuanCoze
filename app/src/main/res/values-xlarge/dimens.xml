@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 7.1寸大屏尺寸覆盖 -->
+
+    <!-- 植物 -->
+    <dimen name="plant_max_height">350dp</dimen>
+    <dimen name="plant_min_height">280dp</dimen>
+
+    <!-- 图鉴卡片 -->
+    <dimen name="catalog_card_width">192dp</dimen>
+    <dimen name="catalog_card_height">220dp</dimen>
+</resources>

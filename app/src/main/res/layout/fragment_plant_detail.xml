@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/xuan_paper"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 返回按钮 -->
+        <TextView
+            android:id="@+id/button_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_back"
+            android:textColor="@color/pure_black"
+            android:textSize="16sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground" />
+
+        <!-- 植物大图 -->
+        <ImageView
+            android:id="@+id/image_plant_detail"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/desc_plant_image" />
+
+        <!-- 植物名称 + 等级 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/text_plant_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/pure_black"
+                android:textSize="24sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_plant_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/deep_gray"
+                android:textSize="16sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+        </LinearLayout>
+
+        <!-- 路径 + 稀有度 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_path_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/medium_gray"
+                android:textSize="12sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+            <TextView
+                android:id="@+id/text_rarity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/deep_gray"
+                android:textSize="12sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+        </LinearLayout>
+
+        <!-- 等级进度条 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <com.mrlaughing.moyuan.ui.common.EinkProgressBar
+                android:id="@+id/progress_level"
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+
+            <TextView
+                android:id="@+id/text_level_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/medium_gray"
+                android:textSize="12sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+        </LinearLayout>
+
+        <!-- 植物描述 -->
+        <TextView
+            android:id="@+id/text_plant_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/deep_gray"
+            android:textSize="14sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- 枯萎预警 -->
+        <TextView
+            android:id="@+id/text_wither_warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/pure_black"
+            android:textSize="14sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>

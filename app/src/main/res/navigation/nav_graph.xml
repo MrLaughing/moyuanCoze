@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/gardenFragment">
+
+    <!-- 4个主Tab Fragment -->
+    <fragment
+        android:id="@+id/gardenFragment"
+        android:name="com.mrlaughing.moyuan.ui.garden.GardenFragment"
+        android:label="@string/nav_garden">
+        <action
+            android:id="@+id/action_gardenFragment_to_plantDetailFragment"
+            app:destination="@id/plantDetailFragment"
+            app:enterAnim="@null"
+            app:exitAnim="@null"
+            app:popEnterAnim="@null"
+            app:popExitAnim="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/catalogFragment"
+        android:name="com.mrlaughing.moyuan.ui.catalog.CatalogFragment"
+        android:label="@string/nav_catalog">
+        <action
+            android:id="@+id/action_catalogFragment_to_plantDetailFragment"
+            app:destination="@id/plantDetailFragment"
+            app:enterAnim="@null"
+            app:exitAnim="@null"
+            app:popEnterAnim="@null"
+            app:popExitAnim="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/studyFragment"
+        android:name="com.mrlaughing.moyuan.ui.study.StudyFragment"
+        android:label="@string/nav_study" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.mrlaughing.moyuan.ui.profile.ProfileFragment"
+        android:label="@string/nav_profile" />
+
+    <!-- 植物详情（共用） -->
+    <fragment
+        android:id="@+id/plantDetailFragment"
+        android:name="com.mrlaughing.moyuan.ui.plant.PlantDetailFragment"
+        android:label="@string/nav_garden">
+        <argument
+            android:name="plantId"
+            app:argType="long" />
+    </fragment>
+
+</navigation>
