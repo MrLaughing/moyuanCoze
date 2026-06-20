@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 /**
  * 阅读统计 Fragment
  */
+@AndroidEntryPoint
 class StudyFragment : Fragment() {
 
     private val viewModel: StudyViewModel by viewModels()

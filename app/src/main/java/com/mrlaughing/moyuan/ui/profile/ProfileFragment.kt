@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 /**
  * 个人中心 Fragment
  */
+@AndroidEntryPoint
 class ProfileFragment : Fragment() {
 
     private val viewModel: ProfileViewModel by viewModels()

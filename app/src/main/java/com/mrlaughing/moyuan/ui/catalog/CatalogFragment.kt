@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 /**
  * 图鉴 Fragment：路径筛选 Tab + 植物卡片网格
  */
+@AndroidEntryPoint
 class CatalogFragment : Fragment() {
 
     private val viewModel: CatalogViewModel by viewModels()
