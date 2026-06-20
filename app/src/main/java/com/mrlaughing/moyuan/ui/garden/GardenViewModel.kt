@@ -50,7 +50,7 @@ class GardenViewModel @Inject constructor(
         viewModelScope.launch {
             gardenRepository.observeGardenState().collect { gardenState ->
                 val season = determineSeason()
-                val weather = determineWeather()
+                val weather = determineWeather(meta)
                 
                 // 从 GardenState 获取 meta 信息
                 val meta = gardenState.meta
@@ -99,9 +99,15 @@ class GardenViewModel @Inject constructor(
     }
 
     /**
-     * 根据概率决定天气
+     * 从数据库读取天气（同步时已存入），若无则概率抽取
      */
-    private fun determineWeather(): Weather {
+    private fun determineWeather(meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?): Weather {
+        // 优先从DB读取同步时存入的天气
+        val dbWeather = meta?.currentWeather
+        if (!dbWeather.isNullOrBlank()) {
+            try { return Weather.valueOf(dbWeather) } catch (_: IllegalArgumentException) {}
+        }
+        // DB无天气数据时，回退到概率抽取
         val today = LocalDate.now()
         val season = SeasonEngine.getSeason(today)
         val isNight = SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
