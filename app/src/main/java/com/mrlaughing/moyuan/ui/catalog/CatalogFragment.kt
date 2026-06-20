@@ -19,9 +19,6 @@ import com.google.android.material.chip.ChipGroup
 import com.mrlaughing.moyuan.R
 import kotlinx.coroutines.launch
 
-/**
- * 图鉴 Fragment：路径筛选标签 + 植物卡片网格
- */
 @AndroidEntryPoint
 class CatalogFragment : Fragment() {
 
@@ -47,7 +44,6 @@ class CatalogFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_catalog)
         unlockedCountText = view.findViewById(R.id.text_unlocked_count)
 
-        // 设置 RecyclerView 3列网格
         adapter = PlantCardAdapter { plant ->
             if (plant.isUnlocked) {
                 navigateToPlantDetail(plant.plantId)
@@ -57,10 +53,8 @@ class CatalogFragment : Fragment() {
         recyclerView.adapter = adapter
         recyclerView.itemAnimator = null
 
-        // 设置 Chip 筛选
-        setupChips()
+        setupChips(view)
 
-        // 观察数据
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -79,25 +73,24 @@ class CatalogFragment : Fragment() {
         }
     }
 
-    private fun setupChips() {
-        // 获取所有 Chip
-        val chips = listOf(
-            view.findViewById<Chip>(R.id.chip_all),
-            view.findViewById<Chip>(R.id.chip_herb),
-            view.findViewById<Chip>(R.id.chip_woody),
-            view.findViewById<Chip>(R.id.chip_vine),
-            view.findViewById<Chip>(R.id.chip_aquatic),
-            view.findViewById<Chip>(R.id.chip_accumulate)
+    private fun setupChips(view: View) {
+        val chipIds = listOf(
+            R.id.chip_all,
+            R.id.chip_herb,
+            R.id.chip_woody,
+            R.id.chip_vine,
+            R.id.chip_aquatic,
+            R.id.chip_accumulate
         )
 
-        chips.forEachIndexed { index, chip ->
-            chip?.setOnClickListener {
+        chipIds.forEachIndexed { index, id ->
+            view.findViewById<Chip>(id)?.setOnClickListener {
                 viewModel.setPathFilter(index)
             }
         }
 
         // 默认选中第一个
-        chips[0]?.isChecked = true
+        view.findViewById<Chip>(R.id.chip_all)?.isChecked = true
     }
 
     private fun navigateToPlantDetail(plantId: Long) {
