@@ -43,7 +43,7 @@
                         android:text="墨"
                         android:textColor="@color/text_on_dark"
                         android:textSize="28sp"
-                        android:fontFamily="@font/lxgw_wenkai"
+                        android:fontFamily="sans-serif"
                         android:textStyle="bold" />
 
                 </FrameLayout>
@@ -62,7 +62,7 @@
                         android:text="墨园"
                         android:textColor="@color/ink_dark"
                         android:textSize="20sp"
-                        android:fontFamily="@font/lxgw_wenkai"
+                        android:fontFamily="sans-serif"
                         android:textStyle="bold" />
 
                     <TextView
@@ -71,7 +71,7 @@
                         android:text="一花一世界，一叶一菩提"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:fontFamily="@font/lxgw_wenkai"
+                        android:fontFamily="sans-serif"
                         android:layout_marginTop="2dp" />
 
                 </LinearLayout>
@@ -98,7 +98,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/ink_dark"
                     android:textSize="32sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:textStyle="bold"
                     tools:text="5" />
 
@@ -108,7 +108,7 @@
                     android:text=" │ "
                     android:textColor="@color/text_secondary"
                     android:textSize="18sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/text_total_plants"
@@ -116,7 +116,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="18sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="/ 27 植物" />
 
                 <View
@@ -130,7 +130,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_tertiary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:visibility="gone"
                     tools:text="枯萎 2"
                     tools:visibility="visible" />
@@ -181,7 +181,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -208,7 +208,7 @@
                     android:text="@string/label_achievements"
                     android:textColor="@color/ink_dark"
                     android:textSize="18sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="@font/jinghua_laosong"
                     android:textStyle="bold" />
 
                 <TextView
@@ -217,7 +217,7 @@
                     android:text=" │ "
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/text_achievement_count"
@@ -225,7 +225,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="3枚" />
 
             </LinearLayout>
@@ -246,7 +246,7 @@
                     android:text="@string/label_cat_all"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:textStyle="bold"
                     android:paddingBottom="4dp" />
 
@@ -264,7 +264,7 @@
                     android:text="@string/label_cat_reading"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:paddingBottom="4dp" />
 
                 <View
@@ -281,7 +281,7 @@
                     android:text="@string/label_cat_growth"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:paddingBottom="4dp" />
 
                 <View
@@ -298,7 +298,7 @@
                     android:text="@string/label_cat_milestone"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     android:paddingBottom="4dp" />
 
             </LinearLayout>
@@ -344,7 +344,7 @@
                     android:text="@string/label_settings"
                     android:textColor="@color/ink_dark"
                     android:textSize="18sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="@font/jinghua_laosong"
                     android:textStyle="bold" />
 
                 <TextView
@@ -353,7 +353,7 @@
                     android:text=" │ "
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -376,7 +376,7 @@
                     android:text="@string/label_weread_auth"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
                 <TextView
                     android:id="@+id/text_weread_status"
@@ -384,7 +384,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="已授权" />
 
                 <TextView
@@ -393,7 +393,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -421,7 +421,7 @@
                     android:text="@string/label_sync_time"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/text_sync_time"
@@ -429,7 +429,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="08:00" />
 
                 <TextView
@@ -438,7 +438,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -466,7 +466,7 @@
                     android:text="@string/label_sync_now"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/text_last_sync"
@@ -474,7 +474,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_tertiary"
                     android:textSize="12sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="上次: 2024-01-01" />
 
                 <TextView
@@ -483,7 +483,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -511,7 +511,7 @@
                     android:text="@string/label_refresh_mode"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/text_refresh_mode"
@@ -519,7 +519,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="局部刷新" />
 
                 <TextView
@@ -528,7 +528,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
@@ -556,7 +556,7 @@
                     android:text="@string/label_about_moyuan"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
                 <TextView
                     android:id="@+id/text_about_version"
@@ -564,7 +564,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_tertiary"
                     android:textSize="12sp"
-                    android:fontFamily="@font/lxgw_wenkai"
+                    android:fontFamily="sans-serif"
                     tools:text="v1.0.0" />
 
                 <TextView
@@ -573,7 +573,7 @@
                     android:text=" →"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 

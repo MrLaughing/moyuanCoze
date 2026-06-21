@@ -43,7 +43,7 @@
             android:text="继续"
             android:textColor="@color/text_on_dark"
             android:textSize="16sp"
-            android:fontFamily="@font/lxgw_wenkai"
+            android:fontFamily="sans-serif"
             android:textAllCaps="false"
             app:backgroundTint="@color/ink_dark"
             app:cornerRadius="8dp"

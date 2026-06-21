@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 京华老宋字体族定义 - 用于页面标题、分区标题、植物描述正文 -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/jinghua_laosong"
+        android:fontStyle="normal"
+        android:fontWeight="400" />
+</font-family>

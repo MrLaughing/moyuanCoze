@@ -26,7 +26,7 @@
             android:text="@string/nav_catalog"
             android:textColor="@color/text_primary"
             android:textSize="24sp"
-            android:fontFamily="@font/lxgw_wenkai"
+            android:fontFamily="@font/jinghua_laosong"
             android:textStyle="bold" />
 
         <TextView
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
-            android:fontFamily="@font/lxgw_wenkai" />
+            android:fontFamily="sans-serif" />
 
     </LinearLayout>
 
@@ -73,7 +73,7 @@
                 android:text="@string/label_path_all"
                 android:textColor="@color/white"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/ink_dark"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
@@ -95,7 +95,7 @@
                 android:text="@string/label_path_jimo"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/surface"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
@@ -117,7 +117,7 @@
                 android:text="@string/label_path_bingzhu"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/surface"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
@@ -139,7 +139,7 @@
                 android:text="@string/label_path_suihan"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/surface"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
@@ -161,7 +161,7 @@
                 android:text="@string/label_path_xunfang"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/surface"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
@@ -183,7 +183,7 @@
                 android:text="@string/label_path_hidden"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp"
-                android:fontFamily="@font/lxgw_wenkai"
+                android:fontFamily="sans-serif"
                 app:chipBackgroundColor="@color/surface"
                 app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
