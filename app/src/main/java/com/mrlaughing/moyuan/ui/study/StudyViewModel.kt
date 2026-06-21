@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
-import com.mrlaughing.moyuan.util.formatMinutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,12 +14,12 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 /**
- * 阅读 ViewModel
- * 
- * 从 Repository 加载真实数据：
- * - ReadStatsRepository.observeReadStats() 获取阅读统计
- * - ReadStatsRepository.observeWeeklyRecords() 获取每周记录
- * - ReadStatsRepository.observeRecentBooks() 获取最近书目
+ * 书案 ViewModel
+ *
+ * 数据来源：
+ * - totalReadMinutes / booksRead：从 GardenMeta 读取（由同步直接填充微信读书历史数据）
+ * - todayReadMinutes / weeklyRecords：从 daily_record 读取
+ * - streakDays：从 GardenMeta 读取
  */
 @HiltViewModel
 class StudyViewModel @Inject constructor(
@@ -35,28 +34,23 @@ class StudyViewModel @Inject constructor(
         loadStats()
     }
 
-    /**
-     * 从 Repository 加载真实阅读数据
-     */
     private fun loadStats() {
         viewModelScope.launch {
-            // 组合多个数据流
             combine(
                 readStatsRepository.observeReadStats(),
                 readStatsRepository.observeWeeklyRecords(),
                 readStatsRepository.observeRecentBooks(),
                 gardenRepository.observeMeta()
             ) { stats, weeklyRecords, recentBooks, meta ->
-                // 构建 WeeklyRecords
+
                 val weekly = weeklyRecords.map { entity ->
                     DailyRecord(
-                        date = java.time.LocalDate.parse(entity.date),
+                        date = LocalDate.parse(entity.date),
                         readMinutes = entity.readMinutes,
                         hasRead = entity.readMinutes > 0
                     )
                 }
 
-                // 构建 RecentBooks
                 val books = recentBooks.map { entity ->
                     BookItem(
                         title = entity.title,
@@ -72,11 +66,15 @@ class StudyViewModel @Inject constructor(
                 // 连续天数从 meta 获取
                 val streakDays = meta?.streakDays ?: 0
 
+                // 总阅读分钟和已读书目从 meta 获取（由同步直接写入微信读书历史数据）
+                val totalReadMinutes = meta?.accumulatedMinutes ?: 0
+                val booksRead = meta?.booksRead ?: 0
+
                 StudyUiState(
                     todayReadMinutes = todayMinutes,
                     streakDays = streakDays,
-                    totalReadMinutes = stats.totalReadMinutes,
-                    booksRead = stats.booksRead,
+                    totalReadMinutes = totalReadMinutes,
+                    booksRead = booksRead,
                     weeklyRecords = weekly,
                     recentBooks = books
                 )
@@ -86,17 +84,11 @@ class StudyViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 刷新数据
-     */
     fun refresh() {
         loadStats()
     }
 }
 
-/**
- * 阅读统计 UI 状态
- */
 data class StudyUiState(
     val todayReadMinutes: Int = 0,
     val streakDays: Int = 0,
@@ -106,18 +98,12 @@ data class StudyUiState(
     val recentBooks: List<BookItem> = emptyList()
 )
 
-/**
- * 每日阅读记录
- */
 data class DailyRecord(
     val date: LocalDate,
     val readMinutes: Int,
     val hasRead: Boolean
 )
 
-/**
- * 书目条目
- */
 data class BookItem(
     val title: String,
     val totalReadMinutes: Int

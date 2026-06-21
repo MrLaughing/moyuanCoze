@@ -22,10 +22,24 @@ import dagger.hilt.InstallIn
 import dagger.hilt.EntryPoint
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
+/**
+ * 同步 Worker
+ *
+ * 直接使用微信读书 API 返回的历史数据填充本地数据库，
+ * 不再做增量计算。基准日期设为 2026-01-01。
+ *
+ * 数据流：
+ * 1. overall → 总阅读时间、总阅读天数 → GardenMeta.accumulatedMinutes
+ * 2. weekly  → 本周每天阅读时长 → daily_record 表
+ * 3. shelf   → 书架书籍 → book_tracking 表
+ * 4. 天气API → GardenMeta.currentWeather
+ * 5. 花园引擎 → 植物解锁/生长/枯萎计算
+ */
 class SyncWorker(
     context: Context,
     params: WorkerParameters
@@ -53,87 +67,95 @@ class SyncWorker(
                 return Result.failure(workDataOf(KEY_ERROR_MSG to "未授权：请先在个人中心输入微信读书API Key"))
             }
 
-            // 拉取阅读数据（weekly 获取今日数据，overall 获取总览）
-            Log.d(TAG, "开始拉取阅读数据...")
-            val weeklyResult = wereadRepository.fetchReadDataWeekly()
-            if (weeklyResult.isFailure) {
-                Log.e(TAG, "拉取周阅读数据失败: ${weeklyResult.exceptionOrNull()?.message}")
-            }
+            Log.d(TAG, "=== 开始同步 ===")
+
+            // 1. 拉取 overall 数据
             val overallResult = wereadRepository.fetchReadDataOverall()
             if (overallResult.isFailure) {
-                Log.e(TAG, "拉取总阅读数据失败: ${overallResult.exceptionOrNull()?.message}")
+                val err = overallResult.exceptionOrNull()?.message ?: "unknown"
+                Log.e(TAG, "拉取总览数据失败: $err")
+                return Result.failure(workDataOf(KEY_ERROR_MSG to "总览数据获取失败: $err"))
             }
-            val weeklyData = weeklyResult.getOrNull()
             val overallData = overallResult.getOrNull()
-
             if (overallData == null || !overallData.isSuccess) {
-                val errMsg = overallResult.exceptionOrNull()?.message
-                    ?: if (overallData != null) "API错误: ${overallData.errMsg}" else "unknown"
-                Log.e(TAG, "同步失败: $errMsg")
-                return Result.failure(workDataOf(KEY_ERROR_MSG to "数据获取失败: $errMsg"))
+                val errMsg = overallData?.errMsg ?: "unknown"
+                Log.e(TAG, "总览数据API错误: $errMsg")
+                return Result.failure(workDataOf(KEY_ERROR_MSG to "总览数据错误: $errMsg"))
             }
 
-            Log.d(TAG, "阅读数据拉取成功: totalReadTime=${overallData.totalReadTime}, readDays=${overallData.readDays}")
+            val totalReadSeconds = overallData.totalReadTime
+            val totalReadMinutes = (totalReadSeconds / 60).toInt()
+            val totalReadDays = overallData.readDays
+            Log.d(TAG, "总览: totalReadTime=${totalReadSeconds}s (${totalReadMinutes}min), readDays=${totalReadDays}")
 
-            // 拉取书架
+            // 2. 拉取 weekly 数据
+            val weeklyResult = wereadRepository.fetchReadDataWeekly()
+            val weeklyData = weeklyResult.getOrNull()
+            if (weeklyResult.isFailure) {
+                Log.w(TAG, "拉取周数据失败: ${weeklyResult.exceptionOrNull()?.message}")
+            }
+            val todayReadSeconds = weeklyData?.getTodayReadSeconds() ?: 0L
+            val todayReadMinutes = (todayReadSeconds / 60).toInt()
+            Log.d(TAG, "今日阅读: ${todayReadSeconds}s (${todayReadMinutes}min)")
+
+            // 3. 拉取书架
             val shelfResult = wereadRepository.fetchShelf()
+            val shelfData = shelfResult.getOrNull()
             if (shelfResult.isFailure) {
                 Log.w(TAG, "拉取书架失败: ${shelfResult.exceptionOrNull()?.message}")
             }
-            val shelfData = shelfResult.getOrNull()
-            Log.d(TAG, "书架拉取: ${shelfData?.books?.size ?: 0}本书")
-
-            // 计算今日阅读秒数
-            val todayReadSeconds = weeklyData?.getTodayReadSeconds() ?: 0L
-            val totalReadSeconds = overallData.totalReadTime
-
-            // 获取书架书籍并按最近阅读时间降序排序
             val shelfBooks = shelfData?.books
                 ?.sortedByDescending { it.readUpdateTime }
                 ?: emptyList()
+            Log.d(TAG, "书架: ${shelfBooks.size}本书")
 
-            // 构建同步数据
-            val wereadSyncData = WereadSyncData(
-                totalReadTime = totalReadSeconds,
-                todayReadTime = todayReadSeconds,
-                streakDays = 0,
-                books = shelfBooks.map { it.toWereadBookData() },
-                syncTimestamp = System.currentTimeMillis()
-            )
+            // 4. 写入每日记录（从 weekly readTimes 填充本周数据）
+            saveWeeklyDailyRecords(readStatsRepository, weeklyData, todayReadMinutes)
 
-            val snapshotManager = SnapshotManager.getInstance(applicationContext)
-            if (!snapshotManager.hasSnapshot()) {
-                snapshotManager.createBaseSnapshot(wereadSyncData)
+            // 5. 写入书目追踪（取前10本）
+            saveBookTracking(readStatsRepository, shelfBooks)
+
+            // 6. 更新 GardenMeta（直接用历史数据，不做增量）
+            val meta = gardenRepository.observeMeta().first()
+            if (meta != null) {
+                val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
+                val hasReadToday = todayReadMinutes > 0
+                val yesterdayStr = LocalDate.now().minusDays(1).toString()
+                val lastSyncYesterday = meta.lastSyncDate == yesterdayStr
+                val newStreakDays = when {
+                    hasReadToday && (meta.lastSyncDate == LocalDate.now().toString()) -> meta.streakDays
+                    hasReadToday && lastSyncYesterday -> meta.streakDays + 1
+                    hasReadToday -> 1
+                    else -> 0
+                }
+
+                gardenRepository.updateMeta(meta.copy(
+                    accumulatedMinutes = totalReadMinutes,
+                    streakDays = newStreakDays,
+                    maxStreakDays = maxOf(meta.maxStreakDays, newStreakDays),
+                    booksRead = shelfBooks.size,
+                    nightReadDays = if (isNightRead) meta.nightReadDays + 1 else meta.nightReadDays,
+                    lastSyncDate = LocalDate.now().toString()
+                ))
+                Log.d(TAG, "GardenMeta已更新: accumulatedMinutes=$totalReadMinutes, booksRead=${shelfBooks.size}, streakDays=$newStreakDays")
             }
 
-            val increment = snapshotManager.calculateIncrement(
-                wereadSyncData,
-                snapshotManager.loadBaseSnapshot()
-            )
-
-            // 写入数据库
-            saveToDatabase(readStatsRepository, increment, todayReadSeconds)
-
-            // 触发花园引擎（先获取真实天气）
+            // 7. 获取天气
             val season = com.mrlaughing.moyuan.engine.season.SeasonEngine.getSeason(LocalDate.now())
             val isNight = com.mrlaughing.moyuan.engine.season.SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
             val realWeather = weatherRepository.fetchWeather(season, isNight)
-            Log.d(TAG, "天气获取: ${realWeather.name}")
+            Log.d(TAG, "天气: ${realWeather.name}")
 
+            // 8. 触发花园引擎（用今日阅读数据驱动植物状态）
             val gardenUpdateResult = triggerGardenEngine(
-                gardenRepository, plantRepository, todayReadSeconds, shelfBooks.size, increment, realWeather
+                gardenRepository, plantRepository, todayReadMinutes, shelfBooks.size, realWeather
             )
-
             gardenUpdateResult?.let {
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
 
-            gardenRepository.observeMeta().first()?.let { meta ->
-                gardenRepository.updateMeta(meta.copy(lastSyncDate = LocalDate.now().toString()))
-            }
-
             notifyUIRefresh()
-            Log.d(TAG, "同步完成!")
+            Log.d(TAG, "=== 同步完成 ===")
             Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "同步异常", e)
@@ -141,63 +163,81 @@ class SyncWorker(
         }
     }
 
-    private fun ShelfBook.toWereadBookData() = WereadBookData(
-        bookId = bookId,
-        title = title,
-        author = author,
-        totalReadTime = 0,
-        lastReadDate = if (readUpdateTime > 0) {
-            java.time.Instant.ofEpochSecond(readUpdateTime)
-                .atZone(ZoneId.systemDefault()).toLocalDate().toString()
-        } else LocalDate.now().toString(),
-        coverUrl = cover
-    )
-
-    private suspend fun saveToDatabase(
+    /**
+     * 从 weekly readTimes 填充本周每天的阅读记录
+     */
+    private suspend fun saveWeeklyDailyRecords(
         readStatsRepository: ReadStatsRepository,
-        increment: IncrementData,
-        todayReadSeconds: Long
+        weeklyData: com.mrlaughing.moyuan.data.remote.dto.ReadDataResponse?,
+        todayReadMinutes: Int
     ) {
-        val today = LocalDate.now().toString()
-        val todayMinutes = (todayReadSeconds / 60).toInt()
-        val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
+        val zoneId = ZoneId.systemDefault()
+        val readTimes = weeklyData?.readTimes ?: emptyMap()
 
-        readStatsRepository.upsertDailyRecord(DailyRecordEntity(
-            date = today,
-            readMinutes = todayMinutes,
-            hasNightRead = isNightRead,
-            newBookCount = increment.books.size,
-            syncedAt = System.currentTimeMillis()
-        ))
+        // 从 readTimes 解析每天的数据
+        val dailyData = mutableMapOf<LocalDate, Long>()
+        for ((key, seconds) in readTimes) {
+            val epochSecond = key.toLongOrNull() ?: continue
+            val date = Instant.ofEpochSecond(epochSecond)
+                .atZone(zoneId).toLocalDate()
+            dailyData[date] = seconds
+        }
 
-        // 按最近阅读时间排序后取前10本保存
-        val recentBooks = increment.books
-            .sortedByDescending { it.lastReadDate }
-            .take(10)
+        // 填充本周每一天
+        val today = LocalDate.now()
+        for (i in 0..6L) {
+            val date = today.minusDays(i)
+            val seconds = dailyData[date] ?: 0L
+            val minutes = (seconds / 60).toInt()
+            val isNightRead = i == 0L && (LocalTime.now().hour >= 22 || LocalTime.now().hour < 6)
 
+            readStatsRepository.upsertDailyRecord(DailyRecordEntity(
+                date = date.toString(),
+                readMinutes = minutes,
+                hasNightRead = isNightRead,
+                newBookCount = 0,
+                syncedAt = System.currentTimeMillis()
+            ))
+        }
+        Log.d(TAG, "已填充本周每日记录: ${dailyData.size}天有数据, 今日${todayReadMinutes}分钟")
+    }
+
+    /**
+     * 保存书架书籍到 book_tracking
+     */
+    private suspend fun saveBookTracking(
+        readStatsRepository: ReadStatsRepository,
+        shelfBooks: List<ShelfBook>
+    ) {
+        val recentBooks = shelfBooks.take(10)
         recentBooks.forEach { book ->
+            val lastReadDate = if (book.readUpdateTime > 0) {
+                Instant.ofEpochSecond(book.readUpdateTime)
+                    .atZone(ZoneId.systemDefault()).toLocalDate().toString()
+            } else {
+                LocalDate.now().toString()
+            }
             readStatsRepository.upsertBookTracking(BookTrackingEntity(
                 bookId = book.bookId,
                 title = book.title,
                 author = book.author,
                 progressPercent = 0,
-                readMinutes = (book.totalReadTime / 60).toInt(),
-                startDate = book.lastReadDate,
-                lastReadDate = book.lastReadDate
+                readMinutes = 0,
+                startDate = lastReadDate,
+                lastReadDate = lastReadDate
             ))
         }
+        Log.d(TAG, "已保存${recentBooks.size}本书目追踪")
     }
 
     private suspend fun triggerGardenEngine(
         gardenRepository: GardenRepository,
         plantRepository: PlantRepository,
-        todayReadSeconds: Long,
+        todayReadMinutes: Int,
         booksCount: Int,
-        increment: IncrementData,
         weather: com.mrlaughing.moyuan.data.model.Weather?
     ): GardenUpdateResult? {
         val today = LocalDate.now()
-        val todayMinutes = (todayReadSeconds / 60).toInt()
         val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
 
         val gardenState = gardenRepository.observeGardenState().first()
@@ -209,7 +249,7 @@ class SyncWorker(
 
         val dailyInput = DailyReadInput(
             date = today,
-            minutesRead = todayMinutes,
+            minutesRead = todayReadMinutes,
             booksReadToday = booksCount,
             isNightRead = isNightRead
         )
@@ -248,28 +288,3 @@ interface SyncWorkerEntryPoint {
     fun readStatsRepository(): ReadStatsRepository
     fun weatherRepository(): WeatherRepository
 }
-
-data class WereadSyncData(
-    val totalReadTime: Long,
-    val todayReadTime: Long,
-    val streakDays: Int,
-    val books: List<WereadBookData>,
-    val syncTimestamp: Long
-)
-
-data class WereadBookData(
-    val bookId: String,
-    val title: String,
-    val author: String,
-    val totalReadTime: Long,
-    val lastReadDate: String,
-    val coverUrl: String?
-)
-
-data class IncrementData(
-    val deltaReadTime: Long,
-    val todayReadTime: Long,
-    val streakDays: Int,
-    val books: List<WereadBookData>,
-    val date: String
-)

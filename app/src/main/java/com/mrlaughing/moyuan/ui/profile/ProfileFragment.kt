@@ -110,16 +110,9 @@ class ProfileFragment : Fragment() {
 
     /**
      * 手动触发同步
-     * 显示具体错误信息，而非笼统提示
+     * 不再依赖 Flow 状态判断授权，直接尝试同步
      */
     private fun triggerManualSync() {
-        // 先检查授权状态
-        val state = viewModel.uiState.value
-        if (!state.wereadAuthorized) {
-            Toast.makeText(context, "请先授权微信读书API Key", Toast.LENGTH_LONG).show()
-            return
-        }
-
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
         WorkManager.getInstance(requireContext()).enqueue(syncRequest)
 

@@ -98,13 +98,13 @@ class MoyuanApp : Application() {
         plantRepository: PlantRepository,
         userPrefs: UserPrefs
     ) {
-        val today = LocalDate.now().toString()
+        val baselineDate = "2026-01-01" // 基准日期，方便测试历史阅读数据
 
         // 1. 检查是否已有元数据
         val existingMeta = gardenRepository.observeMeta().first()
         if (existingMeta == null) {
             // 初始化花园元数据
-            gardenRepository.initMeta(today)
+            gardenRepository.initMeta(baselineDate)
         }
 
         // 2. 检查是否已有植物数据
@@ -120,7 +120,7 @@ class MoyuanApp : Application() {
                         accumulatedMinutes = 0,
                         witherStage = 0,
                         witherStartDate = null,
-                        lastReadDate = today,
+                        lastReadDate = LocalDate.now().toString(),
                         unlockDate = null, // 未解锁
                         justRevived = false,
                         reviveDate = null
