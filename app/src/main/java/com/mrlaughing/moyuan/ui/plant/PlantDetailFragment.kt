@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +18,6 @@ import androidx.navigation.fragment.navArgs
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
-import com.mrlaughing.moyuan.util.formatMinutes
 import kotlinx.coroutines.launch
 
 /**
@@ -31,14 +31,26 @@ class PlantDetailFragment : Fragment() {
 
     private lateinit var plantImage: ImageView
     private lateinit var plantName: TextView
+    private lateinit var textTitle: TextView
     private lateinit var plantLevel: TextView
     private lateinit var levelProgressBar: EinkProgressBar
     private lateinit var levelProgressText: TextView
     private lateinit var plantDescription: TextView
     private lateinit var witherWarning: TextView
+    private lateinit var layoutWitherWarning: LinearLayout
     private lateinit var backButton: View
     private lateinit var pathName: TextView
     private lateinit var rarityText: TextView
+    private lateinit var unlockCondition: TextView
+
+    /** 等级名映射 */
+    private val levelNames = mapOf(
+        1 to "萌芽",
+        2 to "墨枝",
+        3 to "墨叶",
+        4 to "墨韵",
+        5 to "墨华"
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,14 +65,17 @@ class PlantDetailFragment : Fragment() {
 
         plantImage = view.findViewById(R.id.image_plant_detail)
         plantName = view.findViewById(R.id.text_plant_name)
+        textTitle = view.findViewById(R.id.text_title)
         plantLevel = view.findViewById(R.id.text_plant_level)
         levelProgressBar = view.findViewById(R.id.progress_level)
         levelProgressText = view.findViewById(R.id.text_level_progress)
         plantDescription = view.findViewById(R.id.text_plant_description)
         witherWarning = view.findViewById(R.id.text_wither_warning)
+        layoutWitherWarning = view.findViewById(R.id.layout_wither_warning)
         backButton = view.findViewById(R.id.button_back)
         pathName = view.findViewById(R.id.text_path_name)
         rarityText = view.findViewById(R.id.text_rarity)
+        unlockCondition = view.findViewById(R.id.text_unlock_condition)
 
         backButton.setOnClickListener {
             findNavController().navigateUp()
@@ -80,28 +95,72 @@ class PlantDetailFragment : Fragment() {
     }
 
     private fun renderState(state: PlantDetailUiState) {
+        // 顶栏标题：植物名 · 路径名
+        textTitle.text = "${state.name} · ${state.pathName}"
+        
+        // 隐藏的植物名（保留数据绑定）
         plantName.text = state.name
-        plantLevel.text = "Lv.${state.level}"
-        levelProgressBar.progress = state.levelProgress
-        levelProgressText.text = "${(state.levelProgress * 100).toInt()}% → Lv.${state.level + 1}"
-        plantDescription.text = state.description
         pathName.text = state.pathName
+        
+        // 等级显示格式：Lv.5 墨韵
+        val levelName = levelNames[state.level] ?: "萌芽"
+        plantLevel.text = "Lv.${state.level} $levelName"
+        
+        // 稀有度星标 - 使用淡墨色
         rarityText.text = "★".repeat(state.rarity) + "☆".repeat(5 - state.rarity)
+        
+        // 进度条
+        levelProgressBar.progress = state.levelProgress
+        
+        // 灌溉进度文字格式：XXh XXmin / 下一级
+        val totalMinutes = state.totalReadMinutes
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        val progressText = if (hours > 0) {
+            "${hours}h ${minutes}min / 下一级"
+        } else {
+            "${minutes}min / 下一级"
+        }
+        levelProgressText.text = progressText
+        
+        // 植物描述
+        plantDescription.text = state.description
+        
+        // 解锁条件
+        val unlockMinutes = getUnlockMinutes(state.level)
+        unlockCondition.text = "解锁条件：累计阅读 ≥ ${unlockMinutes}min"
 
         // 枯萎预警
-        if (state.witherCountdownDays >= 0) {
-            witherWarning.visibility = View.VISIBLE
+        if (state.witherStage > 0) {
+            layoutWitherWarning.visibility = View.VISIBLE
             witherWarning.text = when {
-                state.witherStage >= 2 -> "⚠ 植物已严重枯萎，请尽快阅读！"
-                state.witherStage == 1 -> "⚠ 植物轻度枯萎，还有${state.witherCountdownDays}天"
-                else -> "还有${state.witherCountdownDays}天未阅读将枯萎"
+                state.witherStage >= 2 -> "未阅读 ${state.witherCountdownDays}天 · 严重枯萎，请尽快阅读！"
+                state.witherStage == 1 -> "未阅读 ${state.witherCountdownDays}天 · 轻度枯萎"
+                else -> "未阅读 ${state.witherCountdownDays}天"
             }
+        } else if (state.witherCountdownDays >= 0) {
+            layoutWitherWarning.visibility = View.VISIBLE
+            witherWarning.text = "未阅读 ${state.witherCountdownDays}天 · 渐枯倒计时 ${state.witherCountdownDays}天"
         } else {
-            witherWarning.visibility = View.GONE
+            layoutWitherWarning.visibility = View.GONE
         }
 
         // 加载植物大图
         loadPlantImage(state)
+    }
+
+    /**
+     * 获取当前等级对应的解锁分钟数
+     */
+    private fun getUnlockMinutes(level: Int): Int {
+        return when (level) {
+            1 -> 30
+            2 -> 120
+            3 -> 480
+            4 -> 1920
+            5 -> 7680
+            else -> 30
+        }
     }
 
     private fun loadPlantImage(state: PlantDetailUiState) {

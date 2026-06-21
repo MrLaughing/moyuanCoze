@@ -10,7 +10,7 @@ import android.view.View
 import com.mrlaughing.moyuan.R
 
 /**
- * 墨水屏友好的进度条：无动画、纯黑白、8dp 高
+ * 墨水屏友好的进度条：无动画、纯墨色、8dp 高
  */
 class EinkProgressBar @JvmOverloads constructor(
     context: Context,
@@ -19,12 +19,12 @@ class EinkProgressBar @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E0E0E0")  // 超浅灰轨道
+        color = Color.parseColor("#E8E0D0")  // 暖色轨道
         style = Paint.Style.FILL
     }
 
     private val progressPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A1A1A")  // 纯黑进度
+        color = Color.parseColor("#2C2416")  // 浓墨进度
         style = Paint.Style.FILL
     }
 
@@ -38,7 +38,7 @@ class EinkProgressBar @JvmOverloads constructor(
         }
 
     /** 轨道颜色 */
-    var trackColor: Int = Color.parseColor("#E0E0E0")
+    var trackColor: Int = Color.parseColor("#E8E0D0")
         set(value) {
             field = value
             trackPaint.color = value
@@ -46,7 +46,7 @@ class EinkProgressBar @JvmOverloads constructor(
         }
 
     /** 进度颜色 */
-    var progressColor: Int = Color.parseColor("#1A1A1A")
+    var progressColor: Int = Color.parseColor("#2C2416")
         set(value) {
             field = value
             progressPaint.color = value
@@ -60,11 +60,11 @@ class EinkProgressBar @JvmOverloads constructor(
             progress = typedArray.getFloat(R.styleable.EinkProgressBar_progress, 0f)
             trackColor = typedArray.getColor(
                 R.styleable.EinkProgressBar_trackColor,
-                Color.parseColor("#E0E0E0")
+                Color.parseColor("#E8E0D0")
             )
             progressColor = typedArray.getColor(
                 R.styleable.EinkProgressBar_progressColor,
-                Color.parseColor("#1A1A1A")
+                Color.parseColor("#2C2416")
             )
             typedArray.recycle()
         }
