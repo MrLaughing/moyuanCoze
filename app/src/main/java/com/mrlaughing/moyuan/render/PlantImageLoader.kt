@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutionException
 
 /**
  * 植物图片加载器：从 assets 加载植物 PNG，失败时生成程序化占位图
+ * 
+ * Asset路径约定: plants/{plantStringId}/lv{level}.png
+ * 例如: plants/changpu/lv3.png, plants/cypress/lv5.png
  */
 object PlantImageLoader {
 
@@ -21,33 +24,34 @@ object PlantImageLoader {
 
     /**
      * 加载植物图片
-     * @param plantId 植物ID
+     * @param plantId 植物ID (Long, 索引+1)
      * @param level 等级 (1-5)
      * @param witherStage 枯萎阶段 (0=健康, 1=轻枯, 2=中枯, 3=死亡)
      * @return Bitmap
      */
     fun load(context: Context, plantId: Long, level: Int, witherStage: Int = 0): Bitmap? {
-        val assetPath = buildAssetPath(plantId, level, witherStage)
+        val stringId = resolveStringId(plantId)
+        val assetPath = buildAssetPath(stringId, level, witherStage)
         val bitmap = loadFromAssets(context, assetPath)
         if (bitmap != null) return bitmap
 
         // 降级策略1：尝试低一级的图片
         if (level > 1) {
-            val fallbackPath = buildAssetPath(plantId, level - 1, witherStage)
+            val fallbackPath = buildAssetPath(stringId, level - 1, witherStage)
             val fallback = loadFromAssets(context, fallbackPath)
             if (fallback != null) return fallback
         }
 
         // 降级策略2：尝试健康状态的同等级图片
         if (witherStage > 0) {
-            val healthyPath = buildAssetPath(plantId, level, 0)
+            val healthyPath = buildAssetPath(stringId, level, 0)
             val healthy = loadFromAssets(context, healthyPath)
             if (healthy != null) return applyWitherFilter(healthy, witherStage)
         }
 
         // 降级策略3：等级1的默认图
         if (level > 1) {
-            val defaultPath = buildAssetPath(plantId, 1, 0)
+            val defaultPath = buildAssetPath(stringId, 1, 0)
             val default = loadFromAssets(context, defaultPath)
             if (default != null) return default
         }
@@ -57,19 +61,70 @@ object PlantImageLoader {
     }
 
     /**
+     * 加载植物图片（使用字符串ID直接指定）
+     * @param plantStringId 植物字符串ID (如 "changpu", "orchid")
+     * @param level 等级 (1-5)
+     * @param witherStage 枯萎阶段
+     * @return Bitmap
+     */
+    fun loadByStringId(context: Context, plantStringId: String, level: Int, witherStage: Int = 0): Bitmap? {
+        val assetPath = buildAssetPath(plantStringId, level, witherStage)
+        val bitmap = loadFromAssets(context, assetPath)
+        if (bitmap != null) return bitmap
+
+        // 降级策略1：尝试低一级的图片
+        if (level > 1) {
+            val fallbackPath = buildAssetPath(plantStringId, level - 1, witherStage)
+            val fallback = loadFromAssets(context, fallbackPath)
+            if (fallback != null) return fallback
+        }
+
+        // 降级策略2：尝试健康状态的同等级图片
+        if (witherStage > 0) {
+            val healthyPath = buildAssetPath(plantStringId, level, 0)
+            val healthy = loadFromAssets(context, healthyPath)
+            if (healthy != null) return applyWitherFilter(healthy, witherStage)
+        }
+
+        // 降级策略3：等级1的默认图
+        if (level > 1) {
+            val defaultPath = buildAssetPath(plantStringId, 1, 0)
+            val default = loadFromAssets(context, defaultPath)
+            if (default != null) return default
+        }
+
+        // 占位图
+        val plantId = (PlantDefinitions.all.indexOfFirst { it.id == plantStringId } + 1L).coerceAtLeast(1L)
+        return generatePlaceholder(context, plantId, level, witherStage)
+    }
+
+    /**
      * 加载剪影图（图鉴未解锁时使用）
      */
     fun loadSilhouette(context: Context, plantId: Long): Bitmap? {
-        val path = "${Constants.PLANT_ASSET_PREFIX}${plantId}/silhouette${Constants.PLANT_ASSET_SUFFIX}"
+        val stringId = resolveStringId(plantId)
+        val path = "${Constants.PLANT_ASSET_PREFIX}${stringId}/silhouette${Constants.PLANT_ASSET_SUFFIX}"
         val bitmap = loadFromAssets(context, path)
         if (bitmap != null) return bitmap
         // 生成剪影占位图
         return generateSilhouettePlaceholder(context, plantId)
     }
 
-    private fun buildAssetPath(plantId: Long, level: Int, witherStage: Int): String {
+    /**
+     * 将 Long plantId 解析为字符串ID（用于构建asset路径）
+     */
+    private fun resolveStringId(plantId: Long): String {
+        val index = (plantId - 1).toInt()
+        return if (index in PlantDefinitions.all.indices) {
+            PlantDefinitions.all[index].id
+        } else {
+            "unknown"
+        }
+    }
+
+    private fun buildAssetPath(plantStringId: String, level: Int, witherStage: Int): String {
         val witherSuffix = if (witherStage > 0) "_w${witherStage}" else ""
-        return "${Constants.PLANT_ASSET_PREFIX}${plantId}/lv${level}${witherSuffix}${Constants.PLANT_ASSET_SUFFIX}"
+        return "${Constants.PLANT_ASSET_PREFIX}${plantStringId}/lv${level}${witherSuffix}${Constants.PLANT_ASSET_SUFFIX}"
     }
 
     private fun loadFromAssets(context: Context, assetPath: String): Bitmap? {
