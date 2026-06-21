@@ -38,7 +38,16 @@ class BookListAdapter : RecyclerView.Adapter<BookListAdapter.ViewHolder>() {
 
         fun bind(item: BookItem) {
             bookTitle.text = item.title
-            bookTime.text = item.totalReadMinutes.formatMinutes()
+            bookTime.text = if (item.totalReadMinutes > 0) {
+                item.totalReadMinutes.formatMinutes()
+            } else {
+                item.lastReadDate?.let { date ->
+                    try {
+                        val ld = java.time.LocalDate.parse(date)
+                        "${ld.monthValue}月${ld.dayOfMonth}日"
+                    } catch (_: Exception) { "" }
+                } ?: ""
+            }
         }
     }
 }

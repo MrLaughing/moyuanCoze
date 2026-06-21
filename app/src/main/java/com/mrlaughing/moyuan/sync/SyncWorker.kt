@@ -8,6 +8,9 @@ import androidx.work.workDataOf
 import com.mrlaughing.moyuan.data.local.db.entity.BookTrackingEntity
 import com.mrlaughing.moyuan.data.local.db.entity.DailyRecordEntity
 import com.mrlaughing.moyuan.data.mapper.EntityMapper
+import com.mrlaughing.moyuan.data.model.GrowthLevel
+import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.model.PlantPath
 import com.mrlaughing.moyuan.data.remote.dto.ShelfBook
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
@@ -131,6 +134,7 @@ class SyncWorker(
 
                 gardenRepository.updateMeta(meta.copy(
                     accumulatedMinutes = totalReadMinutes,
+                    todayReadMinutes = todayReadMinutes,
                     streakDays = newStreakDays,
                     maxStreakDays = maxOf(meta.maxStreakDays, newStreakDays),
                     booksRead = shelfBooks.size,
@@ -153,6 +157,9 @@ class SyncWorker(
             gardenUpdateResult?.let {
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
+
+            // 9. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
+            initializePlantAccumulatedMinutes(plantRepository, totalReadMinutes)
 
             notifyUIRefresh()
             Log.d(TAG, "=== 同步完成 ===")
@@ -270,6 +277,49 @@ class SyncWorker(
         plantRepository.updatePlantAfterRecalculate(updatedPlants)
 
         return updateResult
+    }
+
+    /**
+     * 首次同步时，用历史数据初始化已解锁植物的积累分钟数
+     * 
+     * 策略：对于首次同步（accumulatedMinutes == 0 的已解锁植物），
+     * 根据总阅读时间和植物解锁阈值估算每株植物的积累分钟数。
+     * 
+     * 估算逻辑：
+     * - 积墨路径：accumulatedMinutes ≈ totalReadMinutes - unlockThreshold
+     * - 其他路径：accumulatedMinutes ≈ totalReadMinutes（因为每日阅读对所有植物灌溉）
+     */
+    private suspend fun initializePlantAccumulatedMinutes(
+        plantRepository: PlantRepository,
+        totalReadMinutes: Int
+    ) {
+        val plants = plantRepository.observePlants().first()
+        var anyInitialized = false
+        
+        val updatedPlants = plants.map { plant ->
+            // 只处理已解锁但 accumulatedMinutes 为 0 或很低的植物（首次同步标记）
+            if (!plant.unlockDate.isNullOrEmpty() && plant.accumulatedMinutes < 60) {
+                anyInitialized = true
+                val plantDef = PlantDefinitions.getById(plant.plantId)
+                val estimatedMinutes = if (plantDef != null && plantDef.path == PlantPath.JIMO) {
+                    // 积墨路径：从解锁后开始积累
+                    maxOf(0, totalReadMinutes - plantDef.unlockThreshold)
+                } else {
+                    // 其他路径：估算为总阅读时间的均等份额
+                    totalReadMinutes
+                }
+                // 限制最大值避免超出合理范围
+                val clampedMinutes = estimatedMinutes.coerceAtMost(totalReadMinutes)
+                plant.copy(accumulatedMinutes = clampedMinutes, level = GrowthLevel.fromMinutes(clampedMinutes).level)
+            } else {
+                plant
+            }
+        }
+        
+        if (anyInitialized) {
+            plantRepository.updatePlantAfterRecalculate(updatedPlants)
+            Log.d(TAG, "已用历史数据初始化植物积累分钟数")
+        }
     }
 
     private fun notifyUIRefresh() {

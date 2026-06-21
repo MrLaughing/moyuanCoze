@@ -54,7 +54,8 @@ class StudyViewModel @Inject constructor(
                 val books = recentBooks.map { entity ->
                     BookItem(
                         title = entity.title,
-                        totalReadMinutes = entity.readMinutes
+                        totalReadMinutes = entity.readMinutes,
+                        lastReadDate = entity.lastReadDate
                     )
                 }
 
@@ -106,5 +107,6 @@ data class DailyRecord(
 
 data class BookItem(
     val title: String,
-    val totalReadMinutes: Int
+    val totalReadMinutes: Int,
+    val lastReadDate: String? = null
 )

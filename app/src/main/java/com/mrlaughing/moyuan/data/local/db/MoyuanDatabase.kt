@@ -25,7 +25,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.PlantStateEntity
         GardenMetaEntity::class,
         BookTrackingEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(MoyuanTypeConverters::class)

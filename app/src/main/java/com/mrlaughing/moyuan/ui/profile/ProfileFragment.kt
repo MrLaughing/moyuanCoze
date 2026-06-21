@@ -94,7 +94,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun renderState(state: ProfileUiState) {
-        plantCountText.text = "植物 ${state.plantCount}/27·枯萎${state.witheredCount}"
+        plantCountText.text = "解锁 ${state.unlockedCount}/${state.totalCount}·枯萎${state.witheredCount}"
         unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
 
         val statusText = if (state.wereadAuthorized) getString(R.string.label_authorized) else getString(R.string.label_unauthorized)

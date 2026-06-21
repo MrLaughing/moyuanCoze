@@ -22,5 +22,6 @@ data class GardenMetaEntity(
     val hasRevivedFromDead: Boolean, // 是否有枯寂复活
     val wereadToken: String?,      // 微信读书Token
     val syncHour: Int = 8,         // 每日同步时间(时)
-    val syncMinute: Int = 0        // 每日同步时间(分)
+    val syncMinute: Int = 0,       // 每日同步时间(分)
+    val todayReadMinutes: Int = 0  // 今日阅读分钟数
 )
