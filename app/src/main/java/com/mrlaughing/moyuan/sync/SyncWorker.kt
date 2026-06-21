@@ -158,7 +158,16 @@ class SyncWorker(
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
 
-            // 9. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
+            // 9. 修正引擎对meta的accumulatedMinutes双重计算
+            // 引擎会把 todayReadMinutes 加到 accumulatedMinutes 上，但 SyncWorker 已经设置了正确的总值
+            // 所以需要重新覆盖回正确的总阅读时间
+            val metaAfterEngine = gardenRepository.observeMeta().first()
+            if (metaAfterEngine != null && metaAfterEngine.accumulatedMinutes != totalReadMinutes) {
+                gardenRepository.updateMeta(metaAfterEngine.copy(accumulatedMinutes = totalReadMinutes))
+                Log.d(TAG, "修正accumulatedMinutes: ${metaAfterEngine.accumulatedMinutes} -> $totalReadMinutes")
+            }
+
+            // 10. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
             initializePlantAccumulatedMinutes(plantRepository, totalReadMinutes)
 
             notifyUIRefresh()
