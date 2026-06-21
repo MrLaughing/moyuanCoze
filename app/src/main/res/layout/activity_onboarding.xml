@@ -21,9 +21,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:paddingBottom="48dp"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
+        android:paddingBottom="@dimen/onboarding_bottom_padding"
+        android:paddingStart="@dimen/onboarding_horizontal_padding"
+        android:paddingEnd="@dimen/onboarding_horizontal_padding"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -38,8 +38,8 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"
-            android:layout_width="200dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/onboarding_btn_width"
+            android:layout_height="@dimen/water_button_height"
             android:text="继续"
             android:textColor="@color/text_on_dark"
             android:textSize="16sp"

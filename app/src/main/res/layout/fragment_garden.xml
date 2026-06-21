@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:text="墨园"
             android:textColor="@color/text_primary"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_size_brand"
             android:fontFamily="@font/lxgw_wenkai" />
 
         <View
@@ -324,7 +324,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/water_button"
         android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_height="@dimen/water_button_height"
         android:text="浇灌 · 今日阅读 0 分钟"
         android:textColor="@color/text_on_dark"
         android:textSize="14sp"

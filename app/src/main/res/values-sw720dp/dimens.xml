@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 13.3寸电纸书/大平板尺寸 (sw720dp) -->
+    
+    <!-- 植物 - 最大尺寸 -->
+    <dimen name="plant_max_height">380dp</dimen>
+    <dimen name="plant_min_height">300dp</dimen>
+    
+    <!-- 图鉴卡片 -->
+    <dimen name="catalog_card_width">200dp</dimen>
+    <dimen name="catalog_card_height">230dp</dimen>
+    
+    <!-- 导航 -->
+    <dimen name="nav_height">60dp</dimen>
+    
+    <!-- 顶栏/信息条 -->
+    <dimen name="top_bar_height">56dp</dimen>
+    <dimen name="info_bar_height">44dp</dimen>
+    
+    <!-- 通用间距 -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+    <dimen name="spacing_xxl">48dp</dimen>
+    
+    <!-- 字号 -->
+    <dimen name="text_size_brand">36sp</dimen>
+    <dimen name="text_size_title">24sp</dimen>
+    <dimen name="text_size_subtitle">18sp</dimen>
+    <dimen name="text_size_body">16sp</dimen>
+    <dimen name="text_size_caption">14sp</dimen>
+    <dimen name="text_size_micro">12sp</dimen>
+    
+    <!-- 卡片 -->
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="card_padding">20dp</dimen>
+    
+    <!-- 进度条 -->
+    <dimen name="progress_bar_height">10dp</dimen>
+    
+    <!-- Pill 标签 -->
+    <dimen name="pill_corner_radius">16dp</dimen>
+    <dimen name="pill_padding_horizontal">16dp</dimen>
+    <dimen name="pill_padding_vertical">8dp</dimen>
+    
+    <!-- 头像 -->
+    <dimen name="avatar_size">72dp</dimen>
+    <dimen name="avatar_text_size">32sp</dimen>
+    
+    <!-- 植物详情 -->
+    <dimen name="plant_detail_image_height">350dp</dimen>
+    
+    <!-- 统计卡片 -->
+    <dimen name="stat_card_padding">20dp</dimen>
+    <dimen name="stat_value_text_size">28sp</dimen>
+    
+    <!-- 图表 -->
+    <dimen name="week_chart_height">100dp</dimen>
+    <dimen name="heatmap_height">240dp</dimen>
+    
+    <!-- 成就 -->
+    <dimen name="achievement_seal_size">64dp</dimen>
+    
+    <!-- 按钮 -->
+    <dimen name="water_button_height">56dp</dimen>
+    
+    <!-- 引导页 -->
+    <dimen name="onboarding_icon_size">160dp</dimen>
+    <dimen name="onboarding_title_size">28sp</dimen>
+    <dimen name="onboarding_subtitle_size">16sp</dimen>
+    <dimen name="onboarding_btn_width">240dp</dimen>
+    <dimen name="onboarding_bottom_padding">56dp</dimen>
+    <dimen name="onboarding_horizontal_padding">48dp</dimen>
+    
+    <!-- 底部导航 -->
+    <dimen name="nav_icon_size">28dp</dimen>
+    <dimen name="nav_text_size">12sp</dimen>
+</resources>

@@ -32,8 +32,8 @@
 
                 <!-- 头像：深棕色圆形 + 白色"墨"字 -->
                 <FrameLayout
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="@dimen/avatar_size"
+                    android:layout_height="@dimen/avatar_size"
                     android:background="@drawable/bg_avatar_circle">
 
                     <TextView
@@ -42,7 +42,7 @@
                         android:gravity="center"
                         android:text="墨"
                         android:textColor="@color/text_on_dark"
-                        android:textSize="28sp"
+                        android:textSize="@dimen/avatar_text_size"
                         android:fontFamily="sans-serif"
                         android:textStyle="bold" />
 

@@ -202,7 +202,7 @@
         <com.mrlaughing.moyuan.ui.study.WeekOverviewView
             android:id="@+id/week_overview"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="@dimen/week_chart_height"
             android:background="@drawable/bg_card"
             android:padding="8dp"
             android:layout_marginStart="12dp"
@@ -225,7 +225,7 @@
         <com.mrlaughing.moyuan.ui.study.MonthHeatmapView
             android:id="@+id/month_heatmap"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="@dimen/heatmap_height"
             android:background="@drawable/bg_card"
             android:padding="8dp"
             android:layout_marginStart="12dp"

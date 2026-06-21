@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.util.ScreenUtils
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -68,7 +69,7 @@ class CatalogFragment : Fragment() {
                 navigateToPlantDetail(plant.plantId)
             }
         }
-        recyclerView.layoutManager = GridLayoutManager(context, 3)
+        recyclerView.layoutManager = GridLayoutManager(context, ScreenUtils.getRecommendedGridColumns(requireContext()))
         recyclerView.adapter = adapter
         recyclerView.itemAnimator = null
 

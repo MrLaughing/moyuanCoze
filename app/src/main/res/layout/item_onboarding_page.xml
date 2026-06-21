@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/paper_bg"
-    android:paddingStart="32dp"
-    android:paddingEnd="32dp">
+    android:paddingStart="@dimen/onboarding_horizontal_padding"
+    android:paddingEnd="@dimen/onboarding_horizontal_padding">
 
     <!-- 居中内容区域 -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,8 +21,8 @@
         <!-- 图标 -->
         <ImageView
             android:id="@+id/ivIcon"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="@dimen/onboarding_icon_size"
+            android:layout_height="@dimen/onboarding_icon_size"
             android:contentDescription="@string/desc_plant_image"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:textColor="@color/ink_dark"
-            android:textSize="24sp"
+            android:textSize="@dimen/onboarding_title_size"
             android:fontFamily="@font/jinghua_laosong"
             android:textStyle="bold"
             android:gravity="center"
