@@ -155,7 +155,9 @@ class ProfileFragment : Fragment() {
     private fun setupClickListeners(view: View) {
         // 查看图鉴
         view.findViewById<View>(R.id.layout_view_catalog)?.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_catalogFragment)
+            // 使用底部导航切换而非直接navigate，避免导航栈不同步导致页面点击失灵
+            val bottomNav = requireActivity().findViewById<com.mrlaughing.moyuan.ui.common.EinkBottomNavigationView>(R.id.bottom_nav)
+            bottomNav.selectedItemId = R.id.catalogFragment
         }
 
         // 立即同步按钮
