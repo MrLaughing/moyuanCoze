@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.ui.common.GridSpacingItemDecoration
 import com.mrlaughing.moyuan.util.ScreenUtils
 import kotlinx.coroutines.launch
 
@@ -69,9 +70,14 @@ class CatalogFragment : Fragment() {
                 navigateToPlantDetail(plant.plantId)
             }
         }
-        recyclerView.layoutManager = GridLayoutManager(context, ScreenUtils.getRecommendedGridColumns(requireContext()))
+        val columns = ScreenUtils.getRecommendedGridColumns(requireContext())
+        recyclerView.layoutManager = GridLayoutManager(context, columns)
         recyclerView.adapter = adapter
         recyclerView.itemAnimator = null
+
+        // 卡片间距：8dp（dp转px）
+        val spacingPx = (8 * resources.displayMetrics.density).toInt()
+        recyclerView.addItemDecoration(GridSpacingItemDecoration(columns, spacingPx, includeEdge = false))
 
         setupChips()
 

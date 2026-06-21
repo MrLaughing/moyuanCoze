@@ -60,6 +60,13 @@ class OnboardingActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
         EinkHelper.disableAnimations(this)
 
+        // 已完成引导 → 直接跳转主页
+        if (isOnboardingDone(this)) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_onboarding)
 
         viewPager = findViewById(R.id.viewPager)
