@@ -4,15 +4,20 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.AttributeSet
-import android.view.View
+import android.view.Gravity
+import android.widget.TextView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.mrlaughing.moyuan.R
 
 /**
- * 墨水屏友好的底部导航栏
- * - 纯文字显示，无图标
- * - 选中态下划线样式
- * - 高对比度
+ * 墨园底部导航栏 - 传统文人风
+ * - 宣纸色背景 + 顶部细分割线
+ * - 毛笔笔触风格图标
+ * - 选中态：浓墨色 + 墨点指示器
+ * - 未选中态：中灰色
+ * - 导航标签用系统无衬线字体
  */
 class EinkBottomNavigationView @JvmOverloads constructor(
     context: Context,
@@ -20,10 +25,16 @@ class EinkBottomNavigationView @JvmOverloads constructor(
     defStyleAttr: Int = com.google.android.material.R.attr.bottomNavigationStyle
 ) : BottomNavigationView(context, attrs, defStyleAttr) {
 
-    private val underlinePaint = Paint().apply {
-        color = Color.parseColor("#1A1A1A")
-        strokeWidth = 3f
+    private val dividerPaint = Paint().apply {
+        color = Color.parseColor("#D4C9B8")  // border色
+        strokeWidth = 1f
         style = Paint.Style.STROKE
+        isAntiAlias = false
+    }
+
+    private val dotPaint = Paint().apply {
+        color = Color.parseColor("#2C2416")  // ink_dark
+        style = Paint.Style.FILL
         isAntiAlias = true
     }
 
@@ -31,63 +42,73 @@ class EinkBottomNavigationView @JvmOverloads constructor(
     private var itemCount = 0
 
     init {
-        // 纯文字模式
-        itemIconTintList = android.content.res.ColorStateList.valueOf(Color.TRANSPARENT)
-        
-        // 文字颜色：选中纯黑，未选中浅灰
-        val selectedColor = Color.parseColor("#1A1A1A")
-        val unselectedColor = Color.parseColor("#999999")
+        // 图标颜色
+        itemIconTintList = android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(
+                Color.parseColor("#2C2416"),  // ink_dark
+                Color.parseColor("#57534E")   // ink_medium
+            )
+        )
+
+        // 文字颜色
         val colorStateList = android.content.res.ColorStateList(
             arrayOf(
                 intArrayOf(android.R.attr.state_checked),
                 intArrayOf(-android.R.attr.state_checked)
             ),
-            intArrayOf(selectedColor, unselectedColor)
+            intArrayOf(
+                Color.parseColor("#2C2416"),  // ink_dark 选中
+                Color.parseColor("#57534E")   // ink_medium 未选中
+            )
         )
         itemTextColor = colorStateList
 
         // 禁用 ripple 效果
         itemRippleColor = android.content.res.ColorStateList.valueOf(Color.TRANSPARENT)
 
-        // 显示所有文字标签
+        // 显示所有标签
         labelVisibilityMode = LABEL_VISIBILITY_LABELED
 
-        // 浅灰背景
-        setBackgroundColor(Color.parseColor("#CCCCCC"))
+        // 宣纸色背景
+        setBackgroundColor(Color.parseColor("#F4F1EA"))
 
         // 去掉 elevation 阴影
         elevation = 0f
-        
+
         // 获取item数量
         itemCount = menu.size()
 
         // 监听选中变化
         setOnItemSelectedListener { item ->
-            selectedIndex = item.itemId
-            invalidate() // 重绘下划线
+            invalidate()
             true
         }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        drawUnderline(canvas)
+        // 顶部细分割线
+        canvas.drawLine(0f, 0f, width.toFloat(), 0f, dividerPaint)
+        // 选中态墨点指示器
+        drawInkDot(canvas)
     }
 
-    private fun drawUnderline(canvas: Canvas) {
-        val width = width
-        val height = height
+    private fun drawInkDot(canvas: Canvas) {
         if (width == 0 || height == 0 || itemCount == 0) return
 
         val itemWidth = width.toFloat() / itemCount
         val selectedItemIndex = getSelectedItemIndex()
-        
-        // 计算选中项下划线的位置
-        val startX = selectedItemIndex * itemWidth + itemWidth / 2 - 20f
-        val endX = selectedItemIndex * itemWidth + itemWidth / 2 + 20f
-        val y = height - 8f
 
-        canvas.drawLine(startX, y, endX, y, underlinePaint)
+        // 墨点位置：图标上方
+        val cx = selectedItemIndex * itemWidth + itemWidth / 2
+        val cy = 8f
+        val radius = 2.5f
+
+        canvas.drawCircle(cx, cy, radius, dotPaint)
     }
 
     private fun getSelectedItemIndex(): Int {
@@ -98,9 +119,5 @@ class EinkBottomNavigationView @JvmOverloads constructor(
             }
         }
         return 0
-    }
-
-    override fun setOnItemSelectedListener(listener: OnItemSelectedListener?) {
-        super.setOnItemSelectedListener(listener)
     }
 }

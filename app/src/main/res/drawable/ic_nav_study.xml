@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 笔杆 -->
+    <path
+        android:pathData="M9,4 L15,4 L15,16 L12,19 L9,16Z"
+        android:fillColor="#2C2416"/>
+    <!-- 笔锋 -->
+    <path
+        android:pathData="M10,16 L14,16 L12,20Z"
+        android:fillColor="#2C2416"/>
+</vector>

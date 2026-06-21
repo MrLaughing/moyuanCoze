@@ -3,18 +3,22 @@
 
     <item
         android:id="@+id/gardenFragment"
+        android:icon="@drawable/ic_nav_garden"
         android:title="@string/nav_garden" />
 
     <item
         android:id="@+id/catalogFragment"
+        android:icon="@drawable/ic_nav_catalog"
         android:title="@string/nav_catalog" />
 
     <item
         android:id="@+id/studyFragment"
+        android:icon="@drawable/ic_nav_study"
         android:title="@string/nav_study" />
 
     <item
         android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_nav_profile"
         android:title="@string/nav_profile" />
 
 </menu>

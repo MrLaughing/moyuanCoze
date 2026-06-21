@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 茎干 - 粗细变化的笔触 -->
+    <path
+        android:pathData="M12,20 L12,10"
+        android:strokeWidth="2"
+        android:strokeColor="#2C2416"
+        android:strokeLineCap="round"/>
+    <!-- 左叶 - 毛笔笔触 -->
+    <path
+        android:pathData="M12,12 Q8,8 5,9 Q4,10 7,12 Q9,13 12,12Z"
+        android:fillColor="#2C2416"/>
+    <!-- 右叶 -->
+    <path
+        android:pathData="M12,10 Q16,6 19,7 Q20,8 17,10 Q15,11 12,10Z"
+        android:fillColor="#2C2416"/>
+    <!-- 小芽点 -->
+    <path
+        android:pathData="M11.5,9 A1,1 0 1,1 12.5,9 A1,1 0 1,1 11.5,9Z"
+        android:fillColor="#2C2416"/>
+</vector>
