@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- 路径1 - 积墨 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M18,35 L30,35 L30,85 Q24,88 18,85Z"/>
+    
+    <!-- 路径2 - 秉烛 -->
+    <path
+        android:fillColor="#57534E"
+        android:pathData="M36,45 L48,45 L48,85 Q42,88 36,85Z"/>
+    
+    <!-- 路径3 - 岁寒 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M54,25 L66,25 L66,85 Q60,88 54,85Z"/>
+    
+    <!-- 路径4 - 寻芳 -->
+    <path
+        android:fillColor="#57534E"
+        android:pathData="M72,40 L84,40 L84,85 Q78,88 72,85Z"/>
+    
+    <!-- 路径5 - 隐藏 (矮一些) -->
+    <path
+        android:fillColor="#A8A29E"
+        android:pathData="M90,55 L102,55 L102,85 Q96,88 90,85Z"/>
+
+</vector>

@@ -1,5 +1,6 @@
 package com.mrlaughing.moyuan.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
@@ -7,6 +8,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.render.EinkHelper
 import com.mrlaughing.moyuan.ui.common.EinkBottomNavigationView
+import com.mrlaughing.moyuan.ui.onboarding.OnboardingActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,6 +18,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 检查是否需要显示引导页
+        if (!OnboardingActivity.isOnboardingDone(this)) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+            finish()
+            return
+        }
 
         // 禁用所有过渡动画
         overridePendingTransition(0, 0)

@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- 左页 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M60,30 L60,85 Q40,82 20,85 L20,30 Q40,27 60,30Z"/>
+    
+    <!-- 右页 -->
+    <path
+        android:fillColor="#57534E"
+        android:pathData="M60,30 L60,85 Q80,82 100,85 L100,30 Q80,27 60,30Z"/>
+    
+    <!-- 书脊 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M59,28 L61,28 L61,87 L59,87Z"/>
+
+</vector>

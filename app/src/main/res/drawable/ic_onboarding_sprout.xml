@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- 茎 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M60,90 L60,50" 
+        android:strokeWidth="3"
+        android:strokeColor="#2C2416"/>
+    
+    <!-- 左叶 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M60,55 Q45,40 35,50 Q30,55 40,58 Q50,60 60,55Z"/>
+    
+    <!-- 右叶 -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M60,55 Q75,40 85,50 Q90,55 80,58 Q70,60 60,55Z"/>
+    
+    <!-- 小圆点（根部） -->
+    <path
+        android:fillColor="#2C2416"
+        android:pathData="M56,88 A4,4 0 1,1 64,88 A4,4 0 1,1 56,88Z"/>
+
+</vector>

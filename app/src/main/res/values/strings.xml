@@ -84,4 +84,8 @@
     <string name="weather_rainy">雨</string>
     <string name="weather_snowy">雪</string>
     <string name="weather_foggy">雾</string>
+    <!-- 引导页 -->
+    <string name="label_onboarding_skip">跳过</string>
+    <string name="label_onboarding_next">继续</string>
+    <string name="label_onboarding_start">开始我的墨园</string>
 </resources>
