@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.util.Log
 
 /**
  * 植物详情 ViewModel
@@ -36,45 +37,69 @@ class PlantDetailViewModel @Inject constructor(
      */
     fun loadPlant(plantId: Long) {
         viewModelScope.launch {
-            // 将 Long ID 转换为 String plantId
-            // plantId 从 1 开始，PlantDefinitions.all 的 index + 1
-            val allPlants = PlantDefinitions.all
-            if (plantId < 1 || plantId > allPlants.size) {
-                _uiState.value = PlantDetailUiState(plantId = plantId)
-                return@launch
-            }
+            try {
+                // 将 Long ID 转换为 String plantId
+                // plantId 从 1 开始，PlantDefinitions.all 的 index + 1
+                val allPlants = PlantDefinitions.all
+                if (plantId < 1 || plantId > allPlants.size) {
+                    _uiState.value = PlantDetailUiState(plantId = plantId)
+                    return@launch
+                }
 
-            val plantDef = allPlants[plantId.toInt() - 1]
-            val plantIdStr = plantDef.id
+                val plantDef = allPlants[plantId.toInt() - 1]
+                val plantIdStr = plantDef.id
 
-            // 观察该植物的状态
-            plantRepository.observePlant(plantIdStr).collect { entity ->
-                if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
-                    // 已解锁，显示真实数据
-                    val levelProgress = calculateLevelProgress(
-                        entity.accumulatedMinutes,
-                        entity.level
-                    )
+                // 观察该植物的状态
+                plantRepository.observePlant(plantIdStr).collect { entity ->
+                    if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
+                        // 已解锁，显示真实数据
+                        val safeLevel = entity.level.coerceAtLeast(1)  // 防御level<=0
+                        val levelProgress = calculateLevelProgress(
+                            entity.accumulatedMinutes,
+                            safeLevel
+                        )
 
+                        _uiState.value = PlantDetailUiState(
+                            plantId = plantId,
+                            name = plantDef.name,
+                            level = safeLevel,
+                            maxLevel = Constants.MAX_LEVEL,
+                            totalReadMinutes = entity.accumulatedMinutes,
+                            levelProgress = levelProgress,
+                            description = plantDef.description,
+                            witherStage = entity.witherStage,
+                            witherCountdownDays = -1, // TODO: 计算枯萎倒计时
+                            pathName = pathToName(plantDef.path),
+                            rarity = rarityToInt(plantDef.rarity)
+                        )
+                    } else {
+                        // 未解锁，显示植物定义信息
+                        _uiState.value = PlantDetailUiState(
+                            plantId = plantId,
+                            name = plantDef.name,
+                            level = 1,  // 未解锁也显示为Lv.1，避免level=0导致数组越界
+                            maxLevel = Constants.MAX_LEVEL,
+                            totalReadMinutes = 0,
+                            levelProgress = 0f,
+                            description = plantDef.description,
+                            witherStage = 0,
+                            witherCountdownDays = -1,
+                            pathName = pathToName(plantDef.path),
+                            rarity = rarityToInt(plantDef.rarity)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("PlantDetailVM", "加载植物详情失败 plantId=$plantId", e)
+                // 异常时降级：显示植物基本信息，避免崩溃
+                val allPlants = PlantDefinitions.all
+                val index = (plantId - 1).toInt()
+                if (index in allPlants.indices) {
+                    val plantDef = allPlants[index]
                     _uiState.value = PlantDetailUiState(
                         plantId = plantId,
                         name = plantDef.name,
-                        level = entity.level,
-                        maxLevel = Constants.MAX_LEVEL,
-                        totalReadMinutes = entity.accumulatedMinutes,
-                        levelProgress = levelProgress,
-                        description = plantDef.description,
-                        witherStage = entity.witherStage,
-                        witherCountdownDays = -1, // TODO: 计算枯萎倒计时
-                        pathName = pathToName(plantDef.path),
-                        rarity = rarityToInt(plantDef.rarity)
-                    )
-                } else {
-                    // 未解锁，显示植物定义信息
-                    _uiState.value = PlantDetailUiState(
-                        plantId = plantId,
-                        name = plantDef.name,
-                        level = 1,  // 未解锁也显示为Lv.1，避免level=0导致数组越界
+                        level = 1,
                         maxLevel = Constants.MAX_LEVEL,
                         totalReadMinutes = 0,
                         levelProgress = 0f,
@@ -83,6 +108,12 @@ class PlantDetailViewModel @Inject constructor(
                         witherCountdownDays = -1,
                         pathName = pathToName(plantDef.path),
                         rarity = rarityToInt(plantDef.rarity)
+                    )
+                } else {
+                    _uiState.value = PlantDetailUiState(
+                        plantId = plantId,
+                        name = "未知植物",
+                        level = 1
                     )
                 }
             }

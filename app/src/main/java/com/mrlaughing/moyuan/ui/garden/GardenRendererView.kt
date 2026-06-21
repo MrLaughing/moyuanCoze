@@ -140,10 +140,10 @@ class GardenRendererView @JvmOverloads constructor(
 
         // 从上层（近景）到下层（远景）遍历，优先命中近景
         for (plant in renderPlants.reversed()) {
-            val hitRadius = 20f * plant.scale  // 简化的命中区域
+            val hitRadius = 30f * plant.scale  // 扩大命中区域，远景植物也能点到
 
             // 植物位置是 y 坐标，在其上方一定范围内
-            val topY = plant.y - 40f * plant.scale
+            val topY = plant.y - 60f * plant.scale
             val bottomY = plant.y
 
             if (touchX >= plant.x - hitRadius && touchX <= plant.x + hitRadius &&
