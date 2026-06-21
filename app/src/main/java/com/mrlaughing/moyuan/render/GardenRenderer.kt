@@ -542,7 +542,7 @@ object GardenRenderer {
             Constants.PATH_BINGZHU -> PlantArchetype.FLOWER  // 秉烛多为花卉
             Constants.PATH_SUIHAN -> PlantArchetype.PINE  // 岁寒多为松柏
             Constants.PATH_XUNFANG -> PlantArchetype.FLOWER  // 寻芳多为花卉
-            Constants.PATH_HIDDEN -> PlantArchetype.FLOWER  // 隐藏多为灵芝/彼岸花
+            Constants.PATH_HIDDEN -> PlantArchetype.FLOWER  // 隐藏多为忘忧草/彼岸花
             else -> PlantArchetype.GRASS
         }
     }

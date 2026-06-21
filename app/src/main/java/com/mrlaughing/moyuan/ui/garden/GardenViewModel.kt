@@ -192,19 +192,19 @@ class GardenViewModel @Inject constructor(
             "yuejiancao" -> "月见草"
             "pine" -> "青松"
             "cypress" -> "翠柏"
-            "plum" -> "寒梅"
+            "shancha" -> "山茶"
             "bamboo" -> "修竹"
             "ginkgo" -> "银杏"
-            "guteng" -> "古藤"
+            "wannianqing" -> "万年青"
             "chrysanthemum" -> "墨菊"
             "ziteng" -> "紫藤"
             "lotus" -> "青莲"
             "haitang" -> "海棠"
             "peony" -> "墨牡丹"
             "bodhi" -> "菩提"
-            "lingzhi" -> "灵芝"
+            "wangyoucao" -> "忘忧草"
             "bianhua" -> "彼岸花"
-            "bingtilian" -> "并蒂莲"
+            "lianlizhi" -> "连理枝"
             else -> plantId
         }
     }

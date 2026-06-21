@@ -152,13 +152,13 @@ object PlantDefinitions {
             lore = "古柏千年犹翠，人谓其得天地之正气。文天祥狱中作《正气歌》，以柏自喻。翠柏者，连日不辍之功也。"
         ),
         Plant(
-            id = "plum",
-            name = "寒梅",
+            id = "shancha",
+            name = "山茶",
             path = PlantPath.SUIHAN,
             rarity = PlantRarity.RARE,
             unlockThreshold = 15,
-            description = "百花先觉，独占东风第一枝。疏影横斜，暗香浮动，雪中更显清绝。",
-            lore = "林和靖梅妻鹤子，孤山二十年，梅即其妻。寒梅不争春，却先知春意——如日日坚持之人，看似独行，实则先驱。"
+            description = "冬末春初开花，花瓣如锦似缎，红白相间。风霜中独放，有坚韧高洁之姿。",
+            lore = "陆游诗云「东园三月雨兼风，桃李飘零扫地空。唯有山茶偏耐久，绿丛又放数枝红。」山茶不惧寒，十五日不辍之人，方见山茶之志。"
         ),
         Plant(
             id = "bamboo",
@@ -179,13 +179,13 @@ object PlantDefinitions {
             lore = "佛门以银杏为菩提之替，取其长青不凋之意。银杏历经冰川而不灭，其韧如铁——六十日连读不辍之人，方有银杏之志。"
         ),
         Plant(
-            id = "guteng",
-            name = "古藤",
+            id = "wannianqing",
+            name = "万年青",
             path = PlantPath.SUIHAN,
             rarity = PlantRarity.LEGENDARY,
             unlockThreshold = 100,
-            description = "盘根错节，百年纠缠。春发新枝而老干犹劲，枯荣同株，生死共存。",
-            lore = "李白诗云「枯藤老树昏鸦」，然古藤非枯，乃百岁之韧。藤虽柔而能绕石穿崖，百日后仍日日不辍者，便如古藤——看似柔弱，实则无人可断其志。"
+            description = "四季常青，叶厚如玉，果实殷红似珠。不择土壤，不畏寒暑，长青不衰。",
+            lore = "万年青自古为吉祥之兆，取其万古长青之意。百日后仍日日不辍者，便如万年青——不争一时之艳，而守永恒之青。"
         )
     )
 
@@ -250,13 +250,13 @@ object PlantDefinitions {
     // ─── 隐藏（特殊条件）───────────────────────────────────────
     private val hiddenPlants = listOf(
         Plant(
-            id = "lingzhi",
-            name = "灵芝",
+            id = "wangyoucao",
+            name = "忘忧草",
             path = PlantPath.HIDDEN,
             rarity = PlantRarity.HIDDEN,
             unlockThreshold = 0,
-            description = "仙草之首，祥瑞之兆。形如云盖，色如丹霞，千年结实，万年成精。",
-            lore = "四径通达，方见灵芝。积墨、秉烛、岁寒、寻芳——每一条路上都走过三重境，方能遇见这株灵芝。它不在任何一条路的尽头，而在四路交汇的灵山之上。"
+            description = "即萱草，花色金黄如暖阳，叶细长而柔。古人种于北堂以忘忧，食之忘愁。",
+            lore = "《诗经》云「焉得谖草，言树之背」。萱草即忘忧草，为母亲之花。四径各通三重境者，方能遇见忘忧草——它不在路尽头，而在四路交汇处，替你忘却一路艰辛。"
         ),
         Plant(
             id = "bianhua",
@@ -268,13 +268,13 @@ object PlantDefinitions {
             lore = "传说彼岸花开于忘川之畔，花香能唤起前生记忆。枯寂之中忽见花开——那不是死亡，而是重生。当枯寂的植物重新苏醒，彼岸花便悄然绽放，告诉你：没有白走的路，也没有白枯的花。"
         ),
         Plant(
-            id = "bingtilian",
-            name = "并蒂莲",
+            id = "lianlizhi",
+            name = "连理枝",
             path = PlantPath.HIDDEN,
             rarity = PlantRarity.HIDDEN,
             unlockThreshold = 0,
-            description = "一茎双花，同根并蒂。两朵莲花并肩而开，似知己相对，如故人重逢。",
-            lore = "世间并蒂莲千万中无一。五株鲜活墨韵之花同在一园，并蒂莲便不请自来——此非人力所求，乃心诚则灵。一个人走过五条路、养出五朵满花，这园中便有了并蒂之缘。"
+            description = "两树交合，枝干相连共生。同根异干，却枝叶交错如一，至死不渝。",
+            lore = "白居易诗云「在天愿作比翼鸟，在地愿为连理枝」。连理枝非人力所能致，乃天地成全。五株鲜活满花同在一园，连理枝便悄然生长——此非所求，乃心诚所致。"
         )
     )
 }

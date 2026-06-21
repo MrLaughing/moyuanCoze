@@ -28,7 +28,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
         BookTrackingEntity::class,
         AchievementEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(MoyuanTypeConverters::class)

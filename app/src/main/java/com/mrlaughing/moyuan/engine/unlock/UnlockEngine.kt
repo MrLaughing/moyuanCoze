@@ -19,9 +19,9 @@ import java.time.LocalTime
  * - 岁寒：历史最高连续阅读天数达到阈值
  * - 寻芳：已读不同书目数达到阈值
  * - 隐藏：
- *   - 灵芝：四径各解锁3种植物
+ *   - 忘忧草：四径各解锁3种植物
  *   - 彼岸花：枯寂植物复活
- *   - 并蒂莲：5株鲜活Lv.5植物
+ *   - 连理枝：5株鲜活Lv.5植物
  */
 object UnlockEngine {
 
@@ -67,17 +67,17 @@ object UnlockEngine {
         plants: List<EnginePlantState>
     ): Boolean {
         return when (def.id) {
-            "lingzhi" -> checkLingzhiCondition(plants)
+            "wangyoucao" -> checkWangyoucaoCondition(plants)
             "bianhua" -> checkBianhuaCondition(plants)
-            "bingtilian" -> checkBingtilianCondition(plants)
+            "lianlizhi" -> checkLianlizhiCondition(plants)
             else -> false
         }
     }
 
     /**
-     * 灵芝条件：四径各解锁3种植物
+     * 忘忧草条件：四径各解锁3种植物
      */
-    private fun checkLingzhiCondition(plants: List<EnginePlantState>): Boolean {
+    private fun checkWangyoucaoCondition(plants: List<EnginePlantState>): Boolean {
         val unlockedIds = plants.filter { it.isUnlocked }.map { it.plantId }.toSet()
 
         val paths = listOf(PlantPath.JIMO, PlantPath.BINGZHU, PlantPath.SUIHAN, PlantPath.XUNFANG)
@@ -95,9 +95,9 @@ object UnlockEngine {
     }
 
     /**
-     * 并蒂莲条件：5株鲜活（非枯萎）Lv.5植物
+     * 连理枝条件：5株鲜活（非枯萎）Lv.5植物
      */
-    private fun checkBingtilianCondition(plants: List<EnginePlantState>): Boolean {
+    private fun checkLianlizhiCondition(plants: List<EnginePlantState>): Boolean {
         return plants.count {
             it.isUnlocked &&
             it.growthLevel == GrowthLevel.LV5 &&
