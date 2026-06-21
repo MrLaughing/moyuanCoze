@@ -48,6 +48,7 @@
     <!-- 成就系统 -->
     <string name="label_achievements">成就</string>
     <string name="label_achievements_count">%d枚</string>
+    <string name="label_achievement_count_format">%d/%d</string>
     <string name="label_view_catalog">查看图鉴</string>
     <string name="label_settings">设置</string>
     <string name="label_unlocked_date">✓ 已解锁于%s</string>

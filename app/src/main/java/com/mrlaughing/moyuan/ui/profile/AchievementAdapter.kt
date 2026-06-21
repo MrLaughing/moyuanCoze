@@ -1,9 +1,10 @@
 package com.mrlaughing.moyuan.ui.profile
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -12,13 +13,14 @@ import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
 
 /**
- * 成就列表适配器
+ * 成就网格适配器
+ * 展示印章墙风格的成就徽章，点击弹出详情 Dialog
  */
 class AchievementAdapter : ListAdapter<AchievementEntity, AchievementAdapter.AchievementViewHolder>(AchievementDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AchievementViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_achievement, parent, false)
+            .inflate(R.layout.item_achievement_grid, parent, false)
         return AchievementViewHolder(view)
     }
 
@@ -26,78 +28,81 @@ class AchievementAdapter : ListAdapter<AchievementEntity, AchievementAdapter.Ach
         holder.bind(getItem(position))
     }
 
-    class AchievementViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class AchievementViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val frameSeal: FrameLayout = itemView.findViewById(R.id.frame_seal)
         private val sealText: TextView = itemView.findViewById(R.id.text_seal)
         private val nameText: TextView = itemView.findViewById(R.id.text_achievement_name)
-        private val conditionText: TextView = itemView.findViewById(R.id.text_achievement_condition)
-        private val statusText: TextView = itemView.findViewById(R.id.text_achievement_status)
-        private val progressBar: ProgressBar = itemView.findViewById(R.id.progress_achievement)
-        private val cardView: View = itemView.findViewById(R.id.card_achievement)
 
         fun bind(achievement: AchievementEntity) {
-            // 印章文字：取成就名首字
-            val sealChar = achievement.name.firstOrNull()?.toString() ?: "?"
-            sealText.text = sealChar
-
-            // 成就名和条件
-            nameText.text = achievement.name
-            conditionText.text = achievement.condition
+            val context = itemView.context
 
             if (achievement.isUnlocked) {
-                // 已解锁状态
                 bindUnlocked(achievement)
             } else {
-                // 未解锁状态
                 bindLocked(achievement)
+            }
+
+            // 点击弹出详情 Dialog
+            itemView.setOnClickListener {
+                showAchievementDetailDialog(achievement)
             }
         }
 
         private fun bindUnlocked(achievement: AchievementEntity) {
-            // 背景：实线边框
-            cardView.setBackgroundResource(R.drawable.bg_achievement_unlocked)
+            val context = itemView.context
             
-            // 印章：深棕色背景
-            sealText.setBackgroundResource(R.drawable.bg_seal_stamp)
-            sealText.setTextColor(itemView.context.getColor(R.color.text_on_dark))
+            // 印章：深棕色背景 + 首字
+            frameSeal.setBackgroundResource(R.drawable.bg_seal_stamp)
+            sealText.text = achievement.name.firstOrNull()?.toString() ?: "?"
+            sealText.setTextColor(context.getColor(R.color.text_on_dark))
             
-            // 文字：正常颜色
-            nameText.setTextColor(itemView.context.getColor(R.color.ink_dark))
-            conditionText.setTextColor(itemView.context.getColor(R.color.text_secondary))
-            
-            // 状态文字
-            val dateStr = achievement.unlockedDate ?: ""
-            statusText.text = itemView.context.getString(R.string.label_unlocked_date, dateStr)
-            statusText.setTextColor(itemView.context.getColor(R.color.text_tertiary))
-            statusText.visibility = View.VISIBLE
-            
-            // 进度条：已达成，显示满进度
-            progressBar.max = achievement.targetValue
-            progressBar.progress = achievement.targetValue
-            progressBar.visibility = View.GONE
+            // 成就名：深墨色
+            nameText.text = achievement.name
+            nameText.setTextColor(context.getColor(R.color.ink_dark))
         }
 
         private fun bindLocked(achievement: AchievementEntity) {
-            // 背景：虚线边框
-            cardView.setBackgroundResource(R.drawable.bg_achievement_locked)
+            val context = itemView.context
             
-            // 印章：灰色背景
-            sealText.setBackgroundResource(R.drawable.bg_seal_stamp_locked)
-            sealText.setTextColor(itemView.context.getColor(R.color.ink_dark))
+            // 印章：灰色背景 + "???"
+            frameSeal.setBackgroundResource(R.drawable.bg_seal_stamp_locked)
+            sealText.text = "???"
+            sealText.setTextColor(context.getColor(R.color.ink_light))
             
-            // 文字：浅墨色
-            nameText.setTextColor(itemView.context.getColor(R.color.ink_light))
-            conditionText.setTextColor(itemView.context.getColor(R.color.ink_light))
+            // 成就名：极淡灰
+            nameText.text = "???"
+            nameText.setTextColor(context.getColor(R.color.ink_wash))
+        }
+
+        private fun showAchievementDetailDialog(achievement: AchievementEntity) {
+            val context = itemView.context
             
-            // 状态文字：显示进度
-            val remaining = achievement.targetValue - achievement.currentValue
-            statusText.text = itemView.context.getString(R.string.label_remaining, remaining)
-            statusText.setTextColor(itemView.context.getColor(R.color.text_tertiary))
-            statusText.visibility = View.VISIBLE
-            
-            // 进度条
-            progressBar.max = achievement.targetValue
-            progressBar.progress = achievement.currentValue
-            progressBar.visibility = View.VISIBLE
+            val title = if (achievement.isUnlocked) {
+                achievement.name
+            } else {
+                "???"
+            }
+
+            val message = buildString {
+                if (achievement.isUnlocked) {
+                    appendLine("名称：${achievement.name}")
+                    appendLine("描述：${achievement.description}")
+                    appendLine()
+                    appendLine("解锁条件：${achievement.condition}")
+                    appendLine("获得日期：${achievement.unlockedDate ?: "未知"}")
+                } else {
+                    appendLine("名称：???")
+                    appendLine()
+                    appendLine("解锁条件：${achievement.condition}")
+                    appendLine("当前进度：${achievement.currentValue}/${achievement.targetValue}")
+                }
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("确定", null)
+                .show()
         }
     }
 

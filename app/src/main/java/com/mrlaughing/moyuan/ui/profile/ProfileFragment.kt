@@ -13,8 +13,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mrlaughing.moyuan.ui.common.GridSpacingItemDecoration
+import com.mrlaughing.moyuan.util.ScreenUtils
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkInfo
@@ -102,10 +104,19 @@ class ProfileFragment : Fragment() {
 
     private fun setupAchievementRecycler() {
         achievementAdapter = AchievementAdapter()
+        
+        // 计算网格列数
+        val spanCount = ScreenUtils.getAchievementGridColumns(requireContext())
+        
+        // 转换为 px
+        val spacingPx = (6 * resources.displayMetrics.density).toInt()
+        
         recyclerAchievements.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = GridLayoutManager(requireContext(), spanCount)
             adapter = achievementAdapter
             isNestedScrollingEnabled = false
+            // 添加网格间距装饰器
+            addItemDecoration(GridSpacingItemDecoration(spanCount, spacingPx, false))
         }
     }
 
@@ -205,8 +216,12 @@ class ProfileFragment : Fragment() {
                     }
                 }
                 launch {
-                    viewModel.unlockedCount.collect { count ->
-                        achievementCountText.text = getString(R.string.label_achievements_count, count)
+                    viewModel.unlockedCount.collect { unlockedCount ->
+                        achievementCountText.text = getString(
+                            R.string.label_achievement_count_format,
+                            unlockedCount,
+                            AchievementDefinitions.ALL_ACHIEVEMENTS.size
+                        )
                     }
                 }
             }

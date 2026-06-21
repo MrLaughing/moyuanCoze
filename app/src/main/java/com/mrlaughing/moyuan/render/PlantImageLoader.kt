@@ -102,13 +102,17 @@ object PlantImageLoader {
 
     /**
      * 加载剪影图（图鉴未解锁时使用）
+     * 策略：用 lv1 图片加高灰度滤镜，没有 silhouette.png 专用文件
      */
     fun loadSilhouette(context: Context, plantId: Long): Bitmap? {
         val stringId = resolveStringId(plantId)
-        val path = "${Constants.PLANT_ASSET_PREFIX}${stringId}/silhouette${Constants.PLANT_ASSET_SUFFIX}"
-        val bitmap = loadFromAssets(context, path)
-        if (bitmap != null) return bitmap
-        // 生成剪影占位图
+        // 先尝试加载 lv1 图片，然后施加灰度滤镜
+        val lv1Path = buildAssetPath(stringId, 1, 0)
+        val lv1Bitmap = loadFromAssets(context, lv1Path)
+        if (lv1Bitmap != null) {
+            return applySilhouetteFilter(lv1Bitmap)
+        }
+        // 所有 assets 都找不到，生成程序化剪影占位图
         return generateSilhouettePlaceholder(context, plantId)
     }
 
@@ -253,6 +257,34 @@ object PlantImageLoader {
         } else {
             "植物"
         }
+    }
+
+    /**
+     * 对图片施加剪影效果：大幅降低饱和度、提高亮度，形成半透明剪影
+     */
+    private fun applySilhouetteFilter(source: Bitmap): Bitmap {
+        val width = source.width
+        val height = source.height
+        val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val pixels = IntArray(width * height)
+        source.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        for (i in pixels.indices) {
+            val pixel = pixels[i]
+            val a = pixel ushr 24 and 0xFF
+            val r = pixel ushr 16 and 0xFF
+            val g = pixel ushr 8 and 0xFF
+            val b = pixel and 0xFF
+            // 灰度化
+            val gray = (r * 0.299f + g * 0.587f + b * 0.114f).toInt()
+            // 向浅灰混合，形成剪影效果（高灰度 + 降低对比度）
+            val silhouetteGray = (gray + (200 - gray) * 0.75f).toInt().coerceIn(0, 255)
+            // 降低不透明度，让剪影更淡
+            val newAlpha = (a * 0.6f).toInt().coerceIn(0, 255)
+            pixels[i] = (newAlpha shl 24) or (silhouetteGray shl 16) or (silhouetteGray shl 8) or silhouetteGray
+        }
+        result.setPixels(pixels, 0, width, 0, 0, width, height)
+        return result
     }
 
     /**
