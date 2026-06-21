@@ -17,7 +17,7 @@
         android:paddingEnd="@dimen/spacing_lg"
         android:paddingTop="@dimen/spacing_md"
         android:paddingBottom="@dimen/spacing_md"
-        android:background="@color/white">
+        android:background="@color/paper_bg">
 
         <TextView
             android:layout_width="0dp"
@@ -39,109 +39,157 @@
 
     </LinearLayout>
 
-    <!-- 路径筛选：横向滚动标签 -->
+    <!-- 路径筛选：横向滚动标签区域 -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
-        android:background="@color/white"
+        android:background="@color/paper_bg"
         android:paddingTop="@dimen/spacing_sm"
         android:paddingBottom="@dimen/spacing_sm">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group_path"
+        <LinearLayout
+            android:id="@+id/layout_chip_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingStart="@dimen/spacing_md"
-            android:paddingEnd="@dimen/spacing_md"
-            app:singleSelection="true"
-            app:chipSpacingHorizontal="8dp">
+            android:paddingEnd="@dimen/spacing_md">
+
+            <!-- 选中标签锚点竖线 -->
+            <View
+                android:id="@+id/view_selected_indicator"
+                android:layout_width="2dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="6dp"
+                android:background="@color/ink_dark"
+                android:visibility="gone" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_all"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_all"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/white"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/ink_dark"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/border"
+                android:textSize="14sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_jimo"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_jimo"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/surface"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/border"
+                android:textSize="14sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_bingzhu"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_bingzhu"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/surface"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/border"
+                android:textSize="14sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_suihan"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_suihan"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/surface"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/border"
+                android:textSize="14sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_xunfang"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_xunfang"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/surface"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="@color/border"
+                android:textSize="14sp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_hidden"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_hidden"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
                 android:fontFamily="@font/lxgw_wenkai"
-                app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/border"
-                app:chipStrokeWidth="1dp"
+                app:chipBackgroundColor="@color/surface"
+                app:chipStrokeWidth="0dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
-        </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
 
     </HorizontalScrollView>
 

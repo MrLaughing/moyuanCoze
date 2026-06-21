@@ -15,7 +15,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import com.mrlaughing.moyuan.R
 import kotlinx.coroutines.launch
 
@@ -24,10 +23,20 @@ class CatalogFragment : Fragment() {
 
     private val viewModel: CatalogViewModel by viewModels()
 
-    private lateinit var chipGroup: ChipGroup
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PlantCardAdapter
     private lateinit var unlockedCountText: TextView
+    
+    private lateinit var chipAll: Chip
+    private lateinit var chipJimo: Chip
+    private lateinit var chipBingzhu: Chip
+    private lateinit var chipSuihan: Chip
+    private lateinit var chipXunfang: Chip
+    private lateinit var chipHidden: Chip
+    private lateinit var selectedIndicator: View
+    
+    private val chipList = mutableListOf<Chip>()
+    private var currentSelectedIndex = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,9 +49,19 @@ class CatalogFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        chipGroup = view.findViewById(R.id.chip_group_path)
         recyclerView = view.findViewById(R.id.recycler_catalog)
         unlockedCountText = view.findViewById(R.id.text_unlocked_count)
+        selectedIndicator = view.findViewById(R.id.view_selected_indicator)
+        
+        // 获取 Chip 引用
+        chipAll = view.findViewById(R.id.chip_all)
+        chipJimo = view.findViewById(R.id.chip_jimo)
+        chipBingzhu = view.findViewById(R.id.chip_bingzhu)
+        chipSuihan = view.findViewById(R.id.chip_suihan)
+        chipXunfang = view.findViewById(R.id.chip_xunfang)
+        chipHidden = view.findViewById(R.id.chip_hidden)
+        
+        chipList.addAll(listOf(chipAll, chipJimo, chipBingzhu, chipSuihan, chipXunfang, chipHidden))
 
         adapter = PlantCardAdapter { plant ->
             if (plant.isUnlocked) {
@@ -53,7 +72,7 @@ class CatalogFragment : Fragment() {
         recyclerView.adapter = adapter
         recyclerView.itemAnimator = null
 
-        setupChips(view)
+        setupChips()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -73,24 +92,33 @@ class CatalogFragment : Fragment() {
         }
     }
 
-    private fun setupChips(view: View) {
-        val chipIds = listOf(
-            R.id.chip_all,
-            R.id.chip_jimo,
-            R.id.chip_bingzhu,
-            R.id.chip_suihan,
-            R.id.chip_xunfang,
-            R.id.chip_hidden
-        )
-
-        chipIds.forEachIndexed { index, id ->
-            view.findViewById<Chip>(id)?.setOnClickListener {
+    private fun setupChips() {
+        chipList.forEachIndexed { index, chip ->
+            chip.setOnClickListener {
+                selectChip(index)
                 viewModel.setPathFilter(index)
             }
         }
-
+        
         // 默认选中第一个
-        view.findViewById<Chip>(R.id.chip_all)?.isChecked = true
+        selectChip(0)
+    }
+    
+    private fun selectChip(index: Int) {
+        currentSelectedIndex = index
+        
+        // 更新 Chip 样式
+        chipList.forEachIndexed { i, chip ->
+            if (i == index) {
+                // 选中态：深色背景、白色文字
+                chip.setChipBackgroundColorResource(R.color.ink_dark)
+                chip.setTextColor(resources.getColor(R.color.white, null))
+            } else {
+                // 未选中态：浅色背景、深色文字
+                chip.setChipBackgroundColorResource(R.color.surface)
+                chip.setTextColor(resources.getColor(R.color.text_primary, null))
+            }
+        }
     }
 
     private fun navigateToPlantDetail(plantId: Long) {

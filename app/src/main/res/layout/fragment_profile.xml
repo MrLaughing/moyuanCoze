@@ -29,9 +29,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_warm"
             android:padding="16dp"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -39,8 +39,8 @@
                 android:text="@string/label_garden_overview"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:fontFamily="@font/lxgw_wenkai"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/lxgw_wenkai" />
 
             <TextView
                 android:id="@+id/text_plant_count"
@@ -68,9 +68,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_warm"
             android:padding="16dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true">
 
@@ -80,8 +80,8 @@
                 android:text="@string/label_weread_auth"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:fontFamily="@font/lxgw_wenkai"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/lxgw_wenkai" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -115,9 +115,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_warm"
             android:padding="16dp"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -125,8 +125,8 @@
                 android:text="@string/label_sync_settings"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:fontFamily="@font/lxgw_wenkai"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/lxgw_wenkai" />
 
             <!-- 同步时间 -->
             <LinearLayout
@@ -157,6 +157,13 @@
                     android:fontFamily="@font/lxgw_wenkai" />
 
             </LinearLayout>
+
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/border" />
 
             <!-- 立即同步按钮 -->
             <LinearLayout
@@ -197,9 +204,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_warm"
             android:padding="16dp"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -207,8 +214,8 @@
                 android:text="@string/label_refresh_mode"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:fontFamily="@font/lxgw_wenkai"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/lxgw_wenkai" />
 
             <LinearLayout
                 android:id="@+id/layout_refresh_mode"
@@ -247,7 +254,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_warm"
             android:padding="16dp"
             android:clickable="true"
             android:focusable="true">
@@ -258,8 +265,8 @@
                 android:text="@string/label_about_moyuan"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
-                android:fontFamily="@font/lxgw_wenkai"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/lxgw_wenkai" />
 
             <TextView
                 android:id="@+id/text_about_version"

@@ -34,6 +34,10 @@ class ProfileFragment : Fragment() {
     private lateinit var refreshModeText: TextView
     private lateinit var aboutVersionText: TextView
 
+    // 暖色调颜色定义
+    private val inkDark = 0xFF2C2416.toInt()      // 已授权状态
+    private val inkLight = 0xFFA89F91.toInt()      // 未授权状态
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -98,7 +102,8 @@ class ProfileFragment : Fragment() {
         unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
 
         val statusText = if (state.wereadAuthorized) getString(R.string.label_authorized) else getString(R.string.label_unauthorized)
-        val statusColor = if (state.wereadAuthorized) Color.parseColor("#333333") else Color.parseColor("#999999")
+        // 使用暖色调颜色
+        val statusColor = if (state.wereadAuthorized) inkDark else inkLight
         wereadStatusText.text = statusText
         wereadStatusText.setTextColor(statusColor)
 
