@@ -30,6 +30,7 @@
     <string name="label_books_read">已读书目</string>
     <string name="label_weekly_overview">本周阅读</string>
     <string name="label_recent_books">最近阅读</string>
+    <string name="label_monthly_heatmap">月历热力图</string>
 
     <!-- 个人中心 -->
     <string name="label_garden_overview">花园概况</string>
@@ -55,7 +56,7 @@
     <string name="label_cat_reading">阅读</string>
     <string name="label_cat_growth">养成</string>
     <string name="label_cat_milestone">里程碑</string>
-    <string name="label_plants_progress">%d / %d 植物</string>
+    <string name="label_plants_progress" formatted="false">%d / %d 植物</string>
     <string name="label_withered_hint">枯萎 %d</string>
 
     <!-- 植物详情 -->
