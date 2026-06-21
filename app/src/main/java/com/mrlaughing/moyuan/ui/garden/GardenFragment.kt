@@ -114,7 +114,7 @@ class GardenFragment : Fragment() {
         // 三列数据
         textTodayRead.text = state.todayReadMinutes.toString()
         textStreak.text = state.streakDays.toString()
-        textBonus.text = "×${state.bonusMultiplier}"
+        textBonus.text = "×${String.format("%.1f", state.bonusMultiplier)}"
         textBonusDetail.text = "${state.season.label}${state.weather.label}"
 
         // 植物状态汇总

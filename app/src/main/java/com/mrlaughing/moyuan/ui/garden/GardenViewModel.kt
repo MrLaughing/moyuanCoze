@@ -67,7 +67,7 @@ class GardenViewModel @Inject constructor(
                     .mapIndexed { index, entity ->
                         val pathType = pathToConstant(entity.path)
                         PlantUiItem(
-                            plantId = entity.id.toLong(),
+                            plantId = (PlantDefinitions.all.indexOfFirst { it.id == entity.plantId } + 1L).coerceAtLeast(1L),
                             name = getPlantName(entity.plantId),
                             level = entity.level,
                             witherStage = entity.witherStage,
