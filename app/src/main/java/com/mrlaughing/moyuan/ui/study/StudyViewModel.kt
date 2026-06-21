@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 
 /**
@@ -18,7 +19,7 @@ import javax.inject.Inject
  *
  * 数据来源：
  * - totalReadMinutes / booksRead：从 GardenMeta 读取（由同步直接填充微信读书历史数据）
- * - todayReadMinutes / weeklyRecords：从 daily_record 读取
+ * - todayReadMinutes / weeklyRecords / monthlyRecords：从 daily_record 读取
  * - streakDays：从 GardenMeta 读取
  */
 @HiltViewModel
@@ -30,8 +31,12 @@ class StudyViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StudyUiState())
     val uiState: StateFlow<StudyUiState> = _uiState.asStateFlow()
 
+    private val _currentMonth = MutableStateFlow(YearMonth.now())
+    val currentMonth: StateFlow<YearMonth> = _currentMonth.asStateFlow()
+
     init {
         loadStats()
+        observeMonthlyRecords()
     }
 
     private fun loadStats() {
@@ -85,8 +90,32 @@ class StudyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 观察当月记录，用于月历热力图
+     */
+    private fun observeMonthlyRecords() {
+        viewModelScope.launch {
+            _currentMonth.collect { yearMonth ->
+                readStatsRepository.observeMonthlyRecords(yearMonth).collect { records ->
+                    val monthlyMap = records.associate { entity ->
+                        entity.date to entity.readMinutes
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        monthlyRecords = monthlyMap,
+                        currentMonth = yearMonth
+                    )
+                }
+            }
+        }
+    }
+
+    fun setCurrentMonth(yearMonth: YearMonth) {
+        _currentMonth.value = yearMonth
+    }
+
     fun refresh() {
         loadStats()
+        observeMonthlyRecords()
     }
 }
 
@@ -96,7 +125,9 @@ data class StudyUiState(
     val totalReadMinutes: Int = 0,
     val booksRead: Int = 0,
     val weeklyRecords: List<DailyRecord> = emptyList(),
-    val recentBooks: List<BookItem> = emptyList()
+    val recentBooks: List<BookItem> = emptyList(),
+    val monthlyRecords: Map<String, Int> = emptyMap(), // date -> minutes
+    val currentMonth: YearMonth = YearMonth.now()
 )
 
 data class DailyRecord(

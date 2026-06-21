@@ -2,15 +2,14 @@ package com.mrlaughing.moyuan.ui.study
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
-import java.time.LocalDate
 
 /**
- * 周概览方格图：7个方格，每格代表一天，有阅读则填满
+ * 本周阅读柱状图：7根柱子代表周一到周日
+ * 柱子高度按当日阅读分钟数等比缩放
  */
 class WeekOverviewView @JvmOverloads constructor(
     context: Context,
@@ -18,26 +17,38 @@ class WeekOverviewView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private val filledPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A1A1A")
+    // 墨色配色
+    private val inkDark = 0xFF2C2416.toInt()      // 有阅读的柱子
+    private val inkLight = 0xFFD4C9B8.toInt()      // 无阅读的柱子
+    private val textPrimary = 0xFF2C2416.toInt()   // 文字颜色
+    private val textSecondary = 0xFF78716C.toInt() // 次要文字
+
+    private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
 
-    private val emptyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E0E0E0")
-        style = Paint.Style.FILL
-    }
-
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#666666")
-        textSize = 24f
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = textSecondary
+        textSize = 11f * resources.displayMetrics.density
         textAlign = Paint.Align.CENTER
     }
 
+    private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = textPrimary
+        textSize = 10f * resources.displayMetrics.density
+        textAlign = Paint.Align.CENTER
+    }
+
+    // 星期标签
+    private val dayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
+    
     private var records: List<DailyRecord> = emptyList()
+    private var maxMinutes: Int = 60 // 默认最大值，避免除零
 
     fun setRecords(records: List<DailyRecord>) {
         this.records = records
+        // 计算最大阅读分钟数作为基准
+        maxMinutes = records.maxOfOrNull { it.readMinutes }?.coerceAtLeast(30) ?: 60
         invalidate()
     }
 
@@ -46,39 +57,60 @@ class WeekOverviewView @JvmOverloads constructor(
 
         val w = width.toFloat()
         val h = height.toFloat()
-        if (w <= 0 || h <= 0 || records.isEmpty()) return
+        if (w <= 0 || h <= 0) return
 
-        val padding = 4f * resources.displayMetrics.density
-        val cellWidth = (w - padding * 8) / 7  // 7格 + 间距
-        val cellHeight = h - 40f * resources.displayMetrics.density  // 留出底部文字空间
+        val density = resources.displayMetrics.density
+        val paddingH = 16f * density  // 水平内边距
+        val paddingTop = 8f * density   // 顶部间距（给数值留空间）
+        val paddingBottom = 20f * density // 底部间距（给标签留空间）
+        
+        val chartHeight = h - paddingTop - paddingBottom
+        val chartWidth = w - paddingH * 2
+        
+        // 计算柱宽和间距
+        val barCount = 7
+        val spacing = 8f * density  // 柱子间距
+        val totalSpacing = spacing * (barCount - 1)
+        val barWidth = (chartWidth - totalSpacing) / barCount
 
-        for (i in records.indices) {
-            val record = records[i]
-            val left = padding + i * (cellWidth + padding)
-            val top = padding
-            val right = left + cellWidth
-            val bottom = top + cellHeight
+        // 绘制柱子
+        for (i in 0 until barCount) {
+            val record = records.getOrNull(i)
+            val readMinutes = record?.readMinutes ?: 0
+            val hasRead = readMinutes > 0
 
-            val rect = RectF(left, top, right, bottom)
-            val paint = if (record.hasRead && record.readMinutes > 0) filledPaint else emptyPaint
-            val cornerRadius = 4f * resources.displayMetrics.density
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
+            // 计算柱子位置
+            val left = paddingH + i * (barWidth + spacing)
+            val right = left + barWidth
 
-            // 底部显示星期几
-            val dayOfWeek = record.date.dayOfWeek.value  // 1=Mon ... 7=Sun
-            val dayLabel = when (dayOfWeek) {
-                1 -> "一"
-                2 -> "二"
-                3 -> "三"
-                4 -> "四"
-                5 -> "五"
-                6 -> "六"
-                7 -> "日"
-                else -> ""
+            // 计算柱子高度（按比例）
+            val barHeightRatio = if (maxMinutes > 0) {
+                readMinutes.toFloat() / maxMinutes
+            } else {
+                0f
             }
-            val textX = left + cellWidth / 2
-            val textY = bottom + 24f * resources.displayMetrics.density
-            canvas.drawText(dayLabel, textX, textY, textPaint)
+            val actualBarHeight = (chartHeight * barHeightRatio).coerceIn(4f * density, chartHeight)
+            
+            // 底部对齐
+            val top = h - paddingBottom - actualBarHeight
+            val bottom = h - paddingBottom
+
+            // 柱子圆角矩形
+            barPaint.color = if (hasRead) inkDark else inkLight
+            val cornerRadius = 3f * density
+            val rect = RectF(left, top, right, bottom)
+            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, barPaint)
+
+            // 柱子顶部显示阅读分钟数（>0时）
+            if (hasRead && readMinutes > 0) {
+                val valueText = "${readMinutes}m"
+                val valueY = top - 4f * density
+                canvas.drawText(valueText, left + barWidth / 2, valueY, valuePaint)
+            }
+
+            // 底部显示星期标签
+            val labelY = h - 4f * density
+            canvas.drawText(dayLabels[i], left + barWidth / 2, labelY, labelPaint)
         }
     }
 }

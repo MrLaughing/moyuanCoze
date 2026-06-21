@@ -6,6 +6,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.BookTrackingEntity
 import com.mrlaughing.moyuan.data.local.db.entity.DailyRecordEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import java.time.YearMonth
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -62,6 +63,15 @@ class ReadStatsRepository @Inject constructor(
             start = weekAgo.toString(),
             end = today.toString()
         )
+    }
+
+    /**
+     * 观察指定月份的阅读记录
+     */
+    fun observeMonthlyRecords(yearMonth: YearMonth): Flow<List<DailyRecordEntity>> {
+        val startDate = yearMonth.atDay(1).toString()
+        val endDate = yearMonth.atEndOfMonth().toString()
+        return dailyRecordDao.getRecordsBetween(start = startDate, end = endDate)
     }
 
     /**

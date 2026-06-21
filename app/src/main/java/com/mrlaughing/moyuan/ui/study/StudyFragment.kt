@@ -17,6 +17,8 @@ import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.util.formatMinutes
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -34,6 +36,7 @@ class StudyFragment : Fragment() {
     private lateinit var totalReadText: TextView
     private lateinit var booksReadText: TextView
     private lateinit var weekOverview: WeekOverviewView
+    private lateinit var monthHeatmap: MonthHeatmapView
     private lateinit var bookRecyclerView: RecyclerView
     private lateinit var bookAdapter: BookListAdapter
 
@@ -55,8 +58,12 @@ class StudyFragment : Fragment() {
         totalReadText = view.findViewById(R.id.text_total_read)
         booksReadText = view.findViewById(R.id.text_books_read)
 
-        // 周概览
+        // 周柱状图
         weekOverview = view.findViewById(R.id.week_overview)
+
+        // 月历热力图
+        monthHeatmap = view.findViewById(R.id.month_heatmap)
+        monthHeatmap.refresh()
 
         // 最近阅读书目列表
         bookRecyclerView = view.findViewById(R.id.recycler_books)
@@ -79,6 +86,12 @@ class StudyFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 刷新月历热力图的"今天"标记
+        monthHeatmap.refresh()
+    }
+
     private fun renderState(state: StudyUiState) {
         todayReadText.text = state.todayReadMinutes.formatMinutes()
         streakText.text = "${state.streakDays}天"
@@ -87,5 +100,9 @@ class StudyFragment : Fragment() {
 
         weekOverview.setRecords(state.weeklyRecords)
         bookAdapter.submitList(state.recentBooks)
+
+        // 更新月历热力图
+        monthHeatmap.setYearMonth(state.currentMonth)
+        monthHeatmap.setRecords(state.monthlyRecords)
     }
 }

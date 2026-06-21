@@ -29,6 +29,7 @@
     <string name="label_total_read">累计阅读</string>
     <string name="label_books_read">已读书目</string>
     <string name="label_weekly_overview">本周阅读</string>
+    <string name="label_monthly_heatmap">月度热力</string>
     <string name="label_recent_books">最近阅读</string>
 
     <!-- 个人中心 -->
