@@ -77,4 +77,6 @@
     <!-- 底部导航 -->
     <dimen name="nav_icon_size">28dp</dimen>
     <dimen name="nav_text_size">12sp</dimen>
+    <!-- 统计卡片最小高度 -->
+    <dimen name="stat_card_min_height">72dp</dimen>
 </resources>

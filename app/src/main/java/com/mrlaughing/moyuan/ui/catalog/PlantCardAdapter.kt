@@ -5,9 +5,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.render.PlantImageLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 图鉴植物卡片 Adapter
@@ -117,28 +122,40 @@ class PlantCardAdapter(
         }
 
         private fun loadPlantImage(item: CatalogPlantItem) {
-            // 使用 Glide 从 assets 加载
             val context = itemView.context
-            Thread {
-                val bitmap = PlantImageLoader.load(context, item.plantId, item.level, 0)
-                bitmap?.let {
-                    (itemView.rootView?.context as? android.app.Activity)?.runOnUiThread {
+            // 使用Activity的lifecycleScope代替裸Thread，避免Fragment销毁后崩溃
+            (context as? LifecycleOwner)?.lifecycleScope?.launch {
+                val bitmap = withContext(Dispatchers.IO) {
+                    try {
+                        PlantImageLoader.load(context, item.plantId, item.level, 0)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    bitmap?.let {
                         plantImage.setImageBitmap(it)
                     }
                 }
-            }.start()
+            }
         }
 
         private fun loadSilhouette(item: CatalogPlantItem) {
             val context = itemView.context
-            Thread {
-                val bitmap = PlantImageLoader.loadSilhouette(context, item.plantId)
-                bitmap?.let {
-                    (itemView.rootView?.context as? android.app.Activity)?.runOnUiThread {
+            (context as? LifecycleOwner)?.lifecycleScope?.launch {
+                val bitmap = withContext(Dispatchers.IO) {
+                    try {
+                        PlantImageLoader.loadSilhouette(context, item.plantId)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    bitmap?.let {
                         plantImage.setImageBitmap(it)
                     }
                 }
-            }.start()
+            }
         }
     }
 }

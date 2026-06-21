@@ -18,7 +18,9 @@ import androidx.navigation.fragment.navArgs
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 植物详情 Fragment
@@ -145,7 +147,7 @@ class PlantDetailFragment : Fragment() {
             layoutWitherWarning.visibility = View.GONE
         }
 
-        // 加载植物大图
+        // 加载植物大图 - 使用协程代替Thread，生命周期安全
         loadPlantImage(state)
     }
 
@@ -164,19 +166,21 @@ class PlantDetailFragment : Fragment() {
     }
 
     private fun loadPlantImage(state: PlantDetailUiState) {
-        val context = context ?: return
-        Thread {
-            val bitmap = PlantImageLoader.load(
-                context,
-                state.plantId,
-                state.level,
-                state.witherStage
-            )
-            bitmap?.let {
-                activity?.runOnUiThread {
+        val ctx = context ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val bitmap = withContext(Dispatchers.IO) {
+                try {
+                    PlantImageLoader.load(ctx, state.plantId, state.level, state.witherStage)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            // 确保Fragment仍然存活
+            if (view != null && isAdded) {
+                bitmap?.let {
                     plantImage.setImageBitmap(it)
                 }
             }
-        }.start()
+        }
     }
 }

@@ -59,6 +59,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
                 android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
@@ -78,7 +79,9 @@
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="sans-serif"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
             </LinearLayout>
 
@@ -89,6 +92,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
                 android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
@@ -108,7 +112,9 @@
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="sans-serif"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
             </LinearLayout>
 
@@ -130,6 +136,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
                 android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
@@ -149,7 +156,9 @@
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="sans-serif"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
             </LinearLayout>
 
@@ -160,6 +169,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
                 android:background="@drawable/bg_card"
                 android:padding="12dp"
                 android:layout_margin="4dp">
@@ -179,7 +189,9 @@
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="sans-serif"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
             </LinearLayout>
 
