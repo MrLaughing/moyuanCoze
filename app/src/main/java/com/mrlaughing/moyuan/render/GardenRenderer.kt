@@ -579,7 +579,7 @@ object GardenRenderer {
      */
     private fun drawBamboo(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -630,7 +630,7 @@ object GardenRenderer {
      */
     private fun drawPine(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -670,7 +670,7 @@ object GardenRenderer {
      */
     private fun drawGrass(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -698,7 +698,7 @@ object GardenRenderer {
      */
     private fun drawFlower(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -728,7 +728,7 @@ object GardenRenderer {
                 val py = cy + sin(angle).toFloat() * r * 0.5f
 
                 canvas.save()
-                canvas.rotate(angle * 180 / Math.PI.toFloat(), px, py)
+                canvas.rotate((angle * 180 / Math.PI).toFloat(), px, py)
                 val oval = RectF(
                     px - r * 0.45f, py - r * 0.55f,
                     px + r * 0.45f, py + r * 0.55f
@@ -747,7 +747,7 @@ object GardenRenderer {
                 val py = cy + sin(angle).toFloat() * r * 0.5f
 
                 canvas.save()
-                canvas.rotate(angle * 180 / Math.PI.toFloat(), px, py)
+                canvas.rotate((angle * 180 / Math.PI).toFloat(), px, py)
                 val oval = RectF(
                     px - r * 0.45f, py - r * 0.55f,
                     px + r * 0.45f, py + r * 0.55f
@@ -770,7 +770,7 @@ object GardenRenderer {
      */
     private fun drawVine(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -819,7 +819,7 @@ object GardenRenderer {
      */
     private fun drawBroadleaf(canvas: Canvas, x: Float, y: Float, scale: Float, level: Int, opacity: Int, density: Int) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.opacity = opacity
+            this.alpha = opacity
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
         }
@@ -847,7 +847,7 @@ object GardenRenderer {
             paint.style = Paint.Style.FILL
             paint.color = INK_WASH
             canvas.save()
-            canvas.rotate(angle * 180 / Math.PI - 20, ex, ey - leafH * 0.35f)
+            canvas.rotate((angle * 180 / Math.PI).toFloat() - 20f, ex, ey - leafH * 0.35f)
             val leafOval = RectF(
                 ex - leafW * 0.5f, ey - leafH * 0.35f - leafH * 0.4f,
                 ex + leafW * 0.5f, ey - leafH * 0.35f + leafH * 0.4f

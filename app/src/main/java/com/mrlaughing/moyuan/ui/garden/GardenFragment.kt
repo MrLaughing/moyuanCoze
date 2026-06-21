@@ -195,7 +195,7 @@ class GardenFragment : Fragment() {
                 Triple(
                     plant.plantId,
                     bitmap,
-                    Triple(plant.level, Pair(plant.pathType, plant.witherStage))
+                    Pair(plant.level, Pair(plant.pathType, plant.witherStage))
                 )
             }
 
