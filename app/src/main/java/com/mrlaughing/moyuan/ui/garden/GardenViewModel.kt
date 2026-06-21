@@ -49,22 +49,21 @@ class GardenViewModel @Inject constructor(
     private fun loadGardenData() {
         viewModelScope.launch {
             gardenRepository.observeGardenState().collect { gardenState ->
-                val season = determineSeason()
+                val season = _uiState.value.season  // 保持用户选择的季节
                 val meta = gardenState.meta
-                val weather = determineWeather(meta)
-                
+                val weather = _uiState.value.weather  // 保持用户选择的天气
+
                 // 从 GardenState 获取 meta 信息
                 val todayReadMinutes = meta?.todayReadMinutes ?: 0
                 val streakDays = meta?.streakDays ?: 0
-                
+
                 // 计算灌溉进度（分钟转换为小时）
                 val irrigationMinutes = meta?.accumulatedMinutes ?: 0
                 val irrigationHours = irrigationMinutes / 60
-                
+
                 // 从 PlantState 映射到 PlantUiItem
-                // 只显示已解锁的植物（unlockDate != null）
                 val plants = gardenState.plants
-                    .filter { !it.unlockDate.isNullOrEmpty() } // 只显示已解锁的
+                    .filter { !it.unlockDate.isNullOrEmpty() }
                     .mapIndexed { index, entity ->
                         val pathType = pathToConstant(entity.path)
                         PlantUiItem(
@@ -82,7 +81,7 @@ class GardenViewModel @Inject constructor(
                     weather = weather,
                     todayReadMinutes = todayReadMinutes,
                     streakDays = streakDays,
-                    bonusMultiplier = calculateBonus(streakDays, weather),
+                    bonusMultiplier = calculateBonus(streakDays, weather, season),
                     dateText = LocalDate.now().formatCN(),
                     irrigationHours = irrigationHours,
                     irrigationGoal = IRRIGATION_GOAL_HOURS
@@ -92,39 +91,70 @@ class GardenViewModel @Inject constructor(
     }
 
     /**
-     * 根据月份判断季节
+     * 切换季节
      */
-    private fun determineSeason(): Season {
-        return SeasonEngine.getSeason(LocalDate.now())
+    fun cycleSeason() {
+        val currentSeason = _uiState.value.season
+        val seasons = Season.entries.toTypedArray()
+        val currentIndex = seasons.indexOf(currentSeason)
+        val nextIndex = (currentIndex + 1) % seasons.size
+        val newSeason = seasons[nextIndex]
+
+        _uiState.value = _uiState.value.copy(
+            season = newSeason,
+            bonusMultiplier = calculateBonus(_uiState.value.streakDays, _uiState.value.weather, newSeason)
+        )
     }
 
     /**
-     * 从数据库读取天气（同步时已存入），若无则概率抽取
+     * 切换天气
      */
-    private fun determineWeather(meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?): Weather {
-        // 优先从DB读取同步时存入的天气
-        val dbWeather = meta?.currentWeather
-        if (!dbWeather.isNullOrBlank()) {
-            try { return Weather.valueOf(dbWeather) } catch (_: IllegalArgumentException) {}
-        }
-        // DB无天气数据时，回退到概率抽取
-        val today = LocalDate.now()
-        val season = SeasonEngine.getSeason(today)
+    fun cycleWeather() {
+        val currentWeather = _uiState.value.weather
+        val currentSeason = _uiState.value.season
         val isNight = SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
-        return SeasonEngine.rollWeather(season, isNight)
+
+        // 获取当前季节可用的天气
+        val availableWeathers = Weather.entries.filter { it.isAvailableIn(currentSeason, isNight) }
+        if (availableWeathers.isEmpty()) return
+
+        val currentIndex = availableWeathers.indexOf(currentWeather)
+        val nextIndex = if (currentIndex < 0) 0 else (currentIndex + 1) % availableWeathers.size
+        val newWeather = availableWeathers[nextIndex]
+
+        _uiState.value = _uiState.value.copy(
+            weather = newWeather,
+            bonusMultiplier = calculateBonus(_uiState.value.streakDays, newWeather, currentSeason)
+        )
+    }
+
+    /**
+     * 浇灌植物
+     */
+    fun waterPlants() {
+        // 触发灌溉逻辑（通过刷新数据实现）
+        refresh()
     }
 
     /**
      * 计算加成倍率
      */
-    private fun calculateBonus(streakDays: Int, weather: Weather): Float {
+    private fun calculateBonus(streakDays: Int, weather: Weather, season: Season): Float {
         var bonus = 1.0f
+
+        // 连续天数加成
         if (streakDays >= 30) {
             bonus *= 1.2f
         } else if (streakDays >= 7) {
             bonus *= 1.1f
         }
+
+        // 天气加成
         bonus *= weather.multiplier
+
+        // 季节加成
+        bonus *= season.multiplier
+
         return bonus
     }
 

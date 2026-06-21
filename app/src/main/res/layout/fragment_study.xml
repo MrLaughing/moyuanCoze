@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/xuan_paper"
+    android:background="@color/paper_bg"
     android:fillViewport="true">
 
     <LinearLayout
@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/nav_study"
-                android:textColor="@color/pure_black"
+                android:textColor="@color/text_primary"
                 android:textSize="24sp"
                 android:fontFamily="@font/lxgw_wenkai"
                 android:textStyle="bold" />
@@ -38,7 +38,7 @@
                 android:id="@+id/text_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/medium_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:fontFamily="@font/lxgw_wenkai" />
 
@@ -67,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_today_read"
-                    android:textColor="@color/medium_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
@@ -75,7 +75,7 @@
                     android:id="@+id/text_today_read"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/pure_black"
+                    android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="@font/lxgw_wenkai"
                     android:textStyle="bold" />
@@ -97,7 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_streak_days"
-                    android:textColor="@color/medium_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
@@ -105,7 +105,7 @@
                     android:id="@+id/text_streak"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/pure_black"
+                    android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="@font/lxgw_wenkai"
                     android:textStyle="bold" />
@@ -138,7 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_total_read"
-                    android:textColor="@color/medium_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
@@ -146,7 +146,7 @@
                     android:id="@+id/text_total_read"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/pure_black"
+                    android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="@font/lxgw_wenkai"
                     android:textStyle="bold" />
@@ -168,7 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_books_read"
-                    android:textColor="@color/medium_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
@@ -176,7 +176,7 @@
                     android:id="@+id/text_books_read"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/pure_black"
+                    android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:fontFamily="@font/lxgw_wenkai"
                     android:textStyle="bold" />
@@ -193,7 +193,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="@string/label_weekly_overview"
-            android:textColor="@color/pure_black"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:fontFamily="@font/lxgw_wenkai"
             android:textStyle="bold" />
@@ -216,7 +216,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             android:text="@string/label_recent_books"
-            android:textColor="@color/pure_black"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:fontFamily="@font/lxgw_wenkai"
             android:textStyle="bold" />

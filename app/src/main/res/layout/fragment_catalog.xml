@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/xuan_paper">
+    android:background="@color/paper_bg">
 
     <!-- 标题行：图鉴 + 已解锁数量 -->
     <LinearLayout
@@ -13,10 +13,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="12dp"
+        android:paddingStart="@dimen/spacing_lg"
+        android:paddingEnd="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_md"
+        android:paddingBottom="@dimen/spacing_md"
         android:background="@color/white">
 
         <TextView
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/nav_catalog"
-            android:textColor="@color/pure_black"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:fontFamily="@font/lxgw_wenkai"
             android:textStyle="bold" />
@@ -33,7 +33,7 @@
             android:id="@+id/text_unlocked_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/medium_gray"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:fontFamily="@font/lxgw_wenkai" />
 
@@ -45,15 +45,15 @@
         android:layout_height="wrap_content"
         android:scrollbars="none"
         android:background="@color/white"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingTop="@dimen/spacing_sm"
+        android:paddingBottom="@dimen/spacing_sm">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group_path"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="@dimen/spacing_md"
+            android:paddingEnd="@dimen/spacing_md"
             app:singleSelection="true"
             app:chipSpacingHorizontal="8dp">
 
@@ -62,75 +62,81 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_all"
-                android:textColor="@color/pure_black"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_herb"
+                android:id="@+id/chip_jimo"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_jimo"
-                android:textColor="@color/deep_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_woody"
+                android:id="@+id/chip_bingzhu"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_bingzhu"
-                android:textColor="@color/deep_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_vine"
+                android:id="@+id/chip_suihan"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_suihan"
-                android:textColor="@color/deep_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_aquatic"
+                android:id="@+id/chip_xunfang"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_xunfang"
-                android:textColor="@color/deep_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chip_accumulate"
+                android:id="@+id/chip_hidden"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/label_path_hidden"
-                android:textColor="@color/deep_gray"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"
+                android:fontFamily="@font/lxgw_wenkai"
                 app:chipBackgroundColor="@color/white"
-                app:chipStrokeColor="@color/silver_gray"
+                app:chipStrokeColor="@color/border"
                 app:chipStrokeWidth="1dp"
                 app:chipCornerRadius="18dp"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
@@ -145,7 +151,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
+        android:padding="@dimen/spacing_sm"
         android:clipToPadding="false" />
 
 </LinearLayout>

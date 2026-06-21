@@ -2,22 +2,25 @@ package com.mrlaughing.moyuan.ui.garden
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.mrlaughing.moyuan.data.model.Season
+import com.mrlaughing.moyuan.data.model.Weather
+import com.mrlaughing.moyuan.render.GardenRenderer
 import com.mrlaughing.moyuan.render.PlantRenderInfo
 import com.mrlaughing.moyuan.util.einkInvalidate
 
 /**
- * 花园渲染自定义 View：Canvas 绘制植物
- * - 宣纸纹理背景 (#FFFFF5)
- * - 按 Y 坐标排序绘制植物 PNG
+ * 花园渲染自定义 View：水墨风格 Canvas 绘制
+ * - 宣纸暖色背景
+ * - 山水背景层 + 四季变化
+ * - 天气特效
+ * - Canvas 绘制水墨风植物
  * - 点击检测
  */
 class GardenRendererView @JvmOverloads constructor(
@@ -26,21 +29,11 @@ class GardenRendererView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    /** 宣纸背景色 */
-    private val xuanPaperColor = Color.parseColor("#FFFFF5")
+    /** 当前季节 */
+    private var currentSeason: Season = Season.SPRING
 
-    /** 宣纸纹理画笔 */
-    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = xuanPaperColor
-        style = Paint.Style.FILL
-    }
-
-    /** 纹理噪点画笔 */
-    private val texturePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#F5F0E0")
-        style = Paint.Style.FILL
-        alpha = 30
-    }
+    /** 当前天气 */
+    private var currentWeather: Weather = Weather.CLEAR
 
     /** 当前渲染的植物列表 */
     private var renderPlants: List<PlantRenderInfo> = emptyList()
@@ -54,13 +47,12 @@ class GardenRendererView @JvmOverloads constructor(
     /** 纹理点位置缓存 */
     private val texturePoints = mutableListOf<Float>()
 
-    private val plantPaint = Paint(Paint.FILTER_BITMAP_FLAG).apply {
-        isAntiAlias = false  // 墨水屏不需要抗锯齿
-        isDither = false
+    /** 宣纸纹理画笔 */
+    private val texturePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#F5F0E0")
+        style = Paint.Style.FILL
+        alpha = 20
     }
-
-    /** 临时 Matrix 用于缩放和定位 */
-    private val drawMatrix = Matrix()
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -74,8 +66,8 @@ class GardenRendererView @JvmOverloads constructor(
     private fun generateTexture(width: Int, height: Int) {
         if (textureGenerated || width <= 0 || height <= 0) return
         texturePoints.clear()
-        val rng = java.util.Random(42)  // 固定种子保证一致性
-        val density = 0.002f  // 每1000像素2个点
+        val rng = java.util.Random(42)
+        val density = 0.001f
         val count = (width * height * density).toInt()
         for (i in 0 until count) {
             val x = rng.nextFloat() * width
@@ -90,7 +82,16 @@ class GardenRendererView @JvmOverloads constructor(
      * 更新植物数据并重绘
      */
     fun updatePlants(plants: List<PlantRenderInfo>) {
-        renderPlants = plants.sortedBy { it.y }  // 按 Y 坐标排序（远的先画）
+        renderPlants = plants.sortedBy { it.y }
+        einkInvalidate()
+    }
+
+    /**
+     * 设置季节和天气
+     */
+    fun setSeasonAndWeather(season: Season, weather: Weather) {
+        currentSeason = season
+        currentWeather = weather
         einkInvalidate()
     }
 
@@ -104,13 +105,20 @@ class GardenRendererView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val w = width.toFloat()
-        val h = height.toFloat()
+        val w = width
+        val h = height
+        if (w <= 0 || h <= 0) return
 
-        // 1. 绘制宣纸背景
-        canvas.drawRect(0f, 0f, w, h, bgPaint)
+        // 1. 绘制花园完整画面（背景 + 天气 + 植物）
+        GardenRenderer.drawGarden(
+            canvas,
+            w, h,
+            currentSeason,
+            currentWeather,
+            renderPlants
+        )
 
-        // 2. 绘制纹理噪点
+        // 2. 绘制宣纸纹理（叠加在植物上方）
         if (textureGenerated) {
             var i = 0
             while (i + 1 < texturePoints.size) {
@@ -118,35 +126,10 @@ class GardenRendererView @JvmOverloads constructor(
                 i += 2
             }
         }
-
-        // 3. 按 Y 坐标顺序绘制植物
-        for (plant in renderPlants) {
-            drawPlant(canvas, plant)
-        }
     }
 
     /**
-     * 绘制单株植物
-     */
-    private fun drawPlant(canvas: Canvas, plant: PlantRenderInfo) {
-        val bitmap = plant.bitmap ?: return
-
-        drawMatrix.reset()
-        // 缩放
-        drawMatrix.postScale(plant.scale, plant.scale)
-        // 平移到指定位置（以植物底部中心为锚点）
-        val scaledWidth = bitmap.width * plant.scale
-        val scaledHeight = bitmap.height * plant.scale
-        drawMatrix.postTranslate(
-            plant.x - scaledWidth / 2f,
-            plant.y - scaledHeight  // Y坐标是底部
-        )
-
-        canvas.drawBitmap(bitmap, drawMatrix, plantPaint)
-    }
-
-    /**
-     * 点击检测：判断点击位置是否在某个植物的 bitmap 范围内
+     * 点击检测：判断点击位置是否在某个植物的范围内
      */
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -157,15 +140,14 @@ class GardenRendererView @JvmOverloads constructor(
 
         // 从上层（近景）到下层（远景）遍历，优先命中近景
         for (plant in renderPlants.reversed()) {
-            val bitmap = plant.bitmap ?: continue
-            val scaledWidth = bitmap.width * plant.scale
-            val scaledHeight = bitmap.height * plant.scale
-            val left = plant.x - scaledWidth / 2f
-            val top = plant.y - scaledHeight
-            val right = plant.x + scaledWidth / 2f
-            val bottom = plant.y
+            val hitRadius = 20f * plant.scale  // 简化的命中区域
 
-            if (touchX in left..right && touchY in top..bottom) {
+            // 植物位置是 y 坐标，在其上方一定范围内
+            val topY = plant.y - 40f * plant.scale
+            val bottomY = plant.y
+
+            if (touchX >= plant.x - hitRadius && touchX <= plant.x + hitRadius &&
+                touchY >= topY && touchY <= bottomY) {
                 onPlantClickListener?.invoke(plant.plantId)
                 return true
             }

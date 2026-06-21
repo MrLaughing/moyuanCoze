@@ -17,7 +17,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="@color/pure_black"
+        android:textColor="@color/text_primary"
         android:textSize="14sp"
         android:fontFamily="@font/lxgw_wenkai"
         android:ellipsize="end"
@@ -28,7 +28,7 @@
         android:id="@+id/text_book_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/medium_gray"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         android:fontFamily="@font/lxgw_wenkai" />
 

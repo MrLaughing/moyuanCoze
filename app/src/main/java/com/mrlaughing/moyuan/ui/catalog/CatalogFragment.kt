@@ -76,11 +76,11 @@ class CatalogFragment : Fragment() {
     private fun setupChips(view: View) {
         val chipIds = listOf(
             R.id.chip_all,
-            R.id.chip_herb,
-            R.id.chip_woody,
-            R.id.chip_vine,
-            R.id.chip_aquatic,
-            R.id.chip_accumulate
+            R.id.chip_jimo,
+            R.id.chip_bingzhu,
+            R.id.chip_suihan,
+            R.id.chip_xunfang,
+            R.id.chip_hidden
         )
 
         chipIds.forEachIndexed { index, id ->

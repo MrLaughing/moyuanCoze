@@ -32,9 +32,14 @@
     <dimen name="text_size_micro">10sp</dimen>
 
     <!-- 卡片 -->
-    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
     <dimen name="card_padding">16dp</dimen>
 
     <!-- 进度条 -->
     <dimen name="progress_bar_height">8dp</dimen>
+
+    <!-- Pill 标签 -->
+    <dimen name="pill_corner_radius">16dp</dimen>
+    <dimen name="pill_padding_horizontal">12dp</dimen>
+    <dimen name="pill_padding_vertical">6dp</dimen>
 </resources>

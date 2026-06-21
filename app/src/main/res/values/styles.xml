@@ -4,12 +4,12 @@
 
     <!-- 基础应用主题 -->
     <style name="Theme.Moyuan" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">@color/pure_black</item>
-        <item name="colorPrimaryDark">@color/pure_black</item>
-        <item name="colorAccent">@color/pure_black</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorOnSurface">@color/pure_black</item>
-        <item name="android:windowBackground">@color/page_background</item>
+        <item name="colorPrimary">@color/ink_dark</item>
+        <item name="colorPrimaryDark">@color/ink_dark</item>
+        <item name="colorAccent">@color/ink_dark</item>
+        <item name="colorOnPrimary">@color/text_on_dark</item>
+        <item name="colorOnSurface">@color/ink_dark</item>
+        <item name="android:windowBackground">@color/paper_bg</item>
         <item name="android:fontFamily">@font/lxgw_wenkai</item>
         <item name="fontFamily">@font/lxgw_wenkai</item>
         <item name="android:windowAnimationStyle">@null</item>
@@ -51,25 +51,89 @@
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">4dp</item>
         <item name="cardBackgroundColor">@color/white</item>
+        <item name="strokeColor">@color/border</item>
+        <item name="strokeWidth">1dp</item>
         <item name="rippleColor">@android:color/transparent</item>
+    </style>
+
+    <!-- 墨园卡片样式（带边框） -->
+    <style name="MoyuanCard">
+        <item name="android:background">@color/white</item>
+        <item name="android:padding">@dimen/spacing_md</item>
+    </style>
+
+    <!-- 圆角Pill标签样式 -->
+    <style name="PillTag">
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+    </style>
+
+    <style name="PillTag.Dark">
+        <item name="android:background">@drawable/bg_pill_dark</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+    </style>
+
+    <style name="PillTag.Light">
+        <item name="android:background">@drawable/bg_pill_light</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
     <!-- 高对比度文字样式 -->
     <style name="EinkTitleText">
         <item name="android:fontFamily">@font/lxgw_wenkai</item>
-        <item name="android:textColor">@color/pure_black</item>
+        <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">20sp</item>
     </style>
 
     <style name="EinkBodyText">
         <item name="android:fontFamily">@font/lxgw_wenkai</item>
-        <item name="android:textColor">@color/deep_gray</item>
+        <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">14sp</item>
     </style>
 
     <style name="EinkCaptionText">
         <item name="android:fontFamily">@font/lxgw_wenkai</item>
-        <item name="android:textColor">@color/medium_gray</item>
+        <item name="android:textColor">@color/text_tertiary</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- 花园页文字样式 -->
+    <style name="GardenTitleText">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+
+    <style name="GardenStatValue">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="GardenStatLabel">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="GardenStatUnit">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">9sp</item>
+    </style>
+
+    <!-- 浇灌按钮样式 -->
+    <style name="WaterButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/ink_dark</item>
+        <item name="cornerRadius">8dp</item>
     </style>
 </resources>
