@@ -178,42 +178,50 @@ class GardenFragment : Fragment() {
 
     /**
      * 将植物列表渲染到 GardenRendererView
+     * 新方案：直接构造 PlantRenderInfo，Canvas绘制水墨风植物，无需加载bitmap
      */
     private fun renderPlants(plants: List<PlantUiItem>) {
-        val context = context ?: return
+        if (plants.isEmpty()) {
+            rendererView.updatePlants(emptyList())
+            return
+        }
 
-        // 异步计算位置并渲染
-        Thread {
-            // 加载 Bitmap（如果有的话）
-            val plantData = plants.map { plant ->
-                val bitmap = com.mrlaughing.moyuan.render.PlantImageLoader.load(
-                    context,
-                    plant.plantId,
-                    plant.level,
-                    plant.witherStage
-                )
-                Triple(
-                    plant.plantId,
-                    bitmap,
-                    Pair(plant.level, Pair(plant.pathType, plant.witherStage))
-                )
-            }
+        // 等待视图布局完成再计算位置
+        rendererView.post {
+            val w = rendererView.width
+            val h = rendererView.height
+            if (w <= 0 || h <= 0) return@post
 
             // 计算渲染位置
-            val positions = GardenRenderer.calculatePositions(
-                plants.size,
-                rendererView.width,
-                rendererView.height
-            )
+            val positions = GardenRenderer.calculatePositions(plants.size, w, h)
 
-            // 绑定植物到位置
-            val renderInfo = GardenRenderer.bindPlantsToPositions(plantData, positions)
-
-            // 切回主线程更新
-            activity?.runOnUiThread {
-                rendererView.updatePlants(renderInfo)
+            // 直接构造 PlantRenderInfo（Canvas水墨风绘制，无需bitmap）
+            val renderInfo = plants.mapIndexed { index, plant ->
+                if (index < positions.size) {
+                    positions[index].copy(
+                        plantId = plant.plantId,
+                        plantName = plant.name,
+                        level = plant.level,
+                        pathType = plant.pathType,
+                        witherStage = plant.witherStage
+                    )
+                } else {
+                    PlantRenderInfo(
+                        bitmap = null,
+                        x = w * 0.5f,
+                        y = h * 0.7f,
+                        scale = 0.8f,
+                        plantId = plant.plantId,
+                        plantName = plant.name,
+                        level = plant.level,
+                        pathType = plant.pathType,
+                        witherStage = plant.witherStage
+                    )
+                }
             }
-        }.start()
+
+            rendererView.updatePlants(renderInfo)
+        }
     }
 
     /**
