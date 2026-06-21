@@ -74,7 +74,7 @@ class PlantDetailViewModel @Inject constructor(
                     _uiState.value = PlantDetailUiState(
                         plantId = plantId,
                         name = plantDef.name,
-                        level = 0,
+                        level = 1,  // 未解锁也显示为Lv.1，避免level=0导致数组越界
                         maxLevel = Constants.MAX_LEVEL,
                         totalReadMinutes = 0,
                         levelProgress = 0f,
@@ -94,8 +94,9 @@ class PlantDetailViewModel @Inject constructor(
      */
     private fun calculateLevelProgress(currentMinutes: Int, currentLevel: Int): Float {
         if (currentLevel >= Constants.MAX_LEVEL) return 1.0f
+        if (currentLevel <= 0) return 0f  // 防御：level=0时返回0进度
         val currentThreshold = Constants.LEVEL_THRESHOLDS[currentLevel - 1]
-        val nextThreshold = Constants.LEVEL_THRESHOLDS[currentLevel]
+        val nextThreshold = Constants.LEVEL_THRESHOLDS.getOrElse(currentLevel) { Constants.LEVEL_THRESHOLDS.last() }
         if (nextThreshold <= currentThreshold) return 1.0f
         return ((currentMinutes - currentThreshold).toFloat() /
                 (nextThreshold - currentThreshold)).coerceIn(0f, 1f)

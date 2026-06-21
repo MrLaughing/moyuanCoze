@@ -30,34 +30,35 @@ object PlantImageLoader {
      * @return Bitmap
      */
     fun load(context: Context, plantId: Long, level: Int, witherStage: Int = 0): Bitmap? {
+        val safeLevel = level.coerceIn(1, 5)  // 防御：level必须1-5
         val stringId = resolveStringId(plantId)
-        val assetPath = buildAssetPath(stringId, level, witherStage)
+        val assetPath = buildAssetPath(stringId, safeLevel, witherStage)
         val bitmap = loadFromAssets(context, assetPath)
         if (bitmap != null) return bitmap
 
         // 降级策略1：尝试低一级的图片
-        if (level > 1) {
-            val fallbackPath = buildAssetPath(stringId, level - 1, witherStage)
+        if (safeLevel > 1) {
+            val fallbackPath = buildAssetPath(stringId, safeLevel - 1, witherStage)
             val fallback = loadFromAssets(context, fallbackPath)
             if (fallback != null) return fallback
         }
 
         // 降级策略2：尝试健康状态的同等级图片
         if (witherStage > 0) {
-            val healthyPath = buildAssetPath(stringId, level, 0)
+            val healthyPath = buildAssetPath(stringId, safeLevel, 0)
             val healthy = loadFromAssets(context, healthyPath)
             if (healthy != null) return applyWitherFilter(healthy, witherStage)
         }
 
         // 降级策略3：等级1的默认图
-        if (level > 1) {
+        if (safeLevel > 1) {
             val defaultPath = buildAssetPath(stringId, 1, 0)
             val default = loadFromAssets(context, defaultPath)
             if (default != null) return default
         }
 
         // 所有 assets 都找不到，生成程序化占位图
-        return generatePlaceholder(context, plantId, level, witherStage)
+        return generatePlaceholder(context, plantId, safeLevel, witherStage)
     }
 
     /**
@@ -68,26 +69,27 @@ object PlantImageLoader {
      * @return Bitmap
      */
     fun loadByStringId(context: Context, plantStringId: String, level: Int, witherStage: Int = 0): Bitmap? {
-        val assetPath = buildAssetPath(plantStringId, level, witherStage)
+        val safeLevel = level.coerceIn(1, 5)  // 防御：level必须1-5
+        val assetPath = buildAssetPath(plantStringId, safeLevel, witherStage)
         val bitmap = loadFromAssets(context, assetPath)
         if (bitmap != null) return bitmap
 
         // 降级策略1：尝试低一级的图片
-        if (level > 1) {
-            val fallbackPath = buildAssetPath(plantStringId, level - 1, witherStage)
+        if (safeLevel > 1) {
+            val fallbackPath = buildAssetPath(plantStringId, safeLevel - 1, witherStage)
             val fallback = loadFromAssets(context, fallbackPath)
             if (fallback != null) return fallback
         }
 
         // 降级策略2：尝试健康状态的同等级图片
         if (witherStage > 0) {
-            val healthyPath = buildAssetPath(plantStringId, level, 0)
+            val healthyPath = buildAssetPath(plantStringId, safeLevel, 0)
             val healthy = loadFromAssets(context, healthyPath)
             if (healthy != null) return applyWitherFilter(healthy, witherStage)
         }
 
         // 降级策略3：等级1的默认图
-        if (level > 1) {
+        if (safeLevel > 1) {
             val defaultPath = buildAssetPath(plantStringId, 1, 0)
             val default = loadFromAssets(context, defaultPath)
             if (default != null) return default
