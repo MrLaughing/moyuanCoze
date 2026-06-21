@@ -69,8 +69,8 @@ object Constants {
     const val SYNC_REQUEST_CODE = 10001
 
     // ── 渲染 ──────────────────────────────────
-    const val GARDEN_FOREGROUND_COUNT = 3
-    const val GARDEN_BACKGROUND_COUNT = 2
+    const val GARDEN_FOREGROUND_COUNT = 6
+    const val GARDEN_BACKGROUND_COUNT = 6
     const val PLANT_ASSET_PREFIX = "plants/"
     const val PLANT_ASSET_SUFFIX = ".png"
 

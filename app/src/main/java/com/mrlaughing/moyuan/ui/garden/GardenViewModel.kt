@@ -58,7 +58,7 @@ class GardenViewModel @Inject constructor(
                 val streakDays = meta?.streakDays ?: 0
                 
                 // 计算灌溉进度（分钟转换为小时）
-                val irrigationMinutes = meta?.todayReadMinutes ?: 0
+                val irrigationMinutes = meta?.accumulatedMinutes ?: 0
                 val irrigationHours = irrigationMinutes / 60
                 
                 // 从 PlantState 映射到 PlantUiItem

@@ -32,51 +32,54 @@ object GardenRenderer {
         if (plantCount == 0 || viewWidth <= 0 || viewHeight <= 0) return emptyList()
 
         val positions = mutableListOf<PlantRenderInfo>()
-        val foregroundCount = minOf(Constants.GARDEN_FOREGROUND_COUNT, plantCount)
-        val backgroundCount = minOf(Constants.GARDEN_BACKGROUND_COUNT, plantCount - foregroundCount)
+        val maxCount = minOf(plantCount, Constants.GARDEN_FOREGROUND_COUNT + Constants.GARDEN_BACKGROUND_COUNT)
 
-        // ── 远景植物 ──
-        for (i in 0 until backgroundCount) {
-            val xRatio = 0.15f + (i.toFloat() / maxOf(1, backgroundCount - 1).coerceAtLeast(1)) * 0.7f
-            val yRatio = 0.25f + (i % 2) * 0.08f
-            val x = viewWidth * xRatio
-            val y = viewHeight * yRatio
-            val scale = 0.55f  // 远景小
-            positions.add(
-                PlantRenderInfo(
-                    bitmap = null,
-                    x = x,
-                    y = y,
-                    scale = scale,
-                    plantId = -1L  // 待绑定
-                )
-            )
+        // 将植物分成3层：远景、中景、前景
+        val farCount = (maxCount * 0.25f).toInt().coerceAtLeast(0)
+        val midCount = (maxCount * 0.35f).toInt().coerceAtLeast(0)
+        val nearCount = maxCount - farCount - midCount
+
+        // ── 远景植物（小、靠上）──
+        for (i in 0 until farCount) {
+            val xRatio = spreadPositions(i, farCount, 0.08f, 0.92f)
+            val yRatio = 0.18f + (i % 3) * 0.06f
+            positions.add(PlantRenderInfo(
+                bitmap = null, x = viewWidth * xRatio, y = viewHeight * yRatio,
+                scale = 0.45f, plantId = -1L
+            ))
         }
 
-        // ── 前景植物 ──
-        for (i in 0 until foregroundCount) {
-            val xRatio = when (foregroundCount) {
-                1 -> 0.5f
-                2 -> if (i == 0) 0.3f else 0.7f
-                else -> 0.2f + (i.toFloat() / (foregroundCount - 1)) * 0.6f
-            }
-            val yRatio = 0.55f + (i.toFloat() / foregroundCount) * 0.3f
-            val x = viewWidth * xRatio
-            val y = viewHeight * yRatio
-            val scale = 0.85f + (i % 2) * 0.1f  // 前景大
-            positions.add(
-                PlantRenderInfo(
-                    bitmap = null,
-                    x = x,
-                    y = y,
-                    scale = scale,
-                    plantId = -1L  // 待绑定
-                )
-            )
+        // ── 中景植物（中等大小、中间区域）──
+        for (i in 0 until midCount) {
+            val xRatio = spreadPositions(i, midCount, 0.05f, 0.95f)
+            val yRatio = 0.38f + (i % 3) * 0.08f
+            positions.add(PlantRenderInfo(
+                bitmap = null, x = viewWidth * xRatio, y = viewHeight * yRatio,
+                scale = 0.65f, plantId = -1L
+            ))
+        }
+
+        // ── 前景植物（大、靠下）──
+        for (i in 0 until nearCount) {
+            val xRatio = spreadPositions(i, nearCount, 0.05f, 0.95f)
+            val yRatio = 0.6f + (i.toFloat() / maxOf(1, nearCount)) * 0.28f
+            val scale = 0.85f + (i % 2) * 0.08f
+            positions.add(PlantRenderInfo(
+                bitmap = null, x = viewWidth * xRatio, y = viewHeight * yRatio,
+                scale = scale, plantId = -1L
+            ))
         }
 
         // 按 Y 坐标排序（先画远的，再画近的）
         return positions.sortedBy { it.y }
+    }
+
+    /**
+     * 均匀分布N个点的X坐标比例
+     */
+    private fun spreadPositions(index: Int, total: Int, startRatio: Float, endRatio: Float): Float {
+        if (total <= 1) return (startRatio + endRatio) / 2f
+        return startRatio + (index.toFloat() / (total - 1)) * (endRatio - startRatio)
     }
 
     /**
