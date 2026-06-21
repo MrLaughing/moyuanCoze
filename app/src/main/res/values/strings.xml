@@ -29,7 +29,6 @@
     <string name="label_total_read">累计阅读</string>
     <string name="label_books_read">已读书目</string>
     <string name="label_weekly_overview">本周阅读</string>
-    <string name="label_monthly_heatmap">月度热力</string>
     <string name="label_recent_books">最近阅读</string>
 
     <!-- 个人中心 -->
@@ -37,13 +36,27 @@
     <string name="label_weread_auth">微信读书</string>
     <string name="label_authorized">已授权</string>
     <string name="label_unauthorized">未授权</string>
-    <string name="label_last_sync">上次同步：%s</string>
+    <string name="label_last_sync">上次同步%s</string>
     <string name="label_sync_time">同步时间</string>
     <string name="label_sync_now">立即同步</string>
     <string name="label_refresh_mode">刷新模式</string>
     <string name="label_about">关于</string>
     <string name="label_sync_settings">同步设置</string>
     <string name="label_about_moyuan">关于墨园</string>
+
+    <!-- 成就系统 -->
+    <string name="label_achievements">成就</string>
+    <string name="label_achievements_count">%d枚</string>
+    <string name="label_view_catalog">查看图鉴</string>
+    <string name="label_settings">设置</string>
+    <string name="label_unlocked_date">✓ 已解锁于%s</string>
+    <string name="label_remaining">距解锁还需%d</string>
+    <string name="label_cat_all">全部</string>
+    <string name="label_cat_reading">阅读</string>
+    <string name="label_cat_growth">养成</string>
+    <string name="label_cat_milestone">里程碑</string>
+    <string name="label_plants_progress">%d / %d 植物</string>
+    <string name="label_withered_hint">枯萎 %d</string>
 
     <!-- 植物详情 -->
     <string name="button_back">← 返回</string>
@@ -57,7 +70,7 @@
     <string name="desc_plant_image">植物图片</string>
     <string name="msg_sync_complete">同步完成</string>
     <string name="msg_sync_failed">同步失败</string>
-    <string name="about_content">墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 纯黑白灰配色\n\n用阅读浇灌花园，让知识生长繁茂。</string>
+    <string name="about_content">墨园 v1.0.0\n\n墨水屏养成专注游戏\n水墨画风格 · 暖色调配色\n\n用阅读浇灌花园，让知识生长繁茂。</string>
 
     <!-- 季节 -->
     <string name="season_spring">春</string>

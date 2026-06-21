@@ -1,24 +1,28 @@
 package com.mrlaughing.moyuan.ui.profile
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import dagger.hilt.android.AndroidEntryPoint
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkInfo
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.data.model.AchievementDefinitions
 import com.mrlaughing.moyuan.sync.SyncWorker
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.fragment.app.viewModels
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -26,17 +30,29 @@ class ProfileFragment : Fragment() {
 
     private val viewModel: ProfileViewModel by viewModels()
 
-    private lateinit var plantCountText: TextView
-    private lateinit var unlockProgressText: TextView
+    private lateinit var unlockedCountText: TextView
+    private lateinit var totalPlantsText: TextView
+    private lateinit var witheredCountText: TextView
+    private lateinit var plantsProgress: ProgressBar
+    private lateinit var achievementCountText: TextView
+    private lateinit var recyclerAchievements: RecyclerView
+    private lateinit var tabAll: TextView
+    private lateinit var tabReading: TextView
+    private lateinit var tabGrowth: TextView
+    private lateinit var tabMilestone: TextView
+    private lateinit var indicator: View
     private lateinit var wereadStatusText: TextView
     private lateinit var lastSyncText: TextView
     private lateinit var syncTimeText: TextView
     private lateinit var refreshModeText: TextView
     private lateinit var aboutVersionText: TextView
 
-    // 暖色调颜色定义
-    private val inkDark = 0xFF2C2416.toInt()      // 已授权状态
-    private val inkLight = 0xFFA89F91.toInt()      // 未授权状态
+    private lateinit var achievementAdapter: AchievementAdapter
+    private var currentCategory = AchievementDefinitions.CATEGORY_ALL
+
+    // 隐藏的旧视图（保留兼容性）
+    private lateinit var plantCountText: TextView
+    private lateinit var unlockProgressText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,13 +65,98 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        plantCountText = view.findViewById(R.id.text_plant_count)
-        unlockProgressText = view.findViewById(R.id.text_unlock_progress)
+        initViews(view)
+        setupAchievementRecycler()
+        setupTabListeners()
+        setupClickListeners(view)
+        observeData()
+    }
+
+    private fun initViews(view: View) {
+        // 第一层：植物收集进度
+        unlockedCountText = view.findViewById(R.id.text_unlocked_count)
+        totalPlantsText = view.findViewById(R.id.text_total_plants)
+        witheredCountText = view.findViewById(R.id.text_withered_count)
+        plantsProgress = view.findViewById(R.id.progress_plants)
+
+        // 成就列表
+        achievementCountText = view.findViewById(R.id.text_achievement_count)
+        recyclerAchievements = view.findViewById(R.id.recycler_achievements)
+        tabAll = view.findViewById(R.id.tab_all)
+        tabReading = view.findViewById(R.id.tab_reading)
+        tabGrowth = view.findViewById(R.id.tab_growth)
+        tabMilestone = view.findViewById(R.id.tab_milestone)
+        indicator = view.findViewById(R.id.indicator)
+
+        // 设置区
         wereadStatusText = view.findViewById(R.id.text_weread_status)
         lastSyncText = view.findViewById(R.id.text_last_sync)
         syncTimeText = view.findViewById(R.id.text_sync_time)
         refreshModeText = view.findViewById(R.id.text_refresh_mode)
         aboutVersionText = view.findViewById(R.id.text_about_version)
+
+        // 旧视图（隐藏，保持兼容性）
+        plantCountText = view.findViewById(R.id.text_plant_count)
+        unlockProgressText = view.findViewById(R.id.text_unlock_progress)
+    }
+
+    private fun setupAchievementRecycler() {
+        achievementAdapter = AchievementAdapter()
+        recyclerAchievements.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = achievementAdapter
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    private fun setupTabListeners() {
+        val tabViews = listOf(tabAll, tabReading, tabGrowth, tabMilestone)
+        
+        View.OnClickListener { clickedView ->
+            val category = when (clickedView.id) {
+                R.id.tab_all -> AchievementDefinitions.CATEGORY_ALL
+                R.id.tab_reading -> AchievementDefinitions.CATEGORY_READING
+                R.id.tab_growth -> AchievementDefinitions.CATEGORY_GROWTH
+                R.id.tab_milestone -> AchievementDefinitions.CATEGORY_MILESTONE
+                else -> AchievementDefinitions.CATEGORY_ALL
+            }
+            currentCategory = category
+            updateTabSelection(clickedView)
+            updateAchievementList()
+        }.also { listener ->
+            tabAll.setOnClickListener(listener)
+            tabReading.setOnClickListener(listener)
+            tabGrowth.setOnClickListener(listener)
+            tabMilestone.setOnClickListener(listener)
+        }
+
+        // 默认选中全部
+        updateTabSelection(tabAll)
+    }
+
+    private fun updateTabSelection(selectedView: View) {
+        val allTabs = listOf(tabAll, tabReading, tabGrowth, tabMilestone)
+        allTabs.forEach { tab ->
+            if (tab == selectedView) {
+                tab.setTextColor(requireContext().getColor(R.color.ink_dark))
+                tab.setBackgroundResource(R.drawable.bg_tab_selected)
+            } else {
+                tab.setTextColor(requireContext().getColor(R.color.text_secondary))
+                tab.background = null
+            }
+        }
+    }
+
+    private fun updateAchievementList() {
+        val achievements = viewModel.getAchievementsByCategory(currentCategory)
+        achievementAdapter.submitList(achievements)
+    }
+
+    private fun setupClickListeners(view: View) {
+        // 查看图鉴
+        view.findViewById<View>(R.id.layout_view_catalog)?.setOnClickListener {
+            findNavController().navigate(R.id.action_profileFragment_to_catalogFragment)
+        }
 
         // 立即同步按钮
         view.findViewById<View>(R.id.layout_sync_now)?.setOnClickListener {
@@ -86,36 +187,63 @@ class ProfileFragment : Fragment() {
         view.findViewById<View>(R.id.layout_about)?.setOnClickListener {
             showAboutDialog()
         }
+    }
 
-        // 观察数据
+    private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    renderState(state)
+                launch {
+                    viewModel.uiState.collect { state ->
+                        renderProfileState(state)
+                    }
+                }
+                launch {
+                    viewModel.achievements.collect { _ ->
+                        updateAchievementList()
+                    }
+                }
+                launch {
+                    viewModel.unlockedCount.collect { count ->
+                        achievementCountText.text = getString(R.string.label_achievements_count, count)
+                    }
                 }
             }
         }
     }
 
-    private fun renderState(state: ProfileUiState) {
-        plantCountText.text = "解锁 ${state.unlockedCount}/${state.totalCount}·枯萎${state.witheredCount}"
-        unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
+    private fun renderProfileState(state: ProfileUiState) {
+        // 植物收集进度
+        unlockedCountText.text = state.unlockedCount.toString()
+        totalPlantsText.text = getString(R.string.label_plants_progress, state.unlockedCount, state.totalCount)
+        plantsProgress.max = state.totalCount
+        plantsProgress.progress = state.unlockedCount
+        
+        if (state.witheredCount > 0) {
+            witheredCountText.visibility = View.VISIBLE
+            witheredCountText.text = getString(R.string.label_withered_hint, state.witheredCount)
+        } else {
+            witheredCountText.visibility = View.GONE
+        }
 
+        // 微信读书状态
         val statusText = if (state.wereadAuthorized) getString(R.string.label_authorized) else getString(R.string.label_unauthorized)
-        // 使用暖色调颜色
-        val statusColor = if (state.wereadAuthorized) inkDark else inkLight
+        val statusColor = if (state.wereadAuthorized) requireContext().getColor(R.color.ink_dark) else requireContext().getColor(R.color.text_secondary)
         wereadStatusText.text = statusText
         wereadStatusText.setTextColor(statusColor)
 
-        lastSyncText.text = "上次同步${state.lastSyncTime}"
+        // 同步信息
+        lastSyncText.text = getString(R.string.label_last_sync, state.lastSyncTime)
         syncTimeText.text = String.format("%02d:%02d", state.syncHour, state.syncMinute)
         refreshModeText.text = state.refreshMode
         aboutVersionText.text = "v1.0.0"
+
+        // 旧视图（隐藏，保持兼容性）
+        plantCountText.text = "植物 ${state.plantCount}/${state.totalCount}·枯萎${state.witheredCount}"
+        unlockProgressText.text = "首次种植 ${state.firstPlantDate}"
     }
 
     /**
      * 手动触发同步
-     * 不再依赖 Flow 状态判断授权，直接尝试同步
      */
     private fun triggerManualSync() {
         val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()

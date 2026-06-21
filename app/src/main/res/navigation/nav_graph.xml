@@ -40,7 +40,15 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.mrlaughing.moyuan.ui.profile.ProfileFragment"
-        android:label="@string/nav_profile" />
+        android:label="@string/nav_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_catalogFragment"
+            app:destination="@id/catalogFragment"
+            app:enterAnim="@null"
+            app:exitAnim="@null"
+            app:popEnterAnim="@null"
+            app:popExitAnim="@null" />
+    </fragment>
 
     <!-- 植物详情（共用） -->
     <fragment

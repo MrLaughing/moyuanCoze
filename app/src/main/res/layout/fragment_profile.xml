@@ -2,6 +2,7 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/paper_bg"
@@ -13,18 +14,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- 页面标题：我的 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/nav_profile"
-            android:textColor="@color/text_primary"
-            android:textSize="24sp"
-            android:fontFamily="@font/lxgw_wenkai"
-            android:textStyle="bold" />
-
-        <!-- 1. 花园概况卡片 -->
+        <!-- ========== 第一层：顶部植物收集进度区 ========== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,128 +23,58 @@
             android:padding="16dp"
             android:layout_marginBottom="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_garden_overview"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-            <TextView
-                android:id="@+id/text_plant_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/ink_medium"
-                android:textSize="14sp"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-            <TextView
-                android:id="@+id/text_unlock_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-        </LinearLayout>
-
-        <!-- 2. 微信读书卡片 -->
-        <LinearLayout
-            android:id="@+id/card_weread"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_warm"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_weread_auth"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lxgw_wenkai" />
-
+            <!-- 用户信息行 -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/text_weread_status"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@color/ink_medium"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
-
-                <TextView
-                    android:id="@+id/text_last_sync"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 3. 同步设置卡片 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_warm"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_sync_settings"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-            <!-- 同步时间 -->
-            <LinearLayout
-                android:id="@+id/layout_sync_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="12dp"
-                android:clickable="true"
-                android:focusable="true">
+                android:gravity="center_vertical">
 
-                <TextView
+                <!-- 头像：深棕色圆形 + 白色"墨"字 -->
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_avatar_circle">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="墨"
+                        android:textColor="@color/text_on_dark"
+                        android:textSize="28sp"
+                        android:fontFamily="@font/lxgw_wenkai"
+                        android:textStyle="bold" />
+
+                </FrameLayout>
+
+                <!-- 昵称 + 签名 -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/label_sync_time"
-                    android:textColor="@color/ink_medium"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
 
-                <TextView
-                    android:id="@+id/text_sync_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/lxgw_wenkai" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="墨园"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="20sp"
+                        android:fontFamily="@font/lxgw_wenkai"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="一花一世界，一叶一菩提"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/lxgw_wenkai"
+                        android:layout_marginTop="2dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -162,12 +82,76 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:background="@color/border" />
+                android:background="@color/border"
+                android:layout_marginVertical="12dp" />
 
-            <!-- 立即同步按钮 -->
+            <!-- 植物收集进度数字行 -->
             <LinearLayout
-                android:id="@+id/layout_sync_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/text_unlocked_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="32sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold"
+                    tools:text="5" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" │ "
+                    android:textColor="@color/text_secondary"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_total_plants"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="/ 27 植物" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/text_withered_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:visibility="gone"
+                    tools:text="枯萎 2"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <!-- 墨痕进度条 -->
+            <ProgressBar
+                android:id="@+id/progress_plants"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="8dp"
+                android:progressDrawable="@drawable/bg_plant_progress"
+                android:max="27"
+                android:progress="5"
+                tools:progress="5" />
+
+            <!-- 查看图鉴按钮 -->
+            <LinearLayout
+                android:id="@+id/layout_view_catalog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -178,61 +162,354 @@
                 android:background="?attr/selectableItemBackground"
                 android:paddingVertical="8dp">
 
-                <TextView
+                <View
                     android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/label_sync_now"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:text="@string/label_view_catalog"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="→"
+                    android:text=" →"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- 4. 刷新模式卡片 -->
+        <!-- ========== 第二层：成就区域 ========== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <!-- 成就标题行 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_achievements"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" │ "
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_achievement_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="3枚" />
+
+            </LinearLayout>
+
+            <!-- 分类Tab -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <!-- 全部 -->
+                <TextView
+                    android:id="@+id/tab_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_cat_all"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold"
+                    android:paddingBottom="4dp" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:background="@color/border"
+                    android:layout_marginHorizontal="8dp" />
+
+                <!-- 阅读 -->
+                <TextView
+                    android:id="@+id/tab_reading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_cat_reading"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:paddingBottom="4dp" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:background="@color/border"
+                    android:layout_marginHorizontal="8dp" />
+
+                <!-- 养成 -->
+                <TextView
+                    android:id="@+id/tab_growth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_cat_growth"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:paddingBottom="4dp" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:background="@color/border"
+                    android:layout_marginHorizontal="8dp" />
+
+                <!-- 里程碑 -->
+                <TextView
+                    android:id="@+id/tab_milestone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_cat_milestone"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:paddingBottom="4dp" />
+
+            </LinearLayout>
+
+            <!-- 指示条 -->
+            <View
+                android:id="@+id/indicator"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:background="@color/ink_dark"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 成就列表 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_achievements"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_achievement"
+                tools:itemCount="3" />
+
+        </LinearLayout>
+
+        <!-- ========== 第三层：底部设置区 ========== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_warm"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
+            android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- 设置标题 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/label_refresh_mode"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lxgw_wenkai" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_settings"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" │ "
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
+            <!-- 微信读书 -->
+            <LinearLayout
+                android:id="@+id/card_weread"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="12dp"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_weread_auth"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_weread_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="已授权" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" →"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border" />
+
+            <!-- 同步时间 -->
+            <LinearLayout
+                android:id="@+id/layout_sync_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="12dp"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_sync_time"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_sync_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="08:00" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" →"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border" />
+
+            <!-- 立即同步 -->
+            <LinearLayout
+                android:id="@+id/layout_sync_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="12dp"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_sync_now"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_last_sync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="上次: 2024-01-01" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" →"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border" />
+
+            <!-- 刷新模式 -->
             <LinearLayout
                 android:id="@+id/layout_refresh_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="12dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:paddingVertical="12dp"
+                android:background="?attr/selectableItemBackground">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/label_refresh_mode"
-                    android:textColor="@color/ink_medium"
+                    android:textColor="@color/ink_dark"
                     android:textSize="14sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
@@ -242,44 +519,77 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="局部刷新" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" →"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border" />
+
+            <!-- 关于墨园 -->
+            <LinearLayout
+                android:id="@+id/layout_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="12dp"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_about_moyuan"
+                    android:textColor="@color/ink_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/lxgw_wenkai" />
+
+                <TextView
+                    android:id="@+id/text_about_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    tools:text="v1.0.0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" →"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
                     android:fontFamily="@font/lxgw_wenkai" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- 5. 关于墨园卡片 -->
-        <LinearLayout
-            android:id="@+id/layout_about"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_warm"
-            android:padding="16dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_about_moyuan"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-            <TextView
-                android:id="@+id/text_about_version"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:fontFamily="@font/lxgw_wenkai" />
-
-        </LinearLayout>
-
         <!-- 隐藏的旧视图（保留用于兼容性） -->
+        <TextView
+            android:id="@+id/text_plant_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+        <TextView
+            android:id="@+id/text_unlock_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
         <TextView
             android:id="@+id/text_garden_name"
             android:layout_width="wrap_content"

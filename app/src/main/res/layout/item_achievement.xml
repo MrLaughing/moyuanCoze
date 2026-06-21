@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_achievement"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_achievement_unlocked">
+
+    <!-- 左侧印章区域 -->
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_seal_stamp">
+
+        <TextView
+            android:id="@+id/text_seal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="@color/text_on_dark"
+            android:textSize="20sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:textStyle="bold"
+            tools:text="初" />
+
+    </FrameLayout>
+
+    <!-- 右侧内容区域 -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <!-- 成就名 + 条件 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/text_achievement_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_dark"
+                android:textSize="16sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                android:textStyle="bold"
+                tools:text="初芽" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" │ "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:fontFamily="@font/lxgw_wenkai" />
+
+            <TextView
+                android:id="@+id/text_achievement_condition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                tools:text="首次同步" />
+
+        </LinearLayout>
+
+        <!-- 底部状态 + 进度条 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp">
+
+            <!-- 状态文字 -->
+            <TextView
+                android:id="@+id/text_achievement_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                tools:text="✓ 已解锁于2024-01-01" />
+
+            <!-- 进度条 -->
+            <ProgressBar
+                android:id="@+id/progress_achievement"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="4dp"
+                android:progressDrawable="@drawable/bg_ink_progress"
+                android:max="100"
+                android:progress="50"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

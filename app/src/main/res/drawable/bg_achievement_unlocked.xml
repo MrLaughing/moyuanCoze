@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <!-- 暖色调卡片背景：白色 + 边框 + 圆角 -->
-    <solid android:color="@color/white" />
+    <!-- 已解锁成就背景：表面色 + 实线边框 -->
+    <solid android:color="@color/surface" />
     <stroke 
         android:width="1dp" 
         android:color="@color/border" />
