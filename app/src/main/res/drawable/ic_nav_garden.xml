@@ -3,22 +3,32 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- 茎干 - 粗细变化的笔触 -->
+
+    <!-- 茎干 - 更挺拔，从底到顶 -->
     <path
-        android:pathData="M12,20 L12,10"
-        android:strokeWidth="2"
+        android:pathData="M12,20 L12,5"
+        android:strokeWidth="2.2"
         android:strokeColor="#2C2416"
         android:strokeLineCap="round"/>
-    <!-- 左叶 - 毛笔笔触 -->
+
+    <!-- 左枝叶 - 向左上方大幅舒展 -->
     <path
-        android:pathData="M12,12 Q8,8 5,9 Q4,10 7,12 Q9,13 12,12Z"
+        android:pathData="M12,13 Q6,8 3,5 Q2,7 5,10 Q9,14 12,13Z"
         android:fillColor="#2C2416"/>
-    <!-- 右叶 -->
+
+    <!-- 右枝叶 - 向右上方大幅舒展 -->
     <path
-        android:pathData="M12,10 Q16,6 19,7 Q20,8 17,10 Q15,11 12,10Z"
+        android:pathData="M12,9 Q18,4 21,3 Q22,5 18,8 Q15,10 12,9Z"
         android:fillColor="#2C2416"/>
-    <!-- 小芽点 -->
+
+    <!-- 顶芽左 - 向上伸展 -->
     <path
-        android:pathData="M11.5,9 A1,1 0 1,1 12.5,9 A1,1 0 1,1 11.5,9Z"
+        android:pathData="M12,5 Q9,2 8,3 Q9,5 12,5Z"
         android:fillColor="#2C2416"/>
+
+    <!-- 顶芽右 - 向上伸展 -->
+    <path
+        android:pathData="M12,5 Q15,2 16,3 Q15,5 12,5Z"
+        android:fillColor="#2C2416"/>
+
 </vector>
