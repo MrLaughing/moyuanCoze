@@ -54,7 +54,6 @@ class CatalogFragment : Fragment() {
         unlockedCountText = view.findViewById(R.id.text_unlocked_count)
         selectedIndicator = view.findViewById(R.id.view_selected_indicator)
         
-        // 获取 Chip 引用
         chipAll = view.findViewById(R.id.chip_all)
         chipJimo = view.findViewById(R.id.chip_jimo)
         chipBingzhu = view.findViewById(R.id.chip_bingzhu)
@@ -65,7 +64,6 @@ class CatalogFragment : Fragment() {
         chipList.addAll(listOf(chipAll, chipJimo, chipBingzhu, chipSuihan, chipXunfang, chipHidden))
 
         adapter = PlantCardAdapter { plant ->
-            // 无论已解锁还是未解锁，都可以进入详情页查看
             navigateToPlantDetail(plant.plantId)
         }
         adapter.setFragment(this)
@@ -73,9 +71,8 @@ class CatalogFragment : Fragment() {
         val columns = ScreenUtils.getRecommendedGridColumns(requireContext())
         recyclerView.layoutManager = GridLayoutManager(context, columns)
         recyclerView.adapter = adapter
-        recyclerView.itemAnimator = null
+        recyclerView.itemAnimator = null // 禁用item动画，防止e-ink闪烁
 
-        // 卡片间距：8dp（dp转px）
         val spacingPx = (8 * resources.displayMetrics.density).toInt()
         recyclerView.addItemDecoration(GridSpacingItemDecoration(columns, spacingPx, includeEdge = false))
 
@@ -106,31 +103,22 @@ class CatalogFragment : Fragment() {
                 viewModel.setPathFilter(index)
             }
         }
-        
-        // 默认选中第一个
         selectChip(0)
     }
     
     private fun selectChip(index: Int) {
         currentSelectedIndex = index
-        
-        // 更新 Chip 样式
         chipList.forEachIndexed { i, chip ->
             if (i == index) {
-                // 选中态：深色背景、白色文字
                 chip.setChipBackgroundColorResource(R.color.ink_dark)
                 chip.setTextColor(resources.getColor(R.color.white, null))
             } else {
-                // 未选中态：浅色背景、深色文字
                 chip.setChipBackgroundColorResource(R.color.surface)
                 chip.setTextColor(resources.getColor(R.color.text_primary, null))
             }
         }
     }
 
-    /**
-     * 导航到植物详情页 - 使用 plantStringId（String）传递参数
-     */
     private fun navigateToPlantDetail(plantId: Long) {
         try {
             val direction = CatalogFragmentDirections
@@ -138,7 +126,6 @@ class CatalogFragment : Fragment() {
             findNavController().navigate(direction)
         } catch (e: Exception) {
             android.util.Log.e("CatalogFragment", "导航到植物详情失败: plantId=$plantId", e)
-            // 导航失败时不崩溃，给用户提示
             android.widget.Toast.makeText(
                 requireContext(),
                 "暂时无法查看植物详情",
@@ -147,4 +134,3 @@ class CatalogFragment : Fragment() {
         }
     }
 }
-
