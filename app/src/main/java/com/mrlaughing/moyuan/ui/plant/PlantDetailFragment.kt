@@ -20,6 +20,7 @@ import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.coerceIn
 import kotlinx.coroutines.withContext
 
 /**
@@ -117,59 +118,62 @@ class PlantDetailFragment : Fragment() {
     }
 
     private fun renderState(state: PlantDetailUiState) {
-        // 顶栏标题：植物名 · 路径名
-        textTitle.text = "${state.name} · ${state.pathName}"
-        
-        // 隐藏的植物名（保留数据绑定）
-        plantName.text = state.name
-        pathName.text = state.pathName
-        
-        // 等级显示格式：Lv.5 墨韵
-        val levelName = levelNames[state.level] ?: "萌芽"
-        plantLevel.text = "Lv.${state.level} $levelName"
-        
-        // 稀有度星标 - 使用淡墨色
-        rarityText.text = "★".repeat(state.rarity) + "☆".repeat(5 - state.rarity)
-        
-        // 进度条
-        levelProgressBar.progress = state.levelProgress
-        
-        // 灌溉进度文字格式：XXh XXmin / 下一级
-        val totalMinutes = state.totalReadMinutes
-        val hours = totalMinutes / 60
-        val minutes = totalMinutes % 60
-        val progressText = if (hours > 0) {
-            "${hours}h ${minutes}min / 下一级"
-        } else {
-            "${minutes}min / 下一级"
-        }
-        levelProgressText.text = progressText
-        
-        // 植物描述
-        plantDescription.text = state.description
-        
-        // 解锁条件 - 添加 null 安全检查
-        val unlockMinutes = getUnlockMinutes(state.level)
-        unlockCondition?.text = "解锁条件：累计阅读 ≥ ${unlockMinutes}min"
-        
-        // 枯萎预警 - 添加 null 安全检查
-        if (state.witherStage > 0) {
-            layoutWitherWarning?.visibility = View.VISIBLE
-            witherWarning?.text = when {
-                state.witherStage >= 2 -> "未阅读 ${state.witherCountdownDays}天 · 严重枯萎，请尽快阅读！"
-                state.witherStage == 1 -> "未阅读 ${state.witherCountdownDays}天 · 轻度枯萎"
-                else -> "未阅读 ${state.witherCountdownDays}天"
-            }
-        } else if (state.witherCountdownDays >= 0) {
-            layoutWitherWarning?.visibility = View.VISIBLE
-            witherWarning?.text = "未阅读 ${state.witherCountdownDays}天 · 渐枯倒计时 ${state.witherCountdownDays}天"
-        } else {
-            layoutWitherWarning?.visibility = View.GONE
-        }
+        try {
+            // 顶栏标题：植物名 · 路径名
+            textTitle?.text = "${state.name} · ${state.pathName}"
 
-        // 加载植物大图 - 使用协程代替Thread，生命周期安全
-        // 使用 plantIdStr (String) 直接加载图片
-        loadPlantImage(state)
+            // 隐藏的植物名（保留数据绑定）— 全部安全调用
+            plantName?.text = state.name
+            pathName?.text = state.pathName
+
+            // 等级显示格式：Lv.5 墨韵
+            val levelName = levelNames[state.level] ?: "萌芽"
+            plantLevel?.text = "Lv.${state.level} $levelName"
+
+            // 稀有度星标 - 使用淡墨色
+            rarityText?.text = "★".repeat(state.rarity.coerceIn(1, 5)) + "☆".repeat((5 - state.rarity).coerceIn(0, 4))
+
+            // 进度条
+            levelProgressBar?.progress = state.levelProgress
+
+            // 灌溉进度文字格式：XXh XXmin / 下一级
+            val totalMinutes = state.totalReadMinutes
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            val progressText = if (hours > 0) {
+                "${hours}h ${minutes}min / 下一级"
+            } else {
+                "${minutes}min / 下一级"
+            }
+            levelProgressText?.text = progressText
+
+            // 植物描述
+            plantDescription?.text = state.description
+
+            // 解锁条件
+            val unlockMinutes = getUnlockMinutes(state.level)
+            unlockCondition?.text = "解锁条件：累计阅读 ≥ ${unlockMinutes}min"
+
+            // 枯萎预警
+            if (state.witherStage > 0) {
+                layoutWitherWarning?.visibility = View.VISIBLE
+                witherWarning?.text = when {
+                    state.witherStage >= 2 -> "未阅读 ${state.witherCountdownDays}天 · 严重枯萎，请尽快阅读！"
+                    state.witherStage == 1 -> "未阅读 ${state.witherCountdownDays}天 · 轻度枯萎"
+                    else -> "未阅读 ${state.witherCountdownDays}天"
+                }
+            } else if (state.witherCountdownDays >= 0) {
+                layoutWitherWarning?.visibility = View.VISIBLE
+                witherWarning?.text = "未阅读 ${state.witherCountdownDays}天 · 渐枯倒计时 ${state.witherCountdownDays}天"
+            } else {
+                layoutWitherWarning?.visibility = View.GONE
+            }
+
+            // 加载植物大图
+            loadPlantImage(state)
+        } catch (e: Exception) {
+            android.util.Log.e("PlantDetail", "renderState异常", e)
+        }
     }
 
     /**

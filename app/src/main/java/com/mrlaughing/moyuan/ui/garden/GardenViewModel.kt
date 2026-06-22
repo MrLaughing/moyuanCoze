@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -130,11 +131,38 @@ class GardenViewModel @Inject constructor(
     }
 
     /**
-     * 浇灌植物
+     * 浇灌植物：使用今日阅读时长灌溉所有存活植物
+     * - 重置枯萎阶段为0
+     * - 更新最后阅读日期为今天
+     * - 增加累计灌溉分钟
      */
     fun waterPlants() {
-        // 触发灌溉逻辑（通过刷新数据实现）
-        refresh()
+        val todayMinutes = _uiState.value.todayReadMinutes
+        if (todayMinutes <= 0) return
+
+        viewModelScope.launch {
+            try {
+                val today = java.time.LocalDate.now().toString()
+                plantRepository.observePlants().firstOrNull()?.let { plants ->
+                    plants.filter { !it.unlockDate.isNullOrEmpty() && it.witherStage < 4 }
+                        .forEach { plant ->
+                            plantRepository.updatePlant(
+                                plant.copy(
+                                    witherStage = 0,
+                                    witherStartDate = null,
+                                    lastReadDate = today,
+                                    accumulatedMinutes = plant.accumulatedMinutes + todayMinutes,
+                                    justRevived = false
+                                )
+                            )
+                        }
+                }
+                // 浇灌后刷新UI
+                android.util.Log.d("GardenVM", "浇灌完成: ${todayMinutes}min分配给存活植物")
+            } catch (e: Exception) {
+                android.util.Log.e("GardenVM", "浇灌失败", e)
+            }
+        }
     }
 
     /**

@@ -65,10 +65,8 @@ class CatalogFragment : Fragment() {
         chipList.addAll(listOf(chipAll, chipJimo, chipBingzhu, chipSuihan, chipXunfang, chipHidden))
 
         adapter = PlantCardAdapter { plant ->
-            if (plant.isUnlocked) {
-                // 传入 plantId (Long)
-                navigateToPlantDetail(plant.plantId)
-            }
+            // 无论已解锁还是未解锁，都可以进入详情页查看
+            navigateToPlantDetail(plant.plantId)
         }
 
         val columns = ScreenUtils.getRecommendedGridColumns(requireContext())
