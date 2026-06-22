@@ -81,10 +81,12 @@
     <string name="season_winter">冬</string>
 
     <!-- 天气 -->
-    <string name="weather_sunny">晴</string>
-    <string name="weather_rainy">雨</string>
-    <string name="weather_snowy">雪</string>
+    <string name="weather_clear">晴</string>
+    <string name="weather_spring_rain">春雨</string>
+    <string name="weather_first_snow">初雪</string>
     <string name="weather_foggy">雾</string>
+    <string name="weather_overcast">阴</string>
+    <string name="weather_moonlit">月夜</string>
     <!-- 引导页 -->
     <string name="label_onboarding_skip">跳过</string>
     <string name="label_onboarding_next">继续</string>

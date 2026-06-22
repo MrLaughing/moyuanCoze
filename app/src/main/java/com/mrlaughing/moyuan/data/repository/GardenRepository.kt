@@ -76,7 +76,7 @@ class GardenRepository @Inject constructor(
                 maxStreakDays = 0,
                 nightReadDays = 0,
                 booksRead = 0,
-                currentWeather = "SUNNY",
+                currentWeather = "CLEAR",
                 weatherDate = null,
                 lastSyncDate = null,
                 hasRevivedFromDead = false,
