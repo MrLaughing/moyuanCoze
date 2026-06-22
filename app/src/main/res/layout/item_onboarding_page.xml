@@ -28,7 +28,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- 主标题 -->
+        <!-- 主标题 — 霞鹜文楷(文学温度层): 引导页品牌文案 -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
@@ -36,14 +36,14 @@
             android:layout_marginTop="32dp"
             android:textColor="@color/ink_dark"
             android:textSize="@dimen/onboarding_title_size"
-            android:fontFamily="@font/jinghua_laosong"
+            android:fontFamily="@font/lxgw_wenkai"
             android:textStyle="bold"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/ivIcon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- 副标题 -->
+        <!-- 副标题 — 京华老宋(结构阅读层): 描述性文字 -->
         <TextView
             android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
@@ -51,6 +51,7 @@
             android:layout_marginTop="16dp"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
+            android:fontFamily="@font/jinghua_laosong"
             android:gravity="center"
             android:lineSpacingExtra="4dp"
             app:layout_constraintTop_toBottomOf="@id/tvTitle"

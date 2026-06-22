@@ -21,7 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- 左上角：竖排书法「墨园」 -->
+        <!-- 左上角：竖排书法「墨园」 — 霞鹜文楷(文学温度层) -->
         <TextView
             android:id="@+id/text_moyuan_title"
             android:layout_width="wrap_content"
@@ -36,7 +36,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- 右侧：季节/天气/日期 Pill 标签 -->
+        <!-- 右侧：季节/天气/日期 Pill 标签 — 霞鹜文楷(文学温度层) -->
         <TextView
             android:id="@+id/tag_season"
             android:layout_width="wrap_content"
@@ -269,7 +269,7 @@
 
         </LinearLayout>
 
-        <!-- 植物状态汇总 -->
+        <!-- 植物状态汇总 — 思源黑体(功能数据层) -->
         <TextView
             android:id="@+id/text_plant_status"
             android:layout_width="match_parent"
@@ -301,14 +301,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- "当前加成路径"标签 — 京华老宋(结构阅读层) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="当前加成路径"
             android:textColor="@color/text_secondary"
             android:textSize="10sp"
-            android:fontFamily="sans-serif" />
+            android:fontFamily="@font/jinghua_laosong" />
 
+        <!-- 路径信息 — 京华老宋(结构阅读层) -->
         <TextView
             android:id="@+id/text_path_info"
             android:layout_width="wrap_content"
@@ -316,11 +318,11 @@
             android:text="积墨 · 秉烛 ×1.2"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
-            android:fontFamily="sans-serif" />
+            android:fontFamily="@font/jinghua_laosong" />
 
     </LinearLayout>
 
-    <!-- 浇灌按钮 -->
+    <!-- 浇灌按钮 — 思源黑体(功能数据层) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/water_button"
         android:layout_width="0dp"

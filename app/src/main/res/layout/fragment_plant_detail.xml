@@ -16,6 +16,7 @@
         android:paddingHorizontal="8dp"
         android:background="@color/paper_bg">
 
+        <!-- 返回按钮 — 思源黑体(功能数据层) -->
         <TextView
             android:id="@+id/button_back"
             android:layout_width="wrap_content"
@@ -32,6 +33,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
+        <!-- 植物名标题 — 霞鹜文楷(文学温度层) -->
         <TextView
             android:id="@+id/text_title"
             android:layout_width="wrap_content"
@@ -113,6 +115,7 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
+                    <!-- "等级"标签 — 京华老宋(结构阅读层) -->
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -120,8 +123,9 @@
                         android:text="等级"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:fontFamily="sans-serif" />
+                        android:fontFamily="@font/jinghua_laosong" />
 
+                    <!-- 等级数字 — 思源黑体(功能数据层) -->
                     <TextView
                         android:id="@+id/text_plant_level"
                         android:layout_width="wrap_content"
@@ -142,7 +146,7 @@
                     app:progressColor="@color/ink_dark"
                     app:trackColor="@color/surface" />
 
-                <!-- 第三行：灌溉进度文字 -->
+                <!-- 灌溉进度文字 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_level_progress"
                     android:layout_width="wrap_content"
@@ -163,14 +167,14 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- 描述标签 -->
+                <!-- "描述"标签 — 京华老宋(结构阅读层) -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="描述"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
                 <!-- 分割线 -->
                 <View
@@ -179,7 +183,7 @@
                     android:layout_marginTop="8dp"
                     android:background="@color/border" />
 
-                <!-- 植物描述文字 -->
+                <!-- 植物描述文字 — 京华老宋(结构阅读层) -->
                 <TextView
                     android:id="@+id/text_plant_description"
                     android:layout_width="match_parent"
@@ -190,7 +194,7 @@
                     android:fontFamily="@font/jinghua_laosong"
                     android:lineSpacingExtra="4dp" />
 
-                <!-- 解锁条件 -->
+                <!-- 解锁条件 — 京华老宋(结构阅读层) -->
                 <TextView
                     android:id="@+id/text_unlock_condition"
                     android:layout_width="match_parent"
@@ -198,7 +202,7 @@
                     android:layout_marginTop="12dp"
                     android:textColor="@color/text_tertiary"
                     android:textSize="12sp"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
             </LinearLayout>
 
@@ -222,6 +226,7 @@
                     android:textSize="16sp"
                     android:fontFamily="sans-serif" />
 
+                <!-- 枯萎预警文字 — 京华老宋(结构阅读层) -->
                 <TextView
                     android:id="@+id/text_wither_warning"
                     android:layout_width="0dp"
@@ -230,7 +235,7 @@
                     android:layout_marginStart="8dp"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="@font/jinghua_laosong"
                     android:textStyle="bold" />
 
             </LinearLayout>

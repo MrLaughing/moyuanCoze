@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 墨园主题：NoActionBar、霞鹜文楷字体、无动画、高对比度 -->
+    <!-- 墨园主题：NoActionBar、三字体体系、无动画、高对比度 -->
 
     <!-- 基础应用主题 -->
     <style name="Theme.Moyuan" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -39,6 +39,29 @@
         <item name="android:taskCloseExitAnimation">@null</item>
     </style>
 
+    <!-- ============================================ -->
+    <!-- 三字体体系 TextAppearance -->
+    <!-- 霞鹜文楷(文学温度层) / 京华老宋(结构阅读层) / 思源黑体(功能数据层) -->
+    <!-- ============================================ -->
+
+    <!-- 文学温度层 — 霞鹜文楷：品牌名、植物名、诗词名句、成就名 -->
+    <style name="TextAppearance.Moyuan.Literary" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="fontFamily">@font/lxgw_wenkai</item>
+    </style>
+
+    <!-- 结构阅读层 — 京华老宋：页面标题、分区标题、正文描述、设置项 -->
+    <style name="TextAppearance.Moyuan.Structural" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="fontFamily">@font/jinghua_laosong</item>
+    </style>
+
+    <!-- 功能数据层 — 思源黑体(sans-serif)：导航标签、按钮、数据数字、辅助文字 -->
+    <style name="TextAppearance.Moyuan.Functional" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
     <!-- Tab 文字样式 -->
     <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
         <item name="android:fontFamily">sans-serif</item>
@@ -62,7 +85,7 @@
         <item name="android:padding">@dimen/spacing_md</item>
     </style>
 
-    <!-- 圆角Pill标签样式 -->
+    <!-- 圆角Pill标签样式 — 霞鹜文楷 -->
     <style name="PillTag">
         <item name="android:paddingStart">12dp</item>
         <item name="android:paddingEnd">12dp</item>
@@ -103,7 +126,7 @@
 
     <!-- 花园页文字样式 -->
     <style name="GardenTitleText">
-        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">28sp</item>
     </style>
@@ -116,7 +139,7 @@
     </style>
 
     <style name="GardenStatLabel">
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">10sp</item>
     </style>

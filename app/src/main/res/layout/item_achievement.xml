@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/card_achievement"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="12dp"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/bg_achievement_unlocked">
+    android:paddingVertical="8dp">
 
-    <!-- 左侧印章区域 -->
+    <!-- 左侧墨章 -->
     <FrameLayout
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_seal_stamp">
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_achievement_seal">
 
+        <!-- 印章字 — 思源黑体(功能数据层) -->
         <TextView
             android:id="@+id/text_seal"
             android:layout_width="match_parent"
@@ -26,7 +24,8 @@
             android:textSize="20sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
-            tools:text="初" />
+            tools:text="初"
+            xmlns:tools="http://schemas.android.com/tools" />
 
     </FrameLayout>
 
@@ -45,6 +44,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- 成就名 — 霞鹜文楷(文学温度层) -->
             <TextView
                 android:id="@+id/text_achievement_name"
                 android:layout_width="wrap_content"
@@ -53,7 +53,8 @@
                 android:textSize="16sp"
                 android:fontFamily="@font/lxgw_wenkai"
                 android:textStyle="bold"
-                tools:text="初芽" />
+                tools:text="初芽"
+                xmlns:tools="http://schemas.android.com/tools" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -63,14 +64,16 @@
                 android:textSize="14sp"
                 android:fontFamily="sans-serif" />
 
+            <!-- 成就条件 — 京华老宋(结构阅读层) -->
             <TextView
                 android:id="@+id/text_achievement_condition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
-                android:fontFamily="sans-serif"
-                tools:text="首次同步" />
+                android:fontFamily="@font/jinghua_laosong"
+                tools:text="首次同步"
+                xmlns:tools="http://schemas.android.com/tools" />
 
         </LinearLayout>
 
@@ -81,7 +84,7 @@
             android:orientation="vertical"
             android:layout_marginTop="4dp">
 
-            <!-- 状态文字 -->
+            <!-- 状态文字 — 思源黑体(功能数据层) -->
             <TextView
                 android:id="@+id/text_achievement_status"
                 android:layout_width="wrap_content"
@@ -89,7 +92,8 @@
                 android:textColor="@color/text_tertiary"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif"
-                tools:text="✓ 已解锁于2024-01-01" />
+                tools:text="✓ 已解锁于2024-01-01"
+                xmlns:tools="http://schemas.android.com/tools" />
 
             <!-- 进度条 -->
             <ProgressBar
@@ -102,7 +106,8 @@
                 android:max="100"
                 android:progress="50"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                xmlns:tools="http://schemas.android.com/tools" />
 
         </LinearLayout>
 

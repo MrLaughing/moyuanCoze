@@ -36,6 +36,7 @@
                     android:layout_height="@dimen/avatar_size"
                     android:background="@drawable/bg_avatar_circle">
 
+                    <!-- "墨"字 — 霞鹜文楷(文学温度层) -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -43,7 +44,7 @@
                         android:text="墨"
                         android:textColor="@color/text_on_dark"
                         android:textSize="@dimen/avatar_text_size"
-                        android:fontFamily="sans-serif"
+                        android:fontFamily="@font/lxgw_wenkai"
                         android:textStyle="bold" />
 
                 </FrameLayout>
@@ -56,22 +57,24 @@
                     android:orientation="vertical"
                     android:layout_marginStart="12dp">
 
+                    <!-- "墨园"品牌名 — 霞鹜文楷(文学温度层) -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="墨园"
                         android:textColor="@color/ink_dark"
                         android:textSize="20sp"
-                        android:fontFamily="sans-serif"
+                        android:fontFamily="@font/lxgw_wenkai"
                         android:textStyle="bold" />
 
+                    <!-- 诗词签名 — 霞鹜文楷(文学温度层) -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="一花一世界，一叶一菩提"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:fontFamily="sans-serif"
+                        android:fontFamily="@font/lxgw_wenkai"
                         android:layout_marginTop="2dp" />
 
                 </LinearLayout>
@@ -92,6 +95,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
+                <!-- 解锁数 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_unlocked_count"
                     android:layout_width="wrap_content"
@@ -110,6 +114,7 @@
                     android:textSize="18sp"
                     android:fontFamily="sans-serif" />
 
+                <!-- 总数 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_total_plants"
                     android:layout_width="wrap_content"
@@ -124,6 +129,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+                <!-- 枯萎数 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_withered_count"
                     android:layout_width="wrap_content"
@@ -167,6 +173,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+                <!-- "查看图鉴" — 霞鹜文楷(文学温度层) -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -202,6 +209,7 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="12dp">
 
+                <!-- "成就"标题 — 京华老宋(结构阅读层) -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -219,6 +227,7 @@
                     android:textSize="14sp"
                     android:fontFamily="sans-serif" />
 
+                <!-- 成就计数 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_achievement_count"
                     android:layout_width="wrap_content"
@@ -230,7 +239,7 @@
 
             </LinearLayout>
 
-            <!-- 分类Tab -->
+            <!-- 分类Tab — 思源黑体(功能数据层) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -238,7 +247,6 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="8dp">
 
-                <!-- 全部 -->
                 <TextView
                     android:id="@+id/tab_all"
                     android:layout_width="wrap_content"
@@ -256,7 +264,6 @@
                     android:background="@color/border"
                     android:layout_marginHorizontal="8dp" />
 
-                <!-- 阅读 -->
                 <TextView
                     android:id="@+id/tab_reading"
                     android:layout_width="wrap_content"
@@ -273,7 +280,6 @@
                     android:background="@color/border"
                     android:layout_marginHorizontal="8dp" />
 
-                <!-- 养成 -->
                 <TextView
                     android:id="@+id/tab_growth"
                     android:layout_width="wrap_content"
@@ -290,7 +296,6 @@
                     android:background="@color/border"
                     android:layout_marginHorizontal="8dp" />
 
-                <!-- 里程碑 -->
                 <TextView
                     android:id="@+id/tab_milestone"
                     android:layout_width="wrap_content"
@@ -330,7 +335,7 @@
             android:background="@drawable/bg_card_warm"
             android:padding="16dp">
 
-            <!-- 设置标题 -->
+            <!-- 设置标题 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -357,7 +362,7 @@
 
             </LinearLayout>
 
-            <!-- 微信读书 -->
+            <!-- 微信读书 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:id="@+id/card_weread"
                 android:layout_width="match_parent"
@@ -378,6 +383,7 @@
                     android:textSize="14sp"
                     android:fontFamily="@font/jinghua_laosong" />
 
+                <!-- 状态 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_weread_status"
                     android:layout_width="wrap_content"
@@ -402,7 +408,7 @@
                 android:layout_height="1dp"
                 android:background="@color/border" />
 
-            <!-- 同步时间 -->
+            <!-- 同步时间 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:id="@+id/layout_sync_time"
                 android:layout_width="match_parent"
@@ -421,8 +427,9 @@
                     android:text="@string/label_sync_time"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
+                <!-- 时间值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_sync_time"
                     android:layout_width="wrap_content"
@@ -447,7 +454,7 @@
                 android:layout_height="1dp"
                 android:background="@color/border" />
 
-            <!-- 立即同步 -->
+            <!-- 立即同步 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:id="@+id/layout_sync_now"
                 android:layout_width="match_parent"
@@ -466,8 +473,9 @@
                     android:text="@string/label_sync_now"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
+                <!-- 上次同步 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_last_sync"
                     android:layout_width="wrap_content"
@@ -492,7 +500,7 @@
                 android:layout_height="1dp"
                 android:background="@color/border" />
 
-            <!-- 刷新模式 -->
+            <!-- 刷新模式 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:id="@+id/layout_refresh_mode"
                 android:layout_width="match_parent"
@@ -511,8 +519,9 @@
                     android:text="@string/label_refresh_mode"
                     android:textColor="@color/ink_dark"
                     android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
+                    android:fontFamily="@font/jinghua_laosong" />
 
+                <!-- 模式值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_refresh_mode"
                     android:layout_width="wrap_content"
@@ -537,7 +546,7 @@
                 android:layout_height="1dp"
                 android:background="@color/border" />
 
-            <!-- 关于墨园 -->
+            <!-- 关于墨园 — 京华老宋(结构阅读层) -->
             <LinearLayout
                 android:id="@+id/layout_about"
                 android:layout_width="match_parent"
@@ -558,6 +567,7 @@
                     android:textSize="14sp"
                     android:fontFamily="@font/jinghua_laosong" />
 
+                <!-- 版本号 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_about_version"
                     android:layout_width="wrap_content"
