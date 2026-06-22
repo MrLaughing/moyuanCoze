@@ -197,20 +197,54 @@
 
         </LinearLayout>
 
-        <!-- 本周阅读标题 -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- 每周阅读标题 + 周导航 -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/label_weekly_overview"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif"
-            android:textStyle="bold" />
+            android:layout_marginBottom="4dp">
 
-        <!-- 本周阅读柱状图 -->
+            <!-- 周导航左箭头 -->
+            <ImageButton
+                android:id="@+id/btn_prev_week"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_previous"
+                android:contentDescription="上一周"
+                android:scaleType="centerInside"
+                app:tint="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/text_week_range"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_weekly_overview"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <!-- 周导航右箭头 -->
+            <ImageButton
+                android:id="@+id/btn_next_week"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_next"
+                android:contentDescription="下一周"
+                android:scaleType="centerInside"
+                app:tint="@color/text_primary" />
+
+        </LinearLayout>
+
+        <!-- 每周阅读柱状图 -->
         <com.mrlaughing.moyuan.ui.study.WeekOverviewView
             android:id="@+id/week_overview"
             android:layout_width="match_parent"
@@ -218,37 +252,15 @@
             android:background="@drawable/bg_card"
             android:padding="8dp"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp" />
-
-        <!-- 月历热力图标题 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/label_monthly_heatmap"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif"
-            android:textStyle="bold" />
-
-        <!-- 月历热力图 -->
-        <com.mrlaughing.moyuan.ui.study.MonthHeatmapView
-            android:id="@+id/month_heatmap"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/heatmap_height"
-            android:background="@drawable/bg_card"
-            android:padding="8dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp" />
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp" />
 
         <!-- 最近阅读标题 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="@string/label_recent_books"
             android:textColor="@color/text_primary"
