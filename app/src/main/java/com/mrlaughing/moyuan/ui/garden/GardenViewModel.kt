@@ -19,6 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -52,51 +56,52 @@ class GardenViewModel @Inject constructor(
 
     /**
      * 从 Repository 加载真实花园数据
+     * 使用 distinctUntilChanged + debounce 避免同步时DB多次写入导致UI闪烁
      */
     private fun loadGardenData() {
         viewModelScope.launch {
-            gardenRepository.observeGardenState().collect { gardenState ->
-                val season = _uiState.value.season  // 保持用户选择的季节
-                val meta = gardenState.meta
-                val weather = _uiState.value.weather  // 保持用户选择的天气
+            gardenRepository.observeGardenState()
+                .map { gardenState ->
+                    val season = _uiState.value.season
+                    val meta = gardenState.meta
+                    val weather = _uiState.value.weather
 
-                // 从 GardenState 获取 meta 信息
-                val todayReadMinutes = meta?.todayReadMinutes ?: 0
-                val streakDays = meta?.streakDays ?: 0
+                    val todayReadMinutes = meta?.todayReadMinutes ?: 0
+                    val streakDays = meta?.streakDays ?: 0
+                    val irrigationMinutes = meta?.accumulatedMinutes ?: 0
+                    val irrigationHours = irrigationMinutes / 60
 
-                // 计算灌溉进度（分钟转换为小时）
-                val irrigationMinutes = meta?.accumulatedMinutes ?: 0
-                val irrigationHours = irrigationMinutes / 60
+                    val plants = gardenState.plants
+                        .filter { !it.unlockDate.isNullOrEmpty() }
+                        .mapIndexed { index, entity ->
+                            val pathType = pathToConstant(entity.path)
+                            PlantUiItem(
+                                plantId = (PlantDefinitions.all.indexOfFirst { it.id == entity.plantId } + 1L).coerceAtLeast(1L),
+                                name = getPlantName(entity.plantId),
+                                level = entity.level,
+                                witherStage = entity.witherStage,
+                                pathType = pathType
+                            )
+                        }
 
-                // 从 PlantState 映射到 PlantUiItem
-                val plants = gardenState.plants
-                    .filter { !it.unlockDate.isNullOrEmpty() }
-                    .mapIndexed { index, entity ->
-                        val pathType = pathToConstant(entity.path)
-                        PlantUiItem(
-                            plantId = (PlantDefinitions.all.indexOfFirst { it.id == entity.plantId } + 1L).coerceAtLeast(1L),
-                            name = getPlantName(entity.plantId),
-                            level = entity.level,
-                            witherStage = entity.witherStage,
-                            pathType = pathType
-                        )
-                    }
-
-                _uiState.value = GardenUiState(
-                    plants = plants,
-                    season = season,
-                    weather = weather,
-                    todayReadMinutes = todayReadMinutes,
-                    streakDays = streakDays,
-                    bonusMultiplier = calculateBonus(streakDays, weather, season),
-                    dateText = LocalDate.now().formatCN(),
-                    irrigationHours = irrigationHours,
-                    irrigationGoal = IRRIGATION_GOAL_HOURS,
-                    // 从引擎计算实际激活的路径（与 IrrigationEngine.determineUserPaths 逻辑一致）
-                    // 避免在 GardenFragment 中硬编码季节→路径映射
-                    activePathLabels = determineActivePathLabels(meta)
-                )
-            }
+                    GardenUiState(
+                        plants = plants,
+                        season = season,
+                        weather = weather,
+                        todayReadMinutes = todayReadMinutes,
+                        streakDays = streakDays,
+                        bonusMultiplier = calculateBonus(streakDays, weather, season),
+                        dateText = LocalDate.now().formatCN(),
+                        irrigationHours = irrigationHours,
+                        irrigationGoal = IRRIGATION_GOAL_HOURS,
+                        activePathLabels = determineActivePathLabels(meta)
+                    )
+                }
+                .distinctUntilChanged()
+                .debounce(150) // 150ms防抖，避免同步时DB连续写入导致UI频繁刷新
+                .collect { state ->
+                    _uiState.value = state
+                }
         }
     }
 
@@ -124,7 +129,6 @@ class GardenViewModel @Inject constructor(
         val currentSeason = _uiState.value.season
         val isNight = SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
 
-        // 获取当前季节可用的天气
         val availableWeathers = Weather.entries.filter { it.isAvailableIn(currentSeason, isNight) }
         if (availableWeathers.isEmpty()) return
 
@@ -140,12 +144,6 @@ class GardenViewModel @Inject constructor(
 
     /**
      * 浇灌植物：触发同步，让 GardenEngine 统一处理灌溉逻辑
-     *
-     * ⚠️ 之前此方法直接操作 DB 绕过了 GardenEngine，导致：
-     *   - 灌溉逻辑与引擎的倍率计算（季节×天气×路径匹配）脱节
-     *   - 枯寂植物不获得灌溉等引擎特性被绕过
-     *   - accumulatedMinutes 双重累加
-     * 修复后：改为触发 WorkManager 同步，走完整引擎流程
      */
     fun waterPlants() {
         val todayMinutes = _uiState.value.todayReadMinutes
@@ -153,7 +151,6 @@ class GardenViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // 触发同步 Worker 走引擎流程，不下发独立写库
                 val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
                 WorkManager.getInstance(application).enqueue(syncRequest)
                 android.util.Log.d("GardenVM", "已触发同步灌溉: ${todayMinutes}min 数据走引擎处理")
@@ -168,26 +165,16 @@ class GardenViewModel @Inject constructor(
      */
     private fun calculateBonus(streakDays: Int, weather: Weather, season: Season): Float {
         var bonus = 1.0f
-
-        // 连续天数加成
         if (streakDays >= 30) {
             bonus *= 1.2f
         } else if (streakDays >= 7) {
             bonus *= 1.1f
         }
-
-        // 天气加成
         bonus *= weather.multiplier
-
-        // 季节加成
         bonus *= season.multiplier
-
         return bonus
     }
 
-    /**
-     * 将路径字符串转换为常量
-     */
     private fun pathToConstant(path: String): Int {
         return when (path) {
             "JIMO" -> Constants.PATH_JIMO
@@ -199,9 +186,6 @@ class GardenViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 获取植物名称
-     */
     private fun getPlantName(plantId: String): String {
         return when (plantId) {
             "changpu" -> "菖蒲"
@@ -235,17 +219,10 @@ class GardenViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 刷新花园数据
-     */
     fun refresh() {
         loadGardenData()
     }
 
-    /**
-     * 根据实际阅读数据判定已激活的路径，返回中文标签列表
-     * 逻辑与 IrrigationEngine.determineUserPaths() 保持一致
-     */
     private fun determineActivePathLabels(meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?): List<String> {
         if (meta == null) return emptyList()
         val labels = mutableListOf<String>()
