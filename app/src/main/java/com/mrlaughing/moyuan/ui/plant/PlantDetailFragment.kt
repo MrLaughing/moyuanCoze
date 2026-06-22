@@ -1,12 +1,14 @@
 package com.mrlaughing.moyuan.ui.plant
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
@@ -16,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
 import kotlinx.coroutines.Dispatchers
@@ -59,14 +62,16 @@ class PlantDetailFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("PlantDetail", "onCreateView: plantId=${args.plantId}")
         return inflater.inflate(R.layout.fragment_plant_detail, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("PlantDetail", "onViewCreated: plantId=${args.plantId}")
 
+        // 初始化视图 - 分步try-catch，定位具体失败点
         try {
-            // 初始化视图 - 使用安全的方式获取视图
             plantImage = view.findViewById(R.id.image_plant_detail)
             plantName = view.findViewById(R.id.text_plant_name)
             textTitle = view.findViewById(R.id.text_title)
@@ -80,53 +85,63 @@ class PlantDetailFragment : Fragment() {
             pathName = view.findViewById(R.id.text_path_name)
             rarityText = view.findViewById(R.id.text_rarity)
             unlockCondition = view.findViewById(R.id.text_unlock_condition)
+            Log.d("PlantDetail", "视图初始化完成")
+        } catch (e: Exception) {
+            Log.e("PlantDetail", "视图初始化失败!!!", e)
+            // 不再navigateUp闪回，改为显示Toast提示
+            Toast.makeText(requireContext(), "视图初始化失败: ${e.message}", Toast.LENGTH_LONG).show()
+            return
+        }
 
-            backButton.setOnClickListener {
-                try {
-                    findNavController().navigateUp()
-                } catch (e: Exception) {
-                    android.util.Log.e("PlantDetail", "返回导航失败", e)
-                }
-            }
-
-            // 加载植物数据 - args.plantId 为 Long 索引，转为 String ID
-            // 防御：确保索引在合法范围内
-            val plantIndex = (args.plantId - 1L).toInt().coerceIn(0, com.mrlaughing.moyuan.data.model.PlantDefinitions.all.lastIndex)
-            val plantStringId = com.mrlaughing.moyuan.data.model.PlantDefinitions.all.getOrNull(plantIndex)?.id
-            android.util.Log.d("PlantDetail", "plantId=${args.plantId}, index=$plantIndex, stringId=$plantStringId")
-            if (plantStringId.isNullOrBlank()) {
-                android.util.Log.e("PlantDetail", "无法解析植物ID: plantId=${args.plantId}")
-                try { findNavController().navigateUp() } catch (_: Exception) {}
-                return
-            }
+        backButton.setOnClickListener {
             try {
-                viewModel.loadPlant(plantStringId)
+                findNavController().navigateUp()
             } catch (e: Exception) {
-                android.util.Log.e("PlantDetail", "加载植物详情失败", e)
-                try { findNavController().navigateUp() } catch (_: Exception) {}
-                return
+                Log.e("PlantDetail", "返回导航失败", e)
             }
+        }
 
-            // 观察 UI 状态
-            viewLifecycleOwner.lifecycleScope.launch {
-                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.uiState.collect { state ->
-                        try {
-                            renderState(state)
-                        } catch (e: Exception) {
-                            android.util.Log.e("PlantDetail", "渲染植物详情失败", e)
-                        }
+        // 加载植物数据 - args.plantId 为 Long 索引，转为 String ID
+        val plantIndex = (args.plantId - 1L).toInt().coerceIn(0, PlantDefinitions.all.lastIndex)
+        val plantStringId = PlantDefinitions.all.getOrNull(plantIndex)?.id
+        Log.d("PlantDetail", "plantId=${args.plantId}, index=$plantIndex, stringId=$plantStringId, totalPlants=${PlantDefinitions.all.size}")
+
+        if (plantStringId.isNullOrBlank()) {
+            Log.e("PlantDetail", "无法解析植物ID: plantId=${args.plantId}, index=$plantIndex")
+            // 不再navigateUp闪回，改为显示错误信息
+            textTitle.text = "植物不存在"
+            plantName.text = "未知"
+            return
+        }
+
+        try {
+            viewModel.loadPlant(plantStringId)
+            Log.d("PlantDetail", "viewModel.loadPlant($plantStringId) 调用成功")
+        } catch (e: Exception) {
+            Log.e("PlantDetail", "加载植物详情失败", e)
+            // 不再navigateUp闪回，降级显示
+            textTitle.text = "加载失败"
+            return
+        }
+
+        // 观察 UI 状态
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    try {
+                        renderState(state)
+                    } catch (e: Exception) {
+                        Log.e("PlantDetail", "渲染植物详情失败", e)
                     }
                 }
             }
-        } catch (e: Exception) {
-            android.util.Log.e("PlantDetail", "PlantDetailFragment初始化失败", e)
-            try { findNavController().navigateUp() } catch (_: Exception) {}
         }
     }
 
     private fun renderState(state: PlantDetailUiState) {
         try {
+            Log.d("PlantDetail", "renderState: name=${state.name}, level=${state.level}, plantIdStr=${state.plantIdStr}")
+
             // 顶栏标题：植物名 · 路径名
             textTitle?.text = "${state.name} · ${state.pathName}"
 
@@ -180,7 +195,7 @@ class PlantDetailFragment : Fragment() {
             // 加载植物大图
             loadPlantImage(state)
         } catch (e: Exception) {
-            android.util.Log.e("PlantDetail", "renderState异常", e)
+            Log.e("PlantDetail", "renderState异常", e)
         }
     }
 
@@ -209,6 +224,7 @@ class PlantDetailFragment : Fragment() {
                     // 使用 loadByStringId 直接传入字符串ID
                     PlantImageLoader.loadByStringId(ctx, state.plantIdStr, state.level, state.witherStage)
                 } catch (e: Exception) {
+                    Log.e("PlantDetail", "加载植物图片失败: ${state.plantIdStr}", e)
                     null
                 }
             }
@@ -221,5 +237,3 @@ class PlantDetailFragment : Fragment() {
         }
     }
 }
-
-
