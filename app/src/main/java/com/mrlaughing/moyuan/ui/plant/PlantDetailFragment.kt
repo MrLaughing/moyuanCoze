@@ -65,6 +65,7 @@ class PlantDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 初始化视图 - 使用安全的方式获取视图
         plantImage = view.findViewById(R.id.image_plant_detail)
         plantName = view.findViewById(R.id.text_plant_name)
         textTitle = view.findViewById(R.id.text_title)
@@ -83,7 +84,7 @@ class PlantDetailFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        // 加载植物数据
+        // 加载植物数据 - 使用 args.plantId (String 类型)
         viewModel.loadPlant(args.plantId)
 
         // 观察 UI 状态
@@ -128,26 +129,27 @@ class PlantDetailFragment : Fragment() {
         // 植物描述
         plantDescription.text = state.description
         
-        // 解锁条件
+        // 解锁条件 - 添加 null 安全检查
         val unlockMinutes = getUnlockMinutes(state.level)
-        unlockCondition.text = "解锁条件：累计阅读 ≥ ${unlockMinutes}min"
-
-        // 枯萎预警
+        unlockCondition?.text = "解锁条件：累计阅读 ≥ ${unlockMinutes}min"
+        
+        // 枯萎预警 - 添加 null 安全检查
         if (state.witherStage > 0) {
-            layoutWitherWarning.visibility = View.VISIBLE
-            witherWarning.text = when {
+            layoutWitherWarning?.visibility = View.VISIBLE
+            witherWarning?.text = when {
                 state.witherStage >= 2 -> "未阅读 ${state.witherCountdownDays}天 · 严重枯萎，请尽快阅读！"
                 state.witherStage == 1 -> "未阅读 ${state.witherCountdownDays}天 · 轻度枯萎"
                 else -> "未阅读 ${state.witherCountdownDays}天"
             }
         } else if (state.witherCountdownDays >= 0) {
-            layoutWitherWarning.visibility = View.VISIBLE
-            witherWarning.text = "未阅读 ${state.witherCountdownDays}天 · 渐枯倒计时 ${state.witherCountdownDays}天"
+            layoutWitherWarning?.visibility = View.VISIBLE
+            witherWarning?.text = "未阅读 ${state.witherCountdownDays}天 · 渐枯倒计时 ${state.witherCountdownDays}天"
         } else {
-            layoutWitherWarning.visibility = View.GONE
+            layoutWitherWarning?.visibility = View.GONE
         }
 
         // 加载植物大图 - 使用协程代替Thread，生命周期安全
+        // 使用 plantIdStr (String) 直接加载图片
         loadPlantImage(state)
     }
 
@@ -165,12 +167,16 @@ class PlantDetailFragment : Fragment() {
         }
     }
 
+    /**
+     * 加载植物大图 - 使用 plantIdStr (String) 直接加载
+     */
     private fun loadPlantImage(state: PlantDetailUiState) {
         val ctx = context ?: return
         viewLifecycleOwner.lifecycleScope.launch {
             val bitmap = withContext(Dispatchers.IO) {
                 try {
-                    PlantImageLoader.load(ctx, state.plantId, state.level, state.witherStage)
+                    // 使用 loadByStringId 直接传入字符串ID
+                    PlantImageLoader.loadByStringId(ctx, state.plantIdStr, state.level, state.witherStage)
                 } catch (e: Exception) {
                     null
                 }

@@ -5,7 +5,7 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/gardenFragment">
 
-    <!-- 4个主Tab Fragment -->
+    <!-- 墨园 Fragment -->
     <fragment
         android:id="@+id/gardenFragment"
         android:name="com.mrlaughing.moyuan.ui.garden.GardenFragment"
@@ -42,14 +42,14 @@
         android:name="com.mrlaughing.moyuan.ui.profile.ProfileFragment"
         android:label="@string/nav_profile" />
 
-    <!-- 植物详情（共用） -->
+    <!-- 植物详情 Fragment -->
     <fragment
         android:id="@+id/plantDetailFragment"
         android:name="com.mrlaughing.moyuan.ui.plant.PlantDetailFragment"
         android:label="@string/nav_garden">
         <argument
             android:name="plantId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
 </navigation>

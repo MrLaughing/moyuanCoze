@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException
 
 /**
  * 植物图片加载器：从 assets 加载植物 PNG，失败时生成程序化占位图
- * 
+ *
  * Asset路径约定: plants/{plantStringId}/lv{level}.png
  * 例如: plants/changpu/lv3.png, plants/cypress/lv5.png
  */
@@ -23,53 +23,16 @@ object PlantImageLoader {
     private const val PLACEHOLDER_SIZE = 120
 
     /**
-     * 加载植物图片
-     * @param plantId 植物ID (Long, 索引+1)
+     * 加载植物图片（使用字符串ID直接指定）- 推荐使用此方法
+     * @param plantStringId 植物字符串ID (如 "changpu", "orchid")
      * @param level 等级 (1-5)
      * @param witherStage 枯萎阶段 (0=健康, 1=轻枯, 2=中枯, 3=死亡)
      * @return Bitmap
      */
-    fun load(context: Context, plantId: Long, level: Int, witherStage: Int = 0): Bitmap? {
-        val safeLevel = level.coerceIn(1, 5)  // 防御：level必须1-5
-        val stringId = resolveStringId(plantId)
-        val assetPath = buildAssetPath(stringId, safeLevel, witherStage)
-        val bitmap = loadFromAssets(context, assetPath)
-        if (bitmap != null) return bitmap
-
-        // 降级策略1：尝试低一级的图片
-        if (safeLevel > 1) {
-            val fallbackPath = buildAssetPath(stringId, safeLevel - 1, witherStage)
-            val fallback = loadFromAssets(context, fallbackPath)
-            if (fallback != null) return fallback
-        }
-
-        // 降级策略2：尝试健康状态的同等级图片
-        if (witherStage > 0) {
-            val healthyPath = buildAssetPath(stringId, safeLevel, 0)
-            val healthy = loadFromAssets(context, healthyPath)
-            if (healthy != null) return applyWitherFilter(healthy, witherStage)
-        }
-
-        // 降级策略3：等级1的默认图
-        if (safeLevel > 1) {
-            val defaultPath = buildAssetPath(stringId, 1, 0)
-            val default = loadFromAssets(context, defaultPath)
-            if (default != null) return default
-        }
-
-        // 所有 assets 都找不到，生成程序化占位图
-        return generatePlaceholder(context, plantId, safeLevel, witherStage)
-    }
-
-    /**
-     * 加载植物图片（使用字符串ID直接指定）
-     * @param plantStringId 植物字符串ID (如 "changpu", "orchid")
-     * @param level 等级 (1-5)
-     * @param witherStage 枯萎阶段
-     * @return Bitmap
-     */
     fun loadByStringId(context: Context, plantStringId: String, level: Int, witherStage: Int = 0): Bitmap? {
         val safeLevel = level.coerceIn(1, 5)  // 防御：level必须1-5
+        
+        // 直接使用字符串ID构建 asset 路径
         val assetPath = buildAssetPath(plantStringId, safeLevel, witherStage)
         val bitmap = loadFromAssets(context, assetPath)
         if (bitmap != null) return bitmap
@@ -95,25 +58,43 @@ object PlantImageLoader {
             if (default != null) return default
         }
 
-        // 占位图
-        val plantId = (PlantDefinitions.all.indexOfFirst { it.id == plantStringId } + 1L).coerceAtLeast(1L)
-        return generatePlaceholder(context, plantId, level, witherStage)
+        // 所有 assets 都找不到，生成程序化占位图
+        return generatePlaceholder(context, plantStringId, safeLevel, witherStage)
     }
 
     /**
-     * 加载剪影图（图鉴未解锁时使用）
-     * 策略：用 lv1 图片加高灰度滤镜，没有 silhouette.png 专用文件
+     * 加载植物图片（兼容旧接口 - 使用 Long plantId）
+     * @param plantId 植物ID (Long, 索引+1)
+     * @param level 等级 (1-5)
+     * @param witherStage 枯萎阶段
+     * @return Bitmap
      */
-    fun loadSilhouette(context: Context, plantId: Long): Bitmap? {
+    fun load(context: Context, plantId: Long, level: Int, witherStage: Int = 0): Bitmap? {
         val stringId = resolveStringId(plantId)
+        return loadByStringId(context, stringId, level, witherStage)
+    }
+
+    /**
+     * 加载剪影图（图鉴未解锁时使用）- 使用字符串ID
+     * 策略：用 lv1 图片加高灰度滤镜
+     */
+    fun loadSilhouetteByStringId(context: Context, plantStringId: String): Bitmap? {
         // 先尝试加载 lv1 图片，然后施加灰度滤镜
-        val lv1Path = buildAssetPath(stringId, 1, 0)
+        val lv1Path = buildAssetPath(plantStringId, 1, 0)
         val lv1Bitmap = loadFromAssets(context, lv1Path)
         if (lv1Bitmap != null) {
             return applySilhouetteFilter(lv1Bitmap)
         }
         // 所有 assets 都找不到，生成程序化剪影占位图
-        return generateSilhouettePlaceholder(context, plantId)
+        return generateSilhouettePlaceholder(context, plantStringId)
+    }
+
+    /**
+     * 加载剪影图（兼容旧接口 - 使用 Long plantId）
+     */
+    fun loadSilhouette(context: Context, plantId: Long): Bitmap? {
+        val stringId = resolveStringId(plantId)
+        return loadSilhouetteByStringId(context, stringId)
     }
 
     /**
@@ -129,8 +110,8 @@ object PlantImageLoader {
     }
 
     private fun buildAssetPath(plantStringId: String, level: Int, witherStage: Int): String {
-        val witherSuffix = if (witherStage > 0) "_w${witherStage}" else ""
-        return "${Constants.PLANT_ASSET_PREFIX}${plantStringId}/lv${level}${witherSuffix}${Constants.PLANT_ASSET_SUFFIX}"
+        val witherSuffix = if (witherStage > 0) "_w$witherStage" else ""
+        return "${Constants.PLANT_ASSET_PREFIX}${plantStringId}/lv${level}$witherSuffix${Constants.PLANT_ASSET_SUFFIX}"
     }
 
     private fun loadFromAssets(context: Context, assetPath: String): Bitmap? {
@@ -152,13 +133,13 @@ object PlantImageLoader {
      * 生成程序化占位图：墨水屏风格的植物圆形图标
      * 灰度渐变圆 + 植物名字
      */
-    private fun generatePlaceholder(context: Context, plantId: Long, level: Int, witherStage: Int): Bitmap {
+    private fun generatePlaceholder(context: Context, plantStringId: String, level: Int, witherStage: Int): Bitmap {
         val size = (PLACEHOLDER_SIZE * (0.8f + level * 0.05f)).toInt()
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         // 获取植物名称
-        val plantName = getPlantDisplayName(plantId)
+        val plantName = getPlantDisplayName(plantStringId)
 
         // 基础灰度色（枯萎越重越灰）
         val baseGray = 220 - witherStage * 50
@@ -176,7 +157,6 @@ object PlantImageLoader {
             centerColor, edgeColor,
             Shader.TileMode.CLAMP
         )
-
         val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             shader = gradient
             style = Paint.Style.FILL
@@ -215,7 +195,7 @@ object PlantImageLoader {
     /**
      * 生成剪影占位图：灰色圆形 + 问号
      */
-    private fun generateSilhouettePlaceholder(context: Context, plantId: Long): Bitmap {
+    private fun generateSilhouettePlaceholder(context: Context, plantStringId: String): Bitmap {
         val size = PLACEHOLDER_SIZE
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -250,13 +230,8 @@ object PlantImageLoader {
     /**
      * 获取植物显示名称
      */
-    private fun getPlantDisplayName(plantId: Long): String {
-        val index = (plantId - 1).toInt()
-        return if (index in PlantDefinitions.all.indices) {
-            PlantDefinitions.all[index].name
-        } else {
-            "植物"
-        }
+    private fun getPlantDisplayName(plantStringId: String): String {
+        return PlantDefinitions.getById(plantStringId)?.name ?: "植物"
     }
 
     /**
@@ -275,14 +250,19 @@ object PlantImageLoader {
             val r = pixel ushr 16 and 0xFF
             val g = pixel ushr 8 and 0xFF
             val b = pixel and 0xFF
+
             // 灰度化
             val gray = (r * 0.299f + g * 0.587f + b * 0.114f).toInt()
+
             // 向浅灰混合，形成剪影效果（高灰度 + 降低对比度）
             val silhouetteGray = (gray + (200 - gray) * 0.75f).toInt().coerceIn(0, 255)
+
             // 降低不透明度，让剪影更淡
             val newAlpha = (a * 0.6f).toInt().coerceIn(0, 255)
+
             pixels[i] = (newAlpha shl 24) or (silhouetteGray shl 16) or (silhouetteGray shl 8) or silhouetteGray
         }
+
         result.setPixels(pixels, 0, width, 0, 0, width, height)
         return result
     }
@@ -298,18 +278,22 @@ object PlantImageLoader {
         source.getPixels(pixels, 0, width, 0, 0, width, height)
 
         val grayShift = witherStage * 40  // 枯萎越重，灰度偏移越大
+
         for (i in pixels.indices) {
             val pixel = pixels[i]
             val a = pixel ushr 24 and 0xFF
             val r = pixel ushr 16 and 0xFF
             val g = pixel ushr 8 and 0xFF
             val b = pixel and 0xFF
+
             // 向灰色混合
             val nr = (r + (128 - r) * grayShift / 120).coerceIn(0, 255)
             val ng = (g + (128 - g) * grayShift / 120).coerceIn(0, 255)
             val nb = (b + (128 - b) * grayShift / 120).coerceIn(0, 255)
+
             pixels[i] = (a shl 24) or (nr shl 16) or (ng shl 8) or nb
         }
+
         result.setPixels(pixels, 0, width, 0, 0, width, height)
         return result
     }

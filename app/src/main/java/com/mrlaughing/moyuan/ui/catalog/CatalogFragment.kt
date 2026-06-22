@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 class CatalogFragment : Fragment() {
 
     private val viewModel: CatalogViewModel by viewModels()
-
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PlantCardAdapter
     private lateinit var unlockedCountText: TextView
@@ -67,9 +66,11 @@ class CatalogFragment : Fragment() {
 
         adapter = PlantCardAdapter { plant ->
             if (plant.isUnlocked) {
-                navigateToPlantDetail(plant.plantId)
+                // 传入 plantStringId（String）而非 Long plantId
+                navigateToPlantDetail(plant.plantStringId)
             }
         }
+
         val columns = ScreenUtils.getRecommendedGridColumns(requireContext())
         recyclerView.layoutManager = GridLayoutManager(context, columns)
         recyclerView.adapter = adapter
@@ -128,9 +129,12 @@ class CatalogFragment : Fragment() {
         }
     }
 
-    private fun navigateToPlantDetail(plantId: Long) {
+    /**
+     * 导航到植物详情页 - 使用 plantStringId（String）传递参数
+     */
+    private fun navigateToPlantDetail(plantStringId: String) {
         val direction = CatalogFragmentDirections
-            .actionCatalogFragmentToPlantDetailFragment(plantId)
+            .actionCatalogFragmentToPlantDetailFragment(plantStringId)
         findNavController().navigate(direction)
     }
 }

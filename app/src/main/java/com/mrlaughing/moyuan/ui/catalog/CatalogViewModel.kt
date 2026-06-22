@@ -17,12 +17,12 @@ import javax.inject.Inject
 
 /**
  * 图鉴 ViewModel
- * 
+ *
  * 从 Repository 加载真实数据：
  * - PlantRepository.observePlants() 获取已解锁植物
  * - PlantDefinitions.all 获取全部 27 种植物定义
  * - 未解锁植物显示锁定状态
- * 
+ *
  * 注意：unlockDate 为 null 表示未解锁，非 null 表示已解锁
  */
 @HiltViewModel
@@ -45,7 +45,7 @@ class CatalogViewModel @Inject constructor(
 
     /**
      * 从 Repository 加载植物数据
-     * 
+     *
      * DB 里只有已解锁的植物（unlockDate != null），需要结合 PlantDefinitions 的全部 27 种
      * 已解锁的显示真实等级，未解锁的显示锁定状态
      */
@@ -59,6 +59,7 @@ class CatalogViewModel @Inject constructor(
                 // 合并 PlantDefinitions 的全部 27 种植物
                 val allCatalogItems = PlantDefinitions.all.map { plantDef ->
                     val dbPlant = unlockedMap[plantDef.id]
+
                     // unlockDate != null 表示已解锁
                     val isUnlocked = dbPlant?.unlockDate != null
 
@@ -70,6 +71,7 @@ class CatalogViewModel @Inject constructor(
 
                     CatalogPlantItem(
                         plantId = PlantDefinitions.all.indexOf(plantDef) + 1L,
+                        plantStringId = plantDef.id,  // 直接使用字符串ID，不再依赖Long索引映射
                         name = plantDef.name,
                         level = if (isUnlocked) dbPlant?.level ?: 1 else 0,
                         rarity = rarityToInt(plantDef.rarity),
@@ -145,9 +147,13 @@ class CatalogViewModel @Inject constructor(
 
 /**
  * 图鉴植物卡片数据
+ * 
+ * plantStringId 是植物的字符串标识符（如 "changpu", "orchid"），用于稳定地加载图片
+ * plantId 是 Long 类型的索引（从1开始），仅用于兼容旧代码
  */
 data class CatalogPlantItem(
-    val plantId: Long,
+    val plantId: Long,          // Long索引（兼容用）
+    val plantStringId: String,  // 字符串ID（用于稳定加载）
     val name: String,
     val level: Int,
     val rarity: Int,         // 1-4 星

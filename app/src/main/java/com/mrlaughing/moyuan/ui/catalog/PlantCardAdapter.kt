@@ -29,6 +29,7 @@ class PlantCardAdapter(
     private val unlockedNameColor = 0xFF2C2416.toInt()      // ink_dark
     private val unlockedLevelColor = 0xFF78716C.toInt()     // text_secondary
     private val unlockedStarsColor = 0xFFA89F91.toInt()     // ink_light
+
     private val lockedNameColor = 0xFFA89F91.toInt()        // ink_light
     private val lockedLevelColor = 0xFFA89F91.toInt()       // ink_light
     private val lockedStarsColor = 0xFFD4C9B8.toInt()       // border/ink_wash
@@ -76,6 +77,7 @@ class PlantCardAdapter(
                 // 已解锁：显示正常图片
                 loadPlantImage(item)
                 plantName.text = item.name
+
                 // 显示等级和等级名称：Lv.3 墨枝
                 val levelName = getLevelName(item.level)
                 plantLevel.text = "Lv.${item.level} $levelName"
@@ -121,13 +123,17 @@ class PlantCardAdapter(
             }
         }
 
+        /**
+         * 加载植物图片 - 使用 plantStringId 直接加载，稳定可靠
+         */
         private fun loadPlantImage(item: CatalogPlantItem) {
             val context = itemView.context
             // 使用Activity的lifecycleScope代替裸Thread，避免Fragment销毁后崩溃
             (context as? LifecycleOwner)?.lifecycleScope?.launch {
                 val bitmap = withContext(Dispatchers.IO) {
                     try {
-                        PlantImageLoader.load(context, item.plantId, item.level, 0)
+                        // 使用 loadByStringId 直接传入字符串ID，不再依赖 Long 索引映射
+                        PlantImageLoader.loadByStringId(context, item.plantStringId, item.level, 0)
                     } catch (e: Exception) {
                         null
                     }
@@ -140,12 +146,16 @@ class PlantCardAdapter(
             }
         }
 
+        /**
+         * 加载剪影图 - 使用 plantStringId 直接加载
+         */
         private fun loadSilhouette(item: CatalogPlantItem) {
             val context = itemView.context
             (context as? LifecycleOwner)?.lifecycleScope?.launch {
                 val bitmap = withContext(Dispatchers.IO) {
                     try {
-                        PlantImageLoader.loadSilhouette(context, item.plantId)
+                        // 使用 loadSilhouetteByStringId 直接传入字符串ID
+                        PlantImageLoader.loadSilhouetteByStringId(context, item.plantStringId)
                     } catch (e: Exception) {
                         null
                     }

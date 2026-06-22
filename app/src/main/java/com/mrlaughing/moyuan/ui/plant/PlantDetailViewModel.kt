@@ -17,11 +17,11 @@ import android.util.Log
 
 /**
  * 植物详情 ViewModel
- * 
+ *
  * 从 Repository 加载真实数据：
  * - PlantRepository.observePlant(plantId) 获取植物详情
  * - PlantDefinitions.getById() 获取植物定义信息
- * 
+ *
  * unlockDate != null 表示已解锁
  */
 @HiltViewModel
@@ -33,24 +33,25 @@ class PlantDetailViewModel @Inject constructor(
     val uiState: StateFlow<PlantDetailUiState> = _uiState.asStateFlow()
 
     /**
-     * 加载植物详情
+     * 加载植物详情 - 使用 String plantId 直接查找，不再依赖 Long 索引
      */
-    fun loadPlant(plantId: Long) {
+    fun loadPlant(plantStringId: String) {
         viewModelScope.launch {
             try {
-                // 将 Long ID 转换为 String plantId
-                // plantId 从 1 开始，PlantDefinitions.all 的 index + 1
-                val allPlants = PlantDefinitions.all
-                if (plantId < 1 || plantId > allPlants.size) {
-                    _uiState.value = PlantDetailUiState(plantId = plantId)
+                // 使用 PlantDefinitions.getById() 直接通过字符串ID查找
+                val plantDef = PlantDefinitions.getById(plantStringId)
+                if (plantDef == null) {
+                    Log.e("PlantDetailVM", "未找到植物定义: $plantStringId")
+                    _uiState.value = PlantDetailUiState(
+                        plantIdStr = plantStringId,
+                        name = "未知植物",
+                        level = 1
+                    )
                     return@launch
                 }
 
-                val plantDef = allPlants[plantId.toInt() - 1]
-                val plantIdStr = plantDef.id
-
                 // 观察该植物的状态
-                plantRepository.observePlant(plantIdStr).collect { entity ->
+                plantRepository.observePlant(plantStringId).collect { entity ->
                     if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
                         // 已解锁，显示真实数据
                         val safeLevel = entity.level.coerceAtLeast(1)  // 防御level<=0
@@ -58,9 +59,8 @@ class PlantDetailViewModel @Inject constructor(
                             entity.accumulatedMinutes,
                             safeLevel
                         )
-
                         _uiState.value = PlantDetailUiState(
-                            plantId = plantId,
+                            plantIdStr = plantStringId,
                             name = plantDef.name,
                             level = safeLevel,
                             maxLevel = Constants.MAX_LEVEL,
@@ -75,7 +75,7 @@ class PlantDetailViewModel @Inject constructor(
                     } else {
                         // 未解锁，显示植物定义信息
                         _uiState.value = PlantDetailUiState(
-                            plantId = plantId,
+                            plantIdStr = plantStringId,
                             name = plantDef.name,
                             level = 1,  // 未解锁也显示为Lv.1，避免level=0导致数组越界
                             maxLevel = Constants.MAX_LEVEL,
@@ -90,14 +90,12 @@ class PlantDetailViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("PlantDetailVM", "加载植物详情失败 plantId=$plantId", e)
+                Log.e("PlantDetailVM", "加载植物详情失败 plantStringId=$plantStringId", e)
                 // 异常时降级：显示植物基本信息，避免崩溃
-                val allPlants = PlantDefinitions.all
-                val index = (plantId - 1).toInt()
-                if (index in allPlants.indices) {
-                    val plantDef = allPlants[index]
+                val plantDef = PlantDefinitions.getById(plantStringId)
+                if (plantDef != null) {
                     _uiState.value = PlantDetailUiState(
-                        plantId = plantId,
+                        plantIdStr = plantStringId,
                         name = plantDef.name,
                         level = 1,
                         maxLevel = Constants.MAX_LEVEL,
@@ -111,7 +109,7 @@ class PlantDetailViewModel @Inject constructor(
                     )
                 } else {
                     _uiState.value = PlantDetailUiState(
-                        plantId = plantId,
+                        plantIdStr = plantStringId,
                         name = "未知植物",
                         level = 1
                     )
@@ -159,8 +157,12 @@ class PlantDetailViewModel @Inject constructor(
     }
 }
 
+/**
+ * 植物详情 UI 状态
+ * plantIdStr: 字符串ID，用于稳定地加载图片
+ */
 data class PlantDetailUiState(
-    val plantId: Long = 0,
+    val plantIdStr: String = "",   // 字符串ID（主键）
     val name: String = "",
     val level: Int = 1,
     val maxLevel: Int = Constants.MAX_LEVEL,
