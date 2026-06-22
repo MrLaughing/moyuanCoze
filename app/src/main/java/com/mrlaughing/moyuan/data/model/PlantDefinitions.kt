@@ -13,6 +13,15 @@ object PlantDefinitions {
 
     fun getById(id: String): Plant? = all.find { it.id == id }
 
+    /**
+     * 通过 Long 索引查找植物（索引从1开始，对应 all 的0开始）
+     * 防御越界：超出范围返回 null
+     */
+    fun getByLongIndex(index: Long): Plant? {
+        val i = (index - 1).toInt()
+        return all.getOrNull(i)
+    }
+
     fun getByPath(path: PlantPath): List<Plant> = all.filter { it.path == path }
 
     // ─── 积墨（累计阅读时长）───────────────────────────────────

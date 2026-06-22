@@ -85,17 +85,32 @@ class PlantDetailFragment : Fragment() {
         }
 
         // 加载植物数据 - args.plantId 为 Long 索引，转为 String ID
-        val plantStringId = com.mrlaughing.moyuan.data.model.PlantDefinitions.all.getOrNull(args.plantId.toInt() - 1)?.id ?: run {
-                findNavController().navigateUp()
-                return
-            }
+        // 防御：确保索引在合法范围内
+        val plantIndex = (args.plantId - 1L).toInt().coerceIn(0, com.mrlaughing.moyuan.data.model.PlantDefinitions.all.lastIndex)
+        val plantStringId = com.mrlaughing.moyuan.data.model.PlantDefinitions.all.getOrNull(plantIndex)?.id
+        android.util.Log.d("PlantDetail", "plantId=${args.plantId}, index=$plantIndex, stringId=$plantStringId")
+        if (plantStringId.isNullOrBlank()) {
+            android.util.Log.e("PlantDetail", "无法解析植物ID: plantId=${args.plantId}")
+            findNavController().navigateUp()
+            return
+        }
+        try {
             viewModel.loadPlant(plantStringId)
+        } catch (e: Exception) {
+            android.util.Log.e("PlantDetail", "加载植物详情失败", e)
+            findNavController().navigateUp()
+            return
+        }
 
         // 观察 UI 状态
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    renderState(state)
+                    try {
+                        renderState(state)
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlantDetail", "渲染植物详情失败", e)
+                    }
                 }
             }
         }

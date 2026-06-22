@@ -50,43 +50,49 @@ class PlantDetailViewModel @Inject constructor(
                     return@launch
                 }
 
-                // 观察该植物的状态
+                Log.d("PlantDetailVM", "加载植物: $plantStringId (${plantDef.name})")
+
+                // 观察该植物的状态 — 内层也加 try-catch 防御
                 plantRepository.observePlant(plantStringId).collect { entity ->
-                    if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
-                        // 已解锁，显示真实数据
-                        val safeLevel = entity.level.coerceAtLeast(1)  // 防御level<=0
-                        val levelProgress = calculateLevelProgress(
-                            entity.accumulatedMinutes,
-                            safeLevel
-                        )
-                        _uiState.value = PlantDetailUiState(
-                            plantIdStr = plantStringId,
-                            name = plantDef.name,
-                            level = safeLevel,
-                            maxLevel = Constants.MAX_LEVEL,
-                            totalReadMinutes = entity.accumulatedMinutes,
-                            levelProgress = levelProgress,
-                            description = plantDef.description,
-                            witherStage = entity.witherStage,
-                            witherCountdownDays = -1, // TODO: 计算枯萎倒计时
-                            pathName = pathToName(plantDef.path),
-                            rarity = rarityToInt(plantDef.rarity)
-                        )
-                    } else {
-                        // 未解锁，显示植物定义信息
-                        _uiState.value = PlantDetailUiState(
-                            plantIdStr = plantStringId,
-                            name = plantDef.name,
-                            level = 1,  // 未解锁也显示为Lv.1，避免level=0导致数组越界
-                            maxLevel = Constants.MAX_LEVEL,
-                            totalReadMinutes = 0,
-                            levelProgress = 0f,
-                            description = plantDef.description,
-                            witherStage = 0,
-                            witherCountdownDays = -1,
-                            pathName = pathToName(plantDef.path),
-                            rarity = rarityToInt(plantDef.rarity)
-                        )
+                    try {
+                        if (entity != null && !entity.unlockDate.isNullOrEmpty()) {
+                            // 已解锁，显示真实数据
+                            val safeLevel = entity.level.coerceIn(1, Constants.MAX_LEVEL)
+                            val levelProgress = calculateLevelProgress(
+                                entity.accumulatedMinutes,
+                                safeLevel
+                            )
+                            _uiState.value = PlantDetailUiState(
+                                plantIdStr = plantStringId,
+                                name = plantDef.name,
+                                level = safeLevel,
+                                maxLevel = Constants.MAX_LEVEL,
+                                totalReadMinutes = entity.accumulatedMinutes,
+                                levelProgress = levelProgress,
+                                description = plantDef.description,
+                                witherStage = entity.witherStage.coerceIn(0, 4),
+                                witherCountdownDays = -1,
+                                pathName = pathToName(plantDef.path),
+                                rarity = rarityToInt(plantDef.rarity)
+                            )
+                        } else {
+                            // 未解锁，显示植物定义信息
+                            _uiState.value = PlantDetailUiState(
+                                plantIdStr = plantStringId,
+                                name = plantDef.name,
+                                level = 1,
+                                maxLevel = Constants.MAX_LEVEL,
+                                totalReadMinutes = 0,
+                                levelProgress = 0f,
+                                description = plantDef.description,
+                                witherStage = 0,
+                                witherCountdownDays = -1,
+                                pathName = pathToName(plantDef.path),
+                                rarity = rarityToInt(plantDef.rarity)
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Log.e("PlantDetailVM", "处理植物状态失败", e)
                     }
                 }
             } catch (e: Exception) {
