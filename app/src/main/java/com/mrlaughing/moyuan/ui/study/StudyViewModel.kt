@@ -61,9 +61,13 @@ class StudyViewModel @Inject constructor(
                 val totalReadMinutes = meta?.accumulatedMinutes ?: 0
                 val booksRead = meta?.booksRead ?: 0
                 val streakDays = meta?.streakDays ?: 0
-                Triple(stats, meta, Pair(totalReadMinutes, Pair(booksRead, streakDays)))
-            }.collect { (stats, meta, totals) ->
-                val (totalReadMinutes, booksRead, streakDays) = totals
+                StudyStatsData(stats, meta, totalReadMinutes, booksRead, streakDays)
+            }.collect { data ->
+                val stats = data.stats
+                val meta = data.meta
+                val totalReadMinutes = data.totalReadMinutes
+                val booksRead = data.booksRead
+                val streakDays = data.streakDays
 
                 // 获取当前周的起止日期
                 val weekOffset = currentWeekOffset.value
@@ -201,4 +205,15 @@ data class BookItem(
     val title: String,
     val totalReadMinutes: Int,
     val lastReadDate: String? = null
+)
+
+/**
+ * 书案统计组合数据
+ */
+private data class StudyStatsData(
+    val stats: com.mrlaughing.moyuan.data.local.db.entity.ReadStatsEntity?,
+    val meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?,
+    val totalReadMinutes: Int,
+    val booksRead: Int,
+    val streakDays: Int
 )

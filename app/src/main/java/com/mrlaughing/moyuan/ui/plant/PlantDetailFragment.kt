@@ -85,7 +85,7 @@ class PlantDetailFragment : Fragment() {
         }
 
         // 加载植物数据 - 使用 args.plantId (String 类型)
-        viewModel.loadPlant(args.plantId)
+        viewModel.loadPlant(args.plantId.toString())
 
         // 观察 UI 状态
         viewLifecycleOwner.lifecycleScope.launch {
@@ -190,3 +190,4 @@ class PlantDetailFragment : Fragment() {
         }
     }
 }
+

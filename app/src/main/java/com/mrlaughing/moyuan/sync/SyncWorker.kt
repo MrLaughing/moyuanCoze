@@ -211,9 +211,9 @@ class SyncWorker(
         gardenRepository: GardenRepository,
         plantRepository: PlantRepository,
         totalReadMinutes: Int
-    ): Result<Unit> {
+    ): Result {
         return try {
-            val meta = gardenRepository.observeMeta().first() ?: return Result.success(Unit)
+            val meta = gardenRepository.observeMeta().first() ?: return Result.success()
             
             // 确定补算起始日期
             val installDate = meta.installDate?.let {
@@ -228,14 +228,14 @@ class SyncWorker(
             
             if (backfillStart.isAfter(backfillEnd)) {
                 Log.d(TAG, "无需补算：已同步到昨天")
-                return Result.success(Unit)
+                return Result.success()
             }
 
             Log.d(TAG, "开始补算: $backfillStart ~ $backfillEnd")
 
             // 获取花园状态用于逐日重算
             val gardenState = gardenRepository.observeGardenState().first()
-            val metaEntity = gardenState.meta ?: return Result.success(Unit)
+            val metaEntity = gardenState.meta ?: return Result.success()
             var engineMeta = EntityMapper.toEngineMeta(metaEntity)
             var enginePlants = gardenState.plants.map { EntityMapper.toEnginePlant(it) }
 
@@ -255,7 +255,7 @@ class SyncWorker(
                     
                     // 获取该月历史天气（按月获取避免API限制）
                     val monthStart = yearMonth.atDay(1)
-                    val monthEnd = yearMonth.atEndOfMonth().coerceBefore(backfillEnd)
+                    val monthEnd = yearMonth.atEndOfMonth().coerceAtMost(backfillEnd)
                     val weatherMap = weatherRepository.fetchHistoricalWeather(monthStart, monthEnd)
                     
                     // 处理该月每一天
@@ -333,10 +333,10 @@ class SyncWorker(
             plantRepository.updatePlantAfterRecalculate(finalPlantEntities)
 
             Log.d(TAG, "补算完成")
-            Result.success(Unit)
+            Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "补算异常", e)
-            Result.failure(e)
+            Result.failure()
         }
     }
 
@@ -516,3 +516,4 @@ interface SyncWorkerEntryPoint {
     fun readStatsRepository(): ReadStatsRepository
     fun weatherRepository(): WeatherRepository
 }
+
