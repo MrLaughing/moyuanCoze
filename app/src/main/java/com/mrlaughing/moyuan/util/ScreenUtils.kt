@@ -76,8 +76,8 @@ object ScreenUtils {
      * 成就列数比图鉴多1列
      */
     fun getAchievementGridColumns(context: Context): Int {
-        val catalogColumns = getRecommendedGridColumns(context)
-        return (catalogColumns + 1).coerceAtMost(6)
+        val smallestWidth = getSmallestScreenWidthDp(context)
+        return if (smallestWidth < 360) 4 else 5
     }
 
     /**
@@ -118,3 +118,4 @@ object ScreenUtils {
         return (px / context.resources.displayMetrics.density).toInt()
     }
 }
+

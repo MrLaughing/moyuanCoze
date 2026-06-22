@@ -189,39 +189,23 @@ class ProfileViewModel @Inject constructor(
             // 阅读成就检查
             checkAndUpdateAchievement("first_sync", 
                 if (isAuthorized) 1 else 0)
-            
-            checkAndUpdateAchievement("bookworm", booksRead)
-            
-            checkAndUpdateAchievement("book_collector", booksRead)
-            
-            checkAndUpdateAchievement("library_master", booksRead)
-            
-            checkAndUpdateAchievement("night_reader", meta.nightReadDays)
-            
-            checkAndUpdateAchievement("ink_hours_100", readingHours)
-            
-            checkAndUpdateAchievement("ink_hours_500", readingHours)
+            checkAndUpdateAchievement("read_10_books", booksRead)
+            checkAndUpdateAchievement("read_50_books", booksRead)
+            checkAndUpdateAchievement("night_read_30", meta.nightReadDays)
+            checkAndUpdateAchievement("read_100_hours", readingHours)
+            checkAndUpdateAchievement("read_500_hours", readingHours)
 
             // 养成成就检查
             checkAndUpdateAchievement("first_sprout", 
                 if (unlockedCount >= 1) 1 else 0)
-            
-            checkAndUpdateAchievement("ink_forest", unlockedCount)
-            
-            checkAndUpdateAchievement("full_bloom", unlockedCount)
-            
-            checkAndUpdateAchievement("mohua", 
+            checkAndUpdateAchievement("unlock_10", unlockedCount)
+            checkAndUpdateAchievement("unlock_all", unlockedCount)
+            checkAndUpdateAchievement("reach_lv5", 
                 if (maxLevel >= 5) 1 else 0)
-            
-            checkAndUpdateAchievement("revival", 
-                if (meta.hasRevivedFromDead) 1 else 0)
 
             // 里程碑成就检查
-            checkAndUpdateAchievement("week_streak", meta.streakDays)
-            
-            checkAndUpdateAchievement("month_streak", meta.streakDays)
-            
-            checkAndUpdateAchievement("hundred_streak", meta.maxStreakDays)
+            checkAndUpdateAchievement("streak_7", meta.streakDays)
+            checkAndUpdateAchievement("streak_30", meta.streakDays)
         }
     }
 

@@ -1,20 +1,14 @@
 package com.mrlaughing.moyuan.data.model
 
 /**
- * 成就定义
- * 包含所有成就的静态定义信息
+ * 成就定义 - 12种成就对应12个水墨线条图标
  */
 object AchievementDefinitions {
-    
-    // 成就分类
     const val CATEGORY_READING = "READING"
     const val CATEGORY_GROWTH = "GROWTH"
     const val CATEGORY_MILESTONE = "MILESTONE"
     const val CATEGORY_ALL = "ALL"
     
-    /**
-     * 成就定义数据类
-     */
     data class AchievementDef(
         val id: String,
         val category: String,
@@ -24,148 +18,21 @@ object AchievementDefinitions {
         val targetValue: Int
     )
     
-    /**
-     * 所有成就定义列表
-     */
     val ALL_ACHIEVEMENTS = listOf(
-        // 阅读成就
-        AchievementDef(
-            id = "first_sync",
-            category = CATEGORY_READING,
-            name = "初芽",
-            description = "墨香初识，书卷初开",
-            condition = "首次同步",
-            targetValue = 1
-        ),
-        AchievementDef(
-            id = "bookworm",
-            category = CATEGORY_READING,
-            name = "书虫",
-            description = "腹有诗书气自华",
-            condition = "阅读10本",
-            targetValue = 10
-        ),
-        AchievementDef(
-            id = "book_collector",
-            category = CATEGORY_READING,
-            name = "藏书家",
-            description = "藏书万卷，胸中自足",
-            condition = "阅读50本",
-            targetValue = 50
-        ),
-        AchievementDef(
-            id = "library_master",
-            category = CATEGORY_READING,
-            name = "书阁主人",
-            description = "坐拥书阁，墨韵悠长",
-            condition = "阅读100本",
-            targetValue = 100
-        ),
-        AchievementDef(
-            id = "night_reader",
-            category = CATEGORY_READING,
-            name = "夜读者",
-            description = "夜深灯火共书窗",
-            condition = "夜读30天",
-            targetValue = 30
-        ),
-        AchievementDef(
-            id = "morning_reader",
-            category = CATEGORY_READING,
-            name = "晨读客",
-            description = "晨光熹微，书声朗朗",
-            condition = "晨读30天",
-            targetValue = 30
-        ),
-        AchievementDef(
-            id = "ink_hours_100",
-            category = CATEGORY_READING,
-            name = "墨时累积",
-            description = "积墨成塔，跬步千里",
-            condition = "阅读100小时",
-            targetValue = 100
-        ),
-        AchievementDef(
-            id = "ink_hours_500",
-            category = CATEGORY_READING,
-            name = "墨时深厚",
-            description = "墨海无涯，孜孜不倦",
-            condition = "阅读500小时",
-            targetValue = 500
-        ),
-        
-        // 养成成就
-        AchievementDef(
-            id = "first_sprout",
-            category = CATEGORY_GROWTH,
-            name = "萌芽破土",
-            description = "一株新绿，破土而出",
-            condition = "解锁首株",
-            targetValue = 1
-        ),
-        AchievementDef(
-            id = "ink_forest",
-            category = CATEGORY_GROWTH,
-            name = "墨林初成",
-            description = "墨林初成，郁郁葱葱",
-            condition = "解锁10株",
-            targetValue = 10
-        ),
-        AchievementDef(
-            id = "full_bloom",
-            category = CATEGORY_GROWTH,
-            name = "墨园丰收",
-            description = "墨园繁盛，万物生长",
-            condition = "解锁全部27株",
-            targetValue = 27
-        ),
-        AchievementDef(
-            id = "mohua",
-            category = CATEGORY_GROWTH,
-            name = "墨华绽放",
-            description = "墨华绽放，锦绣天成",
-            condition = "植物达LV5",
-            targetValue = 1
-        ),
-        AchievementDef(
-            id = "revival",
-            category = CATEGORY_GROWTH,
-            name = "枯木逢春",
-            description = "枯木逢春犹再发",
-            condition = "救活1株",
-            targetValue = 1
-        ),
-        
-        // 里程碑成就
-        AchievementDef(
-            id = "week_streak",
-            category = CATEGORY_MILESTONE,
-            name = "一周墨途",
-            description = "七日持之以恒",
-            condition = "连续7天",
-            targetValue = 7
-        ),
-        AchievementDef(
-            id = "month_streak",
-            category = CATEGORY_MILESTONE,
-            name = "一月墨耕",
-            description = "一月勤耕，墨香盈门",
-            condition = "连续30天",
-            targetValue = 30
-        ),
-        AchievementDef(
-            id = "hundred_streak",
-            category = CATEGORY_MILESTONE,
-            name = "百日墨缘",
-            description = "百日之约，墨缘深厚",
-            condition = "连续100天",
-            targetValue = 100
-        )
+        AchievementDef("first_sync", CATEGORY_READING, "初心", "墨香初识，书卷初开", "首次同步", 1),
+        AchievementDef("read_10_books", CATEGORY_READING, "破万卷", "读书破万卷，下笔如有神", "阅读10本书", 10),
+        AchievementDef("night_read_30", CATEGORY_READING, "夜读", "夜深灯火共书窗", "夜读30天", 30),
+        AchievementDef("read_100_hours", CATEGORY_READING, "登高", "会当凌绝顶，一览众山小", "阅读100小时", 100),
+        AchievementDef("read_50_books", CATEGORY_READING, "执笔", "笔落惊风雨，诗成泣鬼神", "阅读50本书", 50),
+        AchievementDef("read_500_hours", CATEGORY_READING, "墨海", "墨海无涯，孜孜不倦", "阅读500小时", 500),
+        AchievementDef("first_sprout", CATEGORY_GROWTH, "留印", "墨园初开，留印为证", "解锁首株植物", 1),
+        AchievementDef("unlock_10", CATEGORY_GROWTH, "寻芳", "寻芳不觉醉流霞", "解锁10株植物", 10),
+        AchievementDef("unlock_all", CATEGORY_GROWTH, "归园", "归园田居，心远地自偏", "解锁全部27株植物", 27),
+        AchievementDef("reach_lv5", CATEGORY_GROWTH, "四季", "四时之景不同，而乐亦无穷", "植物达到Lv5", 1),
+        AchievementDef("streak_7", CATEGORY_MILESTONE, "不辍", "七日持之以恒，笔耕不辍", "连续阅读7天", 7),
+        AchievementDef("streak_30", CATEGORY_MILESTONE, "星辰", "三十日仰望星空，星辰指路", "连续阅读30天", 30)
     )
     
-    /**
-     * 分类显示名称
-     */
     val CATEGORY_LABELS = mapOf(
         CATEGORY_ALL to "全部",
         CATEGORY_READING to "阅读",
