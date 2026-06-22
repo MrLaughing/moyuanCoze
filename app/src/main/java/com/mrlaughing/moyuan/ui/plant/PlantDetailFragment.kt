@@ -84,8 +84,12 @@ class PlantDetailFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        // 加载植物数据 - 使用 args.plantId (String 类型)
-        viewModel.loadPlant(args.plantId.toString())
+        // 加载植物数据 - args.plantId 为 Long 索引，转为 String ID
+        val plantStringId = com.mrlaughing.moyuan.data.model.PlantDefinitions.all.getOrNull(args.plantId.toInt() - 1)?.id ?: run {
+                findNavController().navigateUp()
+                return
+            }
+            viewModel.loadPlant(plantStringId)
 
         // 观察 UI 状态
         viewLifecycleOwner.lifecycleScope.launch {
@@ -190,4 +194,5 @@ class PlantDetailFragment : Fragment() {
         }
     }
 }
+
 

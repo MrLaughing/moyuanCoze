@@ -211,9 +211,10 @@ data class BookItem(
  * 书案统计组合数据
  */
 private data class StudyStatsData(
-    val stats: com.mrlaughing.moyuan.data.local.db.entity.ReadStatsEntity?,
-    val meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?,
+    val stats: ReadStatsEntity?,
+    val meta: GardenMetaEntity?,
     val totalReadMinutes: Int,
     val booksRead: Int,
     val streakDays: Int
 )
+

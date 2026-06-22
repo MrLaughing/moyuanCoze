@@ -119,17 +119,17 @@ class SyncWorker(
             saveWeeklyDailyRecords(readStatsRepository, weeklyData, todayReadMinutes)
 
             // 5. 执行历史天气精确补算
-            val backfillResult = performBackfill(
-                wereadRepository = wereadRepository,
-                readStatsRepository = readStatsRepository,
-                weatherRepository = weatherRepository,
-                gardenRepository = gardenRepository,
-                plantRepository = plantRepository,
-                totalReadMinutes = totalReadMinutes
-            )
-            
-            if (backfillResult.isFailure) {
-                Log.w(TAG, "补算失败（继续执行主流程）: ${backfillResult.exceptionOrNull()?.message}")
+            try {
+                performBackfill(
+                    wereadRepository = wereadRepository,
+                    readStatsRepository = readStatsRepository,
+                    weatherRepository = weatherRepository,
+                    gardenRepository = gardenRepository,
+                    plantRepository = plantRepository,
+                    totalReadMinutes = totalReadMinutes
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "补算失败（继续执行主流程）: ${e.message}")
             }
 
             // 6. 写入书目追踪（取前10本）
@@ -213,7 +213,7 @@ class SyncWorker(
         totalReadMinutes: Int
     ): Result {
         return try {
-            val meta = gardenRepository.observeMeta().first() ?: return Result.success()
+            val meta = gardenRepository.observeMeta().first() ?: return
             
             // 确定补算起始日期
             val installDate = meta.installDate?.let {
@@ -228,14 +228,14 @@ class SyncWorker(
             
             if (backfillStart.isAfter(backfillEnd)) {
                 Log.d(TAG, "无需补算：已同步到昨天")
-                return Result.success()
+                return
             }
 
             Log.d(TAG, "开始补算: $backfillStart ~ $backfillEnd")
 
             // 获取花园状态用于逐日重算
             val gardenState = gardenRepository.observeGardenState().first()
-            val metaEntity = gardenState.meta ?: return Result.success()
+            val metaEntity = gardenState.meta ?: return
             var engineMeta = EntityMapper.toEngineMeta(metaEntity)
             var enginePlants = gardenState.plants.map { EntityMapper.toEnginePlant(it) }
 
@@ -333,10 +333,8 @@ class SyncWorker(
             plantRepository.updatePlantAfterRecalculate(finalPlantEntities)
 
             Log.d(TAG, "补算完成")
-            Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "补算异常", e)
-            Result.failure()
         }
     }
 
@@ -516,4 +514,5 @@ interface SyncWorkerEntryPoint {
     fun readStatsRepository(): ReadStatsRepository
     fun weatherRepository(): WeatherRepository
 }
+
 

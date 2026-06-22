@@ -72,8 +72,7 @@ class GardenFragment : Fragment() {
 
         // 设置植物点击监听
         rendererView.setOnPlantClickListener { plantId ->
-            val plantStringId = com.mrlaughing.moyuan.data.model.PlantDefinitions.all.getOrNull(plantId.toInt() - 1)?.id ?: return@setOnPlantClickListener
-            navigateToPlantDetail(plantStringId)
+            navigateToPlantDetail(plantId)
         }
 
         // 设置季节/天气切换点击
@@ -228,10 +227,11 @@ class GardenFragment : Fragment() {
     /**
      * 导航到植物详情
      */
-    private fun navigateToPlantDetail(plantStringId: String) {
+    private fun navigateToPlantDetail(plantId: Long) {
         val direction = GardenFragmentDirections
-            .actionGardenFragmentToPlantDetailFragment(plantStringId)
+            .actionGardenFragmentToPlantDetailFragment(plantId)
         findNavController().navigate(direction)
     }
 }
+
 

@@ -66,8 +66,8 @@ class CatalogFragment : Fragment() {
 
         adapter = PlantCardAdapter { plant ->
             if (plant.isUnlocked) {
-                // 传入 plantStringId（String）而非 Long plantId
-                navigateToPlantDetail(plant.plantStringId)
+                // 传入 plantId (Long)
+                navigateToPlantDetail(plant.plantId)
             }
         }
 
@@ -132,9 +132,10 @@ class CatalogFragment : Fragment() {
     /**
      * 导航到植物详情页 - 使用 plantStringId（String）传递参数
      */
-    private fun navigateToPlantDetail(plantStringId: String) {
+    private fun navigateToPlantDetail(plantId: Long) {
         val direction = CatalogFragmentDirections
-            .actionCatalogFragmentToPlantDetailFragment(plantStringId)
+            .actionCatalogFragmentToPlantDetailFragment(plantId)
         findNavController().navigate(direction)
     }
 }
+
