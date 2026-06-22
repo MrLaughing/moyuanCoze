@@ -18,6 +18,12 @@ import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
 
 /**
  * 墨园 Room Database
+ * 
+ * Version History:
+ * - v1-v3: 初始版本
+ * - v4: 植物素材替换（梅→山茶/古藤→万年青/灵芝→忘忧草/并蒂莲→连理枝）
+ * - v5: 首次引入（当前版本号）
+ * - v6: 每日记录新增 source 和 weather 字段，支持天气精确补算
  */
 @Database(
     entities = [
@@ -28,7 +34,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
         BookTrackingEntity::class,
         AchievementEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(MoyuanTypeConverters::class)

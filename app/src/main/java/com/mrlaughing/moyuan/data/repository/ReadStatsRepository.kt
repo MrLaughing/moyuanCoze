@@ -6,6 +6,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.BookTrackingEntity
 import com.mrlaughing.moyuan.data.local.db.entity.DailyRecordEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,14 +55,26 @@ class ReadStatsRepository @Inject constructor(
     }
 
     /**
-     * 观察最近7天的阅读记录
+     * 观察最近7天的阅读记录（从今天往前推7天）
      */
     fun observeWeeklyRecords(): Flow<List<DailyRecordEntity>> {
-        val today = java.time.LocalDate.now()
+        val today = LocalDate.now()
         val weekAgo = today.minusDays(6) // 包含今天共7天
         return dailyRecordDao.getRecordsBetween(
             start = weekAgo.toString(),
             end = today.toString()
+        )
+    }
+
+    /**
+     * 观察指定周的阅读记录
+     * @param weekStart 周一日期
+     * @param weekEnd 周日日期
+     */
+    fun observeWeekRecords(weekStart: LocalDate, weekEnd: LocalDate): Flow<List<DailyRecordEntity>> {
+        return dailyRecordDao.getRecordsBetween(
+            start = weekStart.toString(),
+            end = weekEnd.toString()
         )
     }
 

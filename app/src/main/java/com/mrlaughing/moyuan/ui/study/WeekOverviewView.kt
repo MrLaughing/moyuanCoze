@@ -6,10 +6,13 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
- * 本周阅读柱状图：7根柱子代表周一到周日
+ * 每周阅读柱状图：7根柱子代表周一到周日
  * 柱子高度按当日阅读分钟数等比缩放
+ * 支持显示指定周的日期范围
  */
 class WeekOverviewView @JvmOverloads constructor(
     context: Context,
@@ -44,6 +47,9 @@ class WeekOverviewView @JvmOverloads constructor(
     
     private var records: List<DailyRecord> = emptyList()
     private var maxMinutes: Int = 60 // 默认最大值，避免除零
+    
+    // 日期范围格式化
+    private val dateFormatter = DateTimeFormatter.ofPattern("M.d")
 
     fun setRecords(records: List<DailyRecord>) {
         this.records = records
@@ -78,6 +84,7 @@ class WeekOverviewView @JvmOverloads constructor(
             val record = records.getOrNull(i)
             val readMinutes = record?.readMinutes ?: 0
             val hasRead = readMinutes > 0
+            val recordDate = record?.date
 
             // 计算柱子位置
             val left = paddingH + i * (barWidth + spacing)
@@ -108,9 +115,14 @@ class WeekOverviewView @JvmOverloads constructor(
                 canvas.drawText(valueText, left + barWidth / 2, valueY, valuePaint)
             }
 
-            // 底部显示星期标签
+            // 底部显示日期数字（替代星期标签，更直观）
+            val displayText = if (recordDate != null) {
+                recordDate.format(dateFormatter).substringAfter(".")
+            } else {
+                dayLabels[i]
+            }
             val labelY = h - 4f * density
-            canvas.drawText(dayLabels[i], left + barWidth / 2, labelY, labelPaint)
+            canvas.drawText(displayText, left + barWidth / 2, labelY, labelPaint)
         }
     }
 }

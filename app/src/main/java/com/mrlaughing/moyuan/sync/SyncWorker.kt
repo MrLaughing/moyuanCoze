@@ -11,12 +11,13 @@ import com.mrlaughing.moyuan.data.mapper.EntityMapper
 import com.mrlaughing.moyuan.data.model.GrowthLevel
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.data.model.PlantPath
+import com.mrlaughing.moyuan.data.model.Weather
 import com.mrlaughing.moyuan.data.remote.dto.ShelfBook
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
-import com.mrlaughing.moyuan.data.repository.WereadRepository
 import com.mrlaughing.moyuan.data.repository.WeatherRepository
+import com.mrlaughing.moyuan.data.repository.WereadRepository
 import com.mrlaughing.moyuan.engine.DailyReadInput
 import com.mrlaughing.moyuan.engine.GardenEngine
 import com.mrlaughing.moyuan.engine.GardenUpdateResult
@@ -28,20 +29,19 @@ import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZoneId
 
 /**
  * 同步 Worker
  *
- * 直接使用微信读书 API 返回的历史数据填充本地数据库，
- * 不再做增量计算。基准日期设为 2026-01-01。
- *
- * 数据流：
+ * 完整数据流：
  * 1. overall → 总阅读时间、总阅读天数 → GardenMeta.accumulatedMinutes
  * 2. weekly  → 本周每天阅读时长 → daily_record 表
- * 3. shelf   → 书架书籍 → book_tracking 表
- * 4. 天气API → GardenMeta.currentWeather
- * 5. 花园引擎 → 植物解锁/生长/枯萎计算
+ * 3. monthly → 历史每月阅读数据 → 补算 daily_record（source=backfill）
+ * 4. shelf   → 书架书籍 → book_tracking 表
+ * 5. 天气API → 历史天气 → daily_record.weather + GardenEngine.recalculate()
+ * 6. 花园引擎 → 植物解锁/生长/枯萎计算
  */
 class SyncWorker(
     context: Context,
@@ -51,6 +51,9 @@ class SyncWorker(
     companion object {
         private const val TAG = "SyncWorker"
         const val KEY_ERROR_MSG = "error_msg"
+        
+        // 补算起始日期
+        private val BACKFILL_START_DATE = LocalDate.of(2026, 1, 1)
     }
 
     override suspend fun doWork(): Result {
@@ -115,10 +118,24 @@ class SyncWorker(
             // 4. 写入每日记录（从 weekly readTimes 填充本周数据）
             saveWeeklyDailyRecords(readStatsRepository, weeklyData, todayReadMinutes)
 
-            // 5. 写入书目追踪（取前10本）
+            // 5. 执行历史天气精确补算
+            val backfillResult = performBackfill(
+                wereadRepository = wereadRepository,
+                readStatsRepository = readStatsRepository,
+                weatherRepository = weatherRepository,
+                gardenRepository = gardenRepository,
+                plantRepository = plantRepository,
+                totalReadMinutes = totalReadMinutes
+            )
+            
+            if (backfillResult.isFailure) {
+                Log.w(TAG, "补算失败（继续执行主流程）: ${backfillResult.exceptionOrNull()?.message}")
+            }
+
+            // 6. 写入书目追踪（取前10本）
             saveBookTracking(readStatsRepository, shelfBooks)
 
-            // 6. 更新 GardenMeta（直接用历史数据，不做增量）
+            // 7. 更新 GardenMeta（直接用历史数据，不做增量）
             val meta = gardenRepository.observeMeta().first()
             if (meta != null) {
                 val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
@@ -144,13 +161,13 @@ class SyncWorker(
                 Log.d(TAG, "GardenMeta已更新: accumulatedMinutes=$totalReadMinutes, booksRead=${shelfBooks.size}, streakDays=$newStreakDays")
             }
 
-            // 7. 获取天气
+            // 8. 获取当前天气
             val season = com.mrlaughing.moyuan.engine.season.SeasonEngine.getSeason(LocalDate.now())
             val isNight = com.mrlaughing.moyuan.engine.season.SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
             val realWeather = weatherRepository.fetchWeather(season, isNight)
             Log.d(TAG, "天气: ${realWeather.name}")
 
-            // 8. 触发花园引擎（用今日阅读数据驱动植物状态）
+            // 9. 触发花园引擎（用今日阅读数据驱动植物状态）
             val gardenUpdateResult = triggerGardenEngine(
                 gardenRepository, plantRepository, todayReadMinutes, shelfBooks.size, realWeather
             )
@@ -158,16 +175,14 @@ class SyncWorker(
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
 
-            // 9. 修正引擎对meta的accumulatedMinutes双重计算
-            // 引擎会把 todayReadMinutes 加到 accumulatedMinutes 上，但 SyncWorker 已经设置了正确的总值
-            // 所以需要重新覆盖回正确的总阅读时间
+            // 10. 修正引擎对meta的accumulatedMinutes双重计算
             val metaAfterEngine = gardenRepository.observeMeta().first()
             if (metaAfterEngine != null && metaAfterEngine.accumulatedMinutes != totalReadMinutes) {
                 gardenRepository.updateMeta(metaAfterEngine.copy(accumulatedMinutes = totalReadMinutes))
                 Log.d(TAG, "修正accumulatedMinutes: ${metaAfterEngine.accumulatedMinutes} -> $totalReadMinutes")
             }
 
-            // 10. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
+            // 11. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
             initializePlantAccumulatedMinutes(plantRepository, totalReadMinutes)
 
             notifyUIRefresh()
@@ -176,6 +191,152 @@ class SyncWorker(
         } catch (e: Exception) {
             Log.e(TAG, "同步异常", e)
             Result.failure(workDataOf(KEY_ERROR_MSG to (e.message ?: "未知异常")))
+        }
+    }
+
+    /**
+     * 历史天气精确补算
+     * 
+     * 流程：
+     * 1. 确定补算范围：从 installDate 或 2026-01-01 到 lastSyncDate 前一天
+     * 2. 逐月调用微信读书 API 获取历史阅读数据
+     * 3. 获取历史天气数据
+     * 4. 逐日写入 DailyRecordEntity（source=backfill）
+     * 5. 逐日调用 GardenEngine.recalculate() 精确计算植物状态
+     */
+    private suspend fun performBackfill(
+        wereadRepository: WereadRepository,
+        readStatsRepository: ReadStatsRepository,
+        weatherRepository: WeatherRepository,
+        gardenRepository: GardenRepository,
+        plantRepository: PlantRepository,
+        totalReadMinutes: Int
+    ): Result<Unit> {
+        return try {
+            val meta = gardenRepository.observeMeta().first() ?: return Result.success(Unit)
+            
+            // 确定补算起始日期
+            val installDate = meta.installDate?.let {
+                try { LocalDate.parse(it) } catch (_: Exception) { null }
+            }
+            val backfillStart = installDate?.let { if (it.isAfter(BACKFILL_START_DATE)) it else BACKFILL_START_DATE }
+                ?: BACKFILL_START_DATE
+            
+            // 确定补算结束日期（昨天）
+            val today = LocalDate.now()
+            val backfillEnd = today.minusDays(1)
+            
+            if (backfillStart.isAfter(backfillEnd)) {
+                Log.d(TAG, "无需补算：已同步到昨天")
+                return Result.success(Unit)
+            }
+
+            Log.d(TAG, "开始补算: $backfillStart ~ $backfillEnd")
+
+            // 获取花园状态用于逐日重算
+            val gardenState = gardenRepository.observeGardenState().first()
+            val metaEntity = gardenState.meta ?: return Result.success(Unit)
+            var engineMeta = EntityMapper.toEngineMeta(metaEntity)
+            var enginePlants = gardenState.plants.map { EntityMapper.toEnginePlant(it) }
+
+            // 逐月获取历史阅读数据
+            var currentDate = backfillStart
+            while (!currentDate.isAfter(backfillEnd)) {
+                val yearMonth = YearMonth.from(currentDate)
+                
+                // 调用 API 获取该月数据
+                val baseTime = yearMonth.atDay(15)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toEpochSecond()
+                
+                val monthlyResult = wereadRepository.fetchReadDataMonthly(baseTime)
+                if (monthlyResult.isSuccess) {
+                    val monthlyReadTimes = monthlyResult.getOrNull()?.readTimes
+                    
+                    // 获取该月历史天气（按月获取避免API限制）
+                    val monthStart = yearMonth.atDay(1)
+                    val monthEnd = yearMonth.atEndOfMonth().coerceBefore(backfillEnd)
+                    val weatherMap = weatherRepository.fetchHistoricalWeather(monthStart, monthEnd)
+                    
+                    // 处理该月每一天
+                    var day = yearMonth.atDay(1)
+                    while (!day.isAfter(monthEnd)) {
+                        // 检查是否已存在 sync 来源的记录
+                        val existingRecord = readStatsRepository.observeRecordByDate(day.toString()).first()
+                        if (existingRecord == null || existingRecord.source != "sync") {
+                            // 从 API 数据获取阅读分钟
+                            val epochSecond = day.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()
+                            val seconds = monthlyReadTimes?.get(epochSecond.toString()) ?: 0L
+                            val minutes = (seconds / 60).toInt()
+                            
+                            // 获取天气
+                            val weather = weatherMap[day]
+                            val weatherName = weather?.name
+                            
+                            // 写入记录
+                            readStatsRepository.upsertDailyRecord(DailyRecordEntity(
+                                date = day.toString(),
+                                readMinutes = minutes,
+                                hasNightRead = false, // 历史数据无法准确判断
+                                newBookCount = 0,
+                                syncedAt = System.currentTimeMillis(),
+                                source = "backfill",
+                                weather = weatherName
+                            ))
+                            
+                            // 逐日重算花园
+                            val dailyInput = DailyReadInput(
+                                date = day,
+                                minutesRead = minutes,
+                                booksReadToday = 0,
+                                isNightRead = false
+                            )
+                            
+                            val updateResult = GardenEngine.recalculate(
+                                meta = engineMeta,
+                                plantStates = enginePlants,
+                                dailyInput = dailyInput,
+                                today = day,
+                                weather = weather
+                            )
+                            
+                            // 更新状态用于下一天计算
+                            engineMeta = updateResult.meta
+                            enginePlants = updateResult.plants
+                            
+                            // 持久化植物状态（每10天保存一次，避免频繁IO）
+                            if (day.dayOfMonth % 10 == 0 || day == monthEnd) {
+                                val updatedPlantEntities = enginePlants.mapIndexed { index, enginePlant ->
+                                    val existingId = if (index < gardenState.plants.size) gardenState.plants[index].id else 0
+                                    EntityMapper.toDbPlant(enginePlant, existingId)
+                                }
+                                plantRepository.updatePlantAfterRecalculate(updatedPlantEntities)
+                            }
+                        }
+                        
+                        day = day.plusDays(1)
+                    }
+                    
+                    Log.d(TAG, "已完成 $yearMonth 补算")
+                }
+                
+                // 移动到下一个月
+                currentDate = yearMonth.plusMonths(1).atDay(1)
+            }
+
+            // 最终保存补算后的花园状态
+            gardenRepository.updateMeta(EntityMapper.toDbMeta(engineMeta, metaEntity))
+            val finalPlantEntities = enginePlants.mapIndexed { index, enginePlant ->
+                val existingId = if (index < gardenState.plants.size) gardenState.plants[index].id else 0
+                EntityMapper.toDbPlant(enginePlant, existingId)
+            }
+            plantRepository.updatePlantAfterRecalculate(finalPlantEntities)
+
+            Log.d(TAG, "补算完成")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "补算异常", e)
+            Result.failure(e)
         }
     }
 
@@ -212,7 +373,8 @@ class SyncWorker(
                 readMinutes = minutes,
                 hasNightRead = isNightRead,
                 newBookCount = 0,
-                syncedAt = System.currentTimeMillis()
+                syncedAt = System.currentTimeMillis(),
+                source = "sync"
             ))
         }
         Log.d(TAG, "已填充本周每日记录: ${dailyData.size}天有数据, 今日${todayReadMinutes}分钟")
@@ -233,12 +395,15 @@ class SyncWorker(
             } else {
                 LocalDate.now().toString()
             }
+            // 估算阅读分钟数（基于进度和总阅读时间分配）
+            val estimatedMinutes = estimateBookReadMinutes(book, recentBooks.size)
+            
             readStatsRepository.upsertBookTracking(BookTrackingEntity(
                 bookId = book.bookId,
                 title = book.title,
                 author = book.author,
                 progressPercent = 0,
-                readMinutes = 0,
+                readMinutes = estimatedMinutes,
                 startDate = lastReadDate,
                 lastReadDate = lastReadDate
             ))
@@ -246,12 +411,27 @@ class SyncWorker(
         Log.d(TAG, "已保存${recentBooks.size}本书目追踪")
     }
 
+    /**
+     * 估算单本书的阅读分钟数
+     * 基于书架中的顺序（越早开始阅读的越多）
+     */
+    private fun estimateBookReadMinutes(book: ShelfBook, totalBooks: Int): Int {
+        // 简化估算：如果有阅读更新时间，说明最近在读，给一个基础值
+        // 实际精确值需要从阅读明细 API 获取
+        return if (book.readUpdateTime > 0) {
+            // 最近阅读的书籍，估算30-60分钟
+            (30 + (book.bookId.hashCode() % 30)).coerceAtLeast(0)
+        } else {
+            0
+        }
+    }
+
     private suspend fun triggerGardenEngine(
         gardenRepository: GardenRepository,
         plantRepository: PlantRepository,
         todayReadMinutes: Int,
         booksCount: Int,
-        weather: com.mrlaughing.moyuan.data.model.Weather?
+        weather: Weather?
     ): GardenUpdateResult? {
         val today = LocalDate.now()
         val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
@@ -290,13 +470,6 @@ class SyncWorker(
 
     /**
      * 首次同步时，用历史数据初始化已解锁植物的积累分钟数
-     * 
-     * 策略：对于首次同步（accumulatedMinutes == 0 的已解锁植物），
-     * 根据总阅读时间和植物解锁阈值估算每株植物的积累分钟数。
-     * 
-     * 估算逻辑：
-     * - 积墨路径：accumulatedMinutes ≈ totalReadMinutes - unlockThreshold
-     * - 其他路径：accumulatedMinutes ≈ totalReadMinutes（因为每日阅读对所有植物灌溉）
      */
     private suspend fun initializePlantAccumulatedMinutes(
         plantRepository: PlantRepository,
@@ -306,18 +479,14 @@ class SyncWorker(
         var anyInitialized = false
         
         val updatedPlants = plants.map { plant ->
-            // 只处理已解锁但 accumulatedMinutes 为 0 或很低的植物（首次同步标记）
             if (!plant.unlockDate.isNullOrEmpty() && plant.accumulatedMinutes < 60) {
                 anyInitialized = true
                 val plantDef = PlantDefinitions.getById(plant.plantId)
                 val estimatedMinutes = if (plantDef != null && plantDef.path == PlantPath.JIMO) {
-                    // 积墨路径：从解锁后开始积累
                     maxOf(0, totalReadMinutes - plantDef.unlockThreshold)
                 } else {
-                    // 其他路径：估算为总阅读时间的均等份额
                     totalReadMinutes
                 }
-                // 限制最大值避免超出合理范围
                 val clampedMinutes = estimatedMinutes.coerceAtMost(totalReadMinutes)
                 plant.copy(accumulatedMinutes = clampedMinutes, level = GrowthLevel.fromMinutes(clampedMinutes).level)
             } else {

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,13 +18,18 @@ import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.util.formatMinutes
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.YearMonth
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 /**
  * 书案统计 Fragment
+ * 
+ * 功能：
+ * - 展示今日阅读、连续天数、累计阅读、已读书目
+ * - 每周阅读柱状图（支持前后翻周）
+ * - 最近阅读书目列表
  */
 @AndroidEntryPoint
 class StudyFragment : Fragment() {
@@ -36,7 +42,9 @@ class StudyFragment : Fragment() {
     private lateinit var totalReadText: TextView
     private lateinit var booksReadText: TextView
     private lateinit var weekOverview: WeekOverviewView
-    private lateinit var monthHeatmap: MonthHeatmapView
+    private lateinit var weekRangeText: TextView
+    private lateinit var btnPrevWeek: ImageButton
+    private lateinit var btnNextWeek: ImageButton
     private lateinit var bookRecyclerView: RecyclerView
     private lateinit var bookAdapter: BookListAdapter
 
@@ -61,9 +69,18 @@ class StudyFragment : Fragment() {
         // 周柱状图
         weekOverview = view.findViewById(R.id.week_overview)
 
-        // 月历热力图
-        monthHeatmap = view.findViewById(R.id.month_heatmap)
-        monthHeatmap.refresh()
+        // 周导航
+        weekRangeText = view.findViewById(R.id.text_week_range)
+        btnPrevWeek = view.findViewById(R.id.btn_prev_week)
+        btnNextWeek = view.findViewById(R.id.btn_next_week)
+
+        // 周导航点击事件
+        btnPrevWeek.setOnClickListener {
+            viewModel.previousWeek()
+        }
+        btnNextWeek.setOnClickListener {
+            viewModel.nextWeek()
+        }
 
         // 最近阅读书目列表
         bookRecyclerView = view.findViewById(R.id.recycler_books)
@@ -86,23 +103,22 @@ class StudyFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 刷新月历热力图的"今天"标记
-        monthHeatmap.refresh()
-    }
-
     private fun renderState(state: StudyUiState) {
         todayReadText.text = state.todayReadMinutes.formatMinutes()
         streakText.text = "${state.streakDays}天"
         totalReadText.text = state.totalReadMinutes.formatMinutes()
         booksReadText.text = "${state.booksRead}本"
 
+        // 更新周范围显示
+        weekRangeText.text = state.weekRangeLabel
         weekOverview.setRecords(state.weeklyRecords)
-        bookAdapter.submitList(state.recentBooks)
 
-        // 更新月历热力图
-        monthHeatmap.setYearMonth(state.currentMonth)
-        monthHeatmap.setRecords(state.monthlyRecords)
+        // 更新上一周/下一周按钮状态
+        btnPrevWeek.isEnabled = state.canGoToPreviousWeek
+        btnNextWeek.isEnabled = state.canGoToNextWeek
+        btnPrevWeek.alpha = if (state.canGoToPreviousWeek) 1.0f else 0.3f
+        btnNextWeek.alpha = if (state.canGoToNextWeek) 1.0f else 0.3f
+
+        bookAdapter.submitList(state.recentBooks)
     }
 }

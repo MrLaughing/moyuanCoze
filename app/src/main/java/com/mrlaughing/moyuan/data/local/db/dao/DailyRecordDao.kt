@@ -67,4 +67,40 @@ interface DailyRecordDao {
      */
     @Query("SELECT COALESCE(SUM(readMinutes), 0) FROM daily_record")
     fun getTotalReadMinutes(): Flow<Int>
+
+    /**
+     * 获取最早的记录日期
+     */
+    @Query("SELECT MIN(date) FROM daily_record")
+    suspend fun getEarliestRecordDate(): String?
+
+    /**
+     * 获取最晚的记录日期
+     */
+    @Query("SELECT MAX(date) FROM daily_record")
+    suspend fun getLatestRecordDate(): String?
+
+    /**
+     * 获取记录总数
+     */
+    @Query("SELECT COUNT(*) FROM daily_record")
+    suspend fun getRecordsCount(): Int
+
+    /**
+     * 按来源获取记录总数
+     */
+    @Query("SELECT COUNT(*) FROM daily_record WHERE source = :source")
+    suspend fun getRecordsCountBySource(source: String): Int
+
+    /**
+     * 获取指定来源的记录
+     */
+    @Query("SELECT * FROM daily_record WHERE source = :source ORDER BY date ASC")
+    suspend fun getRecordsBySource(source: String): List<DailyRecordEntity>
+
+    /**
+     * 更新记录来源和天气
+     */
+    @Query("UPDATE daily_record SET source = :source, weather = :weather, syncedAt = :syncedAt WHERE date = :date")
+    suspend fun updateRecordSourceAndWeather(date: String, source: String, weather: String?, syncedAt: Long)
 }

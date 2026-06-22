@@ -28,9 +28,8 @@
     <!-- 书案 -->
     <string name="label_total_read">累计阅读</string>
     <string name="label_books_read">已读书目</string>
-    <string name="label_weekly_overview">本周阅读</string>
+    <string name="label_weekly_overview">每周阅读</string>
     <string name="label_recent_books">最近阅读</string>
-    <string name="label_monthly_heatmap">月历热力图</string>
 
     <!-- 个人中心 -->
     <string name="label_garden_overview">花园概况</string>
@@ -81,12 +80,11 @@
     <string name="season_winter">冬</string>
 
     <!-- 天气 -->
-    <string name="weather_clear">晴</string>
-    <string name="weather_spring_rain">春雨</string>
-    <string name="weather_first_snow">初雪</string>
+    <string name="weather_sunny">晴</string>
+    <string name="weather_rainy">雨</string>
+    <string name="weather_snowy">雪</string>
     <string name="weather_foggy">雾</string>
-    <string name="weather_overcast">阴</string>
-    <string name="weather_moonlit">月夜</string>
+
     <!-- 引导页 -->
     <string name="label_onboarding_skip">跳过</string>
     <string name="label_onboarding_next">继续</string>
