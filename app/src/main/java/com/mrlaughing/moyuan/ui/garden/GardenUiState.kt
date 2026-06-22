@@ -13,7 +13,9 @@ data class GardenUiState(
     val bonusMultiplier: Float = 1.0f,
     val dateText: String = "",
     val irrigationHours: Int = 0,
-    val irrigationGoal: Int = 40
+    val irrigationGoal: Int = 40,
+    /** 当前激活的路径列表（来自引擎动态判定），UI 按此显示路径加成，不再硬编码 */
+    val activePathLabels: List<String> = emptyList()
 )
 
 data class PlantUiItem(

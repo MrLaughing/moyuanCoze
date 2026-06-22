@@ -1,13 +1,17 @@
 package com.mrlaughing.moyuan.ui.garden
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.data.model.Weather
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.engine.season.SeasonEngine
+import com.mrlaughing.moyuan.sync.SyncWorker
 import com.mrlaughing.moyuan.util.Constants
 import com.mrlaughing.moyuan.util.formatCN
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +35,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GardenViewModel @Inject constructor(
     private val gardenRepository: GardenRepository,
-    private val plantRepository: PlantRepository
+    private val plantRepository: PlantRepository,
+    private val application: Application
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GardenUiState())
@@ -86,7 +91,10 @@ class GardenViewModel @Inject constructor(
                     bonusMultiplier = calculateBonus(streakDays, weather, season),
                     dateText = LocalDate.now().formatCN(),
                     irrigationHours = irrigationHours,
-                    irrigationGoal = IRRIGATION_GOAL_HOURS
+                    irrigationGoal = IRRIGATION_GOAL_HOURS,
+                    // 从引擎计算实际激活的路径（与 IrrigationEngine.determineUserPaths 逻辑一致）
+                    // 避免在 GardenFragment 中硬编码季节→路径映射
+                    activePathLabels = determineActivePathLabels(meta)
                 )
             }
         }
@@ -131,10 +139,13 @@ class GardenViewModel @Inject constructor(
     }
 
     /**
-     * 浇灌植物：使用今日阅读时长灌溉所有存活植物
-     * - 重置枯萎阶段为0
-     * - 更新最后阅读日期为今天
-     * - 增加累计灌溉分钟
+     * 浇灌植物：触发同步，让 GardenEngine 统一处理灌溉逻辑
+     *
+     * ⚠️ 之前此方法直接操作 DB 绕过了 GardenEngine，导致：
+     *   - 灌溉逻辑与引擎的倍率计算（季节×天气×路径匹配）脱节
+     *   - 枯寂植物不获得灌溉等引擎特性被绕过
+     *   - accumulatedMinutes 双重累加
+     * 修复后：改为触发 WorkManager 同步，走完整引擎流程
      */
     fun waterPlants() {
         val todayMinutes = _uiState.value.todayReadMinutes
@@ -142,25 +153,12 @@ class GardenViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val today = java.time.LocalDate.now().toString()
-                plantRepository.observePlants().firstOrNull()?.let { plants ->
-                    plants.filter { !it.unlockDate.isNullOrEmpty() && it.witherStage < 4 }
-                        .forEach { plant ->
-                            plantRepository.updatePlant(
-                                plant.copy(
-                                    witherStage = 0,
-                                    witherStartDate = null,
-                                    lastReadDate = today,
-                                    accumulatedMinutes = plant.accumulatedMinutes + todayMinutes,
-                                    justRevived = false
-                                )
-                            )
-                        }
-                }
-                // 浇灌后刷新UI
-                android.util.Log.d("GardenVM", "浇灌完成: ${todayMinutes}min分配给存活植物")
+                // 触发同步 Worker 走引擎流程，不下发独立写库
+                val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
+                WorkManager.getInstance(application).enqueue(syncRequest)
+                android.util.Log.d("GardenVM", "已触发同步灌溉: ${todayMinutes}min 数据走引擎处理")
             } catch (e: Exception) {
-                android.util.Log.e("GardenVM", "浇灌失败", e)
+                android.util.Log.e("GardenVM", "触发同步灌溉失败", e)
             }
         }
     }
@@ -242,5 +240,19 @@ class GardenViewModel @Inject constructor(
      */
     fun refresh() {
         loadGardenData()
+    }
+
+    /**
+     * 根据实际阅读数据判定已激活的路径，返回中文标签列表
+     * 逻辑与 IrrigationEngine.determineUserPaths() 保持一致
+     */
+    private fun determineActivePathLabels(meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?): List<String> {
+        if (meta == null) return emptyList()
+        val labels = mutableListOf<String>()
+        if (meta.accumulatedMinutes > 0) labels.add("积墨")
+        if (meta.nightReadDays >= 1) labels.add("秉烛")
+        if (meta.streakDays >= 1) labels.add("岁寒")
+        if (meta.booksRead >= 1) labels.add("寻芳")
+        return labels
     }
 }

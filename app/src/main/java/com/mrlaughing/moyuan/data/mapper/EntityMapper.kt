@@ -31,7 +31,9 @@ object EntityMapper {
             maxStreakDays = db.maxStreakDays,
             nightReadDays = db.nightReadDays,
             booksRead = db.booksRead,
-            lastReadDate = parseDate(db.installDate),
+            // 使用 lastSyncDate 而非 installDate——installDate 是固定安装日，不能代表最后阅读日
+            // 未同步时（lastSyncDate=null）使用当天日期，避免产生虚假连续阅读天数
+            lastReadDate = parseDateOrNull(db.lastSyncDate) ?: LocalDate.now(),
             totalReadDays = 0,
             hasRevivedFromDead = db.hasRevivedFromDead,
             activePaths = emptySet()

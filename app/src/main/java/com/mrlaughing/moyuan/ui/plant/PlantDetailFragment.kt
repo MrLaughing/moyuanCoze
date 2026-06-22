@@ -18,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.mrlaughing.moyuan.R
+import com.mrlaughing.moyuan.data.model.GrowthLevel
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
@@ -48,14 +49,10 @@ class PlantDetailFragment : Fragment() {
     private lateinit var rarityText: TextView
     private lateinit var unlockCondition: TextView
 
-    /** 等级名映射 */
-    private val levelNames = mapOf(
-        1 to "萌芽",
-        2 to "墨枝",
-        3 to "墨叶",
-        4 to "墨韵",
-        5 to "墨华"
-    )
+    /** 等级名从 GrowthLevel 枚举获取，与引擎定义保持同步 */
+    private fun getLevelLabel(level: Int): String {
+        return GrowthLevel.entries.firstOrNull { it.level == level }?.label ?: "墨芽"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -149,8 +146,8 @@ class PlantDetailFragment : Fragment() {
             plantName?.text = state.name
             pathName?.text = state.pathName
 
-            // 等级显示格式：Lv.5 墨韵
-            val levelName = levelNames[state.level] ?: "萌芽"
+            // 等级显示格式：Lv.5 墨韵（使用 GrowthLevel 枚举定义，与引擎保持一致）
+            val levelName = getLevelLabel(state.level)
             plantLevel?.text = "Lv.${state.level} $levelName"
 
             // 稀有度星标 - 使用淡墨色

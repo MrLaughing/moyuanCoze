@@ -29,6 +29,20 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
+        <!-- 同步闹钟接收器（由 AlarmManager 触发） -->
+        <receiver
+            android:name=".sync.SyncReceiver"
+            android:exported="false" />
+
+        <!-- 开机重启后重新注册同步闹钟 -->
+        <receiver
+            android:name=".sync.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

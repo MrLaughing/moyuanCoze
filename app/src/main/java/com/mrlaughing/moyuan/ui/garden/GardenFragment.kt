@@ -15,7 +15,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import com.mrlaughing.moyuan.R
-import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.data.model.Weather
 import com.mrlaughing.moyuan.render.GardenRenderer
 import com.mrlaughing.moyuan.render.PlantRenderInfo
@@ -144,8 +143,12 @@ class GardenFragment : Fragment() {
             witherAlertCard.visibility = View.GONE
         }
 
-        // 路径加成信息
-        textPathInfo.text = getPathBonusText(state.season)
+        // 路径加成信息（使用引擎动态判定的结果，取代硬编码的季节→路径映射）
+        textPathInfo.text = if (state.activePathLabels.isNotEmpty()) {
+            "${state.activePathLabels.joinToString(" · ")} ×1.2"
+        } else {
+            "暂无激活路径"
+        }
 
         // 浇灌按钮文字
         val waterButtonText = if (state.todayReadMinutes > 0) {
@@ -160,20 +163,6 @@ class GardenFragment : Fragment() {
 
         // 渲染植物
         renderPlants(state.plants)
-    }
-
-    /**
-     * 获取路径加成文本
-     */
-    private fun getPathBonusText(season: Season): String {
-        // 简化实现，根据季节返回对应的加成路径
-        val pathNames = when (season) {
-            Season.SPRING -> "积墨 · 秉烛"
-            Season.SUMMER -> "积墨 · 岁寒"
-            Season.AUTUMN -> "秉烛 · 寻芳"
-            Season.WINTER -> "岁寒 · 寻芳"
-        }
-        return "$pathNames ×1.2"
     }
 
     /**

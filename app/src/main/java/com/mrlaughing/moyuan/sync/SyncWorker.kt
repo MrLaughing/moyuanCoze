@@ -121,7 +121,7 @@ class SyncWorker(
             // 5. 写入书目追踪（先写DB，UI可立即显示数据）（取前10本）
             saveBookTracking(readStatsRepository, shelfBooks, overallData?.readLongest ?: emptyList())
 
-            // 6. 更新 GardenMeta（直接用历史数据，不做增量）
+            // 6. 更新 GardenMeta 的非引擎字段（累计分钟由 API 总量覆盖，不依赖引擎增量计算）
             val meta = gardenRepository.observeMeta().first()
             if (meta != null) {
                 val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
@@ -136,7 +136,8 @@ class SyncWorker(
                 }
 
                 gardenRepository.updateMeta(meta.copy(
-                    accumulatedMinutes = totalReadMinutes,
+                    // 注意：不在这里设置 accumulatedMinutes——引擎会做增量累加导致双重计算
+                    // 引擎执行后，由 triggerGardenEngine 用 API 总量覆盖（见下文）
                     todayReadMinutes = todayReadMinutes,
                     streakDays = newStreakDays,
                     maxStreakDays = maxOf(meta.maxStreakDays, newStreakDays),
@@ -144,7 +145,7 @@ class SyncWorker(
                     nightReadDays = if (isNightRead) meta.nightReadDays + 1 else meta.nightReadDays,
                     lastSyncDate = LocalDate.now().toString()
                 ))
-                Log.d(TAG, "GardenMeta已更新: accumulatedMinutes=$totalReadMinutes, booksRead=${shelfBooks.size}, streakDays=$newStreakDays")
+                Log.d(TAG, "GardenMeta已更新: todayReadMinutes=$todayReadMinutes, booksRead=${shelfBooks.size}, streakDays=$newStreakDays")
             }
 
             // 7. 获取当前天气
@@ -154,22 +155,34 @@ class SyncWorker(
             Log.d(TAG, "天气: ${realWeather.name}")
 
             // 8. 触发花园引擎（用今日阅读数据驱动植物状态）
+            //   引擎内部会做增量累加 accumulatedMinutes += todayReadMinutes
+            //   由于 API 总量已包含今日数据，我们在引擎内部用 API 总量覆盖
             val gardenUpdateResult = triggerGardenEngine(
-                gardenRepository, plantRepository, todayReadMinutes, shelfBooks.size, realWeather
+                gardenRepository, plantRepository, todayReadMinutes, shelfBooks.size, realWeather,
+                apiTotalMinutes = totalReadMinutes  // 传入API总量，引擎内部用于修正
             )
             gardenUpdateResult?.let {
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
 
-            // 9. 修正引擎对meta的accumulatedMinutes双重计算
-            val metaAfterEngine = gardenRepository.observeMeta().first()
-            if (metaAfterEngine != null && metaAfterEngine.accumulatedMinutes != totalReadMinutes) {
-                gardenRepository.updateMeta(metaAfterEngine.copy(accumulatedMinutes = totalReadMinutes))
-                Log.d(TAG, "修正accumulatedMinutes: ${metaAfterEngine.accumulatedMinutes} -> $totalReadMinutes")
-            }
-
-            // 11. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
+            // 注：不再需要"修正accumulatedMinutes双重计算"步骤
+            // 因为 triggerGardenEngine 内部已用 API 总量覆盖了引擎增量结果
+            // 9. 首次同步时，用历史数据初始化已解锁植物的积累分钟数
             initializePlantAccumulatedMinutes(plantRepository, totalReadMinutes)
+
+            // 10. 历史数据精确补算（放在最末尾执行，不阻塞主流程）
+            try {
+                performBackfill(
+                    wereadRepository = wereadRepository,
+                    readStatsRepository = readStatsRepository,
+                    weatherRepository = weatherRepository,
+                    gardenRepository = gardenRepository,
+                    plantRepository = plantRepository,
+                    totalReadMinutes = totalReadMinutes
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "补算失败（不影响主流程）: ${e.message}")
+            }
 
             notifyUIRefresh()
             Log.d(TAG, "=== 同步完成 ===")
@@ -409,7 +422,8 @@ class SyncWorker(
         plantRepository: PlantRepository,
         todayReadMinutes: Int,
         booksCount: Int,
-        weather: Weather?
+        weather: Weather?,
+        apiTotalMinutes: Int  // API 返回的总累计分钟数（含今日），用于覆盖引擎增量计算的结果
     ): GardenUpdateResult? {
         val today = LocalDate.now()
         val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
@@ -436,7 +450,13 @@ class SyncWorker(
             weather = weather
         )
 
-        gardenRepository.updateMeta(EntityMapper.toDbMeta(updateResult.meta, metaEntity))
+        // 引擎内部将 accumulatedMinutes += todayReadMinutes，但 API 总量已包含今日数据
+        // 因此以 API 总量为 ground truth 覆盖引擎计算的累计分钟
+        val correctedMeta = EntityMapper.toDbMeta(updateResult.meta, metaEntity).copy(
+            accumulatedMinutes = apiTotalMinutes
+        )
+        gardenRepository.updateMeta(correctedMeta)
+        
         val updatedPlants = updateResult.plants.mapIndexed { index, enginePlant ->
             val existingId = if (index < plantEntities.size) plantEntities[index].id else 0
             EntityMapper.toDbPlant(enginePlant, existingId)
