@@ -118,24 +118,10 @@ class SyncWorker(
             // 4. 写入每日记录（从 weekly readTimes 填充本周数据）
             saveWeeklyDailyRecords(readStatsRepository, weeklyData, todayReadMinutes)
 
-            // 5. 执行历史天气精确补算
-            try {
-                performBackfill(
-                    wereadRepository = wereadRepository,
-                    readStatsRepository = readStatsRepository,
-                    weatherRepository = weatherRepository,
-                    gardenRepository = gardenRepository,
-                    plantRepository = plantRepository,
-                    totalReadMinutes = totalReadMinutes
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "补算失败（继续执行主流程）: ${e.message}")
-            }
-
-            // 6. 写入书目追踪（取前10本）
+            // 5. 写入书目追踪（先写DB，UI可立即显示数据）（取前10本）
             saveBookTracking(readStatsRepository, shelfBooks, overallData?.readLongest ?: emptyList())
 
-            // 7. 更新 GardenMeta（直接用历史数据，不做增量）
+            // 6. 更新 GardenMeta（直接用历史数据，不做增量）
             val meta = gardenRepository.observeMeta().first()
             if (meta != null) {
                 val isNightRead = LocalTime.now().hour >= 22 || LocalTime.now().hour < 6
@@ -161,13 +147,13 @@ class SyncWorker(
                 Log.d(TAG, "GardenMeta已更新: accumulatedMinutes=$totalReadMinutes, booksRead=${shelfBooks.size}, streakDays=$newStreakDays")
             }
 
-            // 8. 获取当前天气
+            // 7. 获取当前天气
             val season = com.mrlaughing.moyuan.engine.season.SeasonEngine.getSeason(LocalDate.now())
             val isNight = com.mrlaughing.moyuan.engine.season.SeasonEngine.isNightHour(java.time.LocalTime.now().hour)
             val realWeather = weatherRepository.fetchWeather(season, isNight)
             Log.d(TAG, "天气: ${realWeather.name}")
 
-            // 9. 触发花园引擎（用今日阅读数据驱动植物状态）
+            // 8. 触发花园引擎（用今日阅读数据驱动植物状态）
             val gardenUpdateResult = triggerGardenEngine(
                 gardenRepository, plantRepository, todayReadMinutes, shelfBooks.size, realWeather
             )
@@ -175,7 +161,7 @@ class SyncWorker(
                 gardenRepository.updateWeather(it.weather.name, LocalDate.now().toString())
             }
 
-            // 10. 修正引擎对meta的accumulatedMinutes双重计算
+            // 9. 修正引擎对meta的accumulatedMinutes双重计算
             val metaAfterEngine = gardenRepository.observeMeta().first()
             if (metaAfterEngine != null && metaAfterEngine.accumulatedMinutes != totalReadMinutes) {
                 gardenRepository.updateMeta(metaAfterEngine.copy(accumulatedMinutes = totalReadMinutes))
