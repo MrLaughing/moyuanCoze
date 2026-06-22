@@ -20,7 +20,6 @@ import com.mrlaughing.moyuan.render.PlantImageLoader
 import com.mrlaughing.moyuan.ui.common.EinkProgressBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.coerceIn
 import kotlinx.coroutines.withContext
 
 /**
