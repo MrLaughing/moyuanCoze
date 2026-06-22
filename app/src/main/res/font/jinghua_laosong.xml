@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 京华老宋字体族定义 - 用于页面标题、分区标题、植物描述正文 -->
+<!-- 结构阅读层 — 京华老宋(缺失字元已用霞鹜文楷Medium替代) -->
+<!-- 页面标题、分区标题、正文描述、设置项 -->
 <font-family xmlns:android="http://schemas.android.com/apk/res/android">
     <font
-        android:font="@font/jinghua_laosong_regular"
+        android:font="@font/lxgw_wenkai_medium"
         android:fontStyle="normal"
-        android:fontWeight="400" />
+        android:fontWeight="500" />
 </font-family>
