@@ -91,7 +91,7 @@ class ReadStatsRepository @Inject constructor(
      * 观察最近阅读的书目
      */
     fun observeRecentBooks(): Flow<List<BookTrackingEntity>> {
-        return bookTrackingDao.getRecentBooks(limit = 10)
+        return bookTrackingDao.getRecentBooks(limit = 20)
     }
 
     /**

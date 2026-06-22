@@ -133,7 +133,7 @@ class SyncWorker(
             }
 
             // 6. 写入书目追踪（取前10本）
-            saveBookTracking(readStatsRepository, shelfBooks)
+            saveBookTracking(readStatsRepository, shelfBooks, overallData?.readLongest ?: emptyList())
 
             // 7. 更新 GardenMeta（直接用历史数据，不做增量）
             val meta = gardenRepository.observeMeta().first()
@@ -154,7 +154,7 @@ class SyncWorker(
                     todayReadMinutes = todayReadMinutes,
                     streakDays = newStreakDays,
                     maxStreakDays = maxOf(meta.maxStreakDays, newStreakDays),
-                    booksRead = shelfBooks.size,
+                    booksRead = shelfBooks.count { it.readUpdateTime > 0 },
                     nightReadDays = if (isNightRead) meta.nightReadDays + 1 else meta.nightReadDays,
                     lastSyncDate = LocalDate.now().toString()
                 ))
@@ -380,48 +380,42 @@ class SyncWorker(
 
     /**
      * 保存书架书籍到 book_tracking
+     * 使用 readLongest 数据获取真实阅读时长
      */
     private suspend fun saveBookTracking(
         readStatsRepository: ReadStatsRepository,
-        shelfBooks: List<ShelfBook>
+        shelfBooks: List<ShelfBook>,
+        readLongest: List<com.mrlaughing.moyuan.data.remote.dto.ReadLongestBook>
     ) {
-        val recentBooks = shelfBooks.take(10)
+        // 构建 readLongest 的 bookId→readTime 映射（秒→分钟）
+        val readTimeMap = readLongest.mapNotNull { item ->
+            item.book?.bookId?.let { bid -> bid to (item.readTime / 60).toInt() }
+        }.toMap()
+
+        // 保存最近阅读的书籍（有阅读记录的优先）
+        val recentBooks = shelfBooks
+            .filter { it.readUpdateTime > 0 }
+            .sortedByDescending { it.readUpdateTime }
+            .take(20)
+
         recentBooks.forEach { book ->
-            val lastReadDate = if (book.readUpdateTime > 0) {
-                Instant.ofEpochSecond(book.readUpdateTime)
-                    .atZone(ZoneId.systemDefault()).toLocalDate().toString()
-            } else {
-                LocalDate.now().toString()
-            }
-            // 估算阅读分钟数（基于进度和总阅读时间分配）
-            val estimatedMinutes = estimateBookReadMinutes(book, recentBooks.size)
-            
+            val lastReadDate = Instant.ofEpochSecond(book.readUpdateTime)
+                .atZone(ZoneId.systemDefault()).toLocalDate().toString()
+
+            // 优先使用 readLongest 中的真实阅读时长，否则标记为0（待后续同步补全）
+            val realMinutes = readTimeMap[book.bookId] ?: 0
+
             readStatsRepository.upsertBookTracking(BookTrackingEntity(
                 bookId = book.bookId,
                 title = book.title,
                 author = book.author,
-                progressPercent = 0,
-                readMinutes = estimatedMinutes,
+                progressPercent = if (book.finishReading == 1) 100 else 0,
+                readMinutes = realMinutes,
                 startDate = lastReadDate,
                 lastReadDate = lastReadDate
             ))
         }
-        Log.d(TAG, "已保存${recentBooks.size}本书目追踪")
-    }
-
-    /**
-     * 估算单本书的阅读分钟数
-     * 基于书架中的顺序（越早开始阅读的越多）
-     */
-    private fun estimateBookReadMinutes(book: ShelfBook, totalBooks: Int): Int {
-        // 简化估算：如果有阅读更新时间，说明最近在读，给一个基础值
-        // 实际精确值需要从阅读明细 API 获取
-        return if (book.readUpdateTime > 0) {
-            // 最近阅读的书籍，估算30-60分钟
-            (30 + (book.bookId.hashCode() % 30)).coerceAtLeast(0)
-        } else {
-            0
-        }
+        Log.d(TAG, "已保存${recentBooks.size}本书目追踪（含${readTimeMap.size}本真实阅读时长）")
     }
 
     private suspend fun triggerGardenEngine(
