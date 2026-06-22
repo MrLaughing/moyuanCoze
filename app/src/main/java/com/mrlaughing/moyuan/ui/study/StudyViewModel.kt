@@ -2,6 +2,8 @@ package com.mrlaughing.moyuan.ui.study
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity
+import com.mrlaughing.moyuan.data.local.db.entity.ReadStatsEntity
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -88,7 +90,7 @@ class StudyViewModel @Inject constructor(
         totalReadMinutes: Int,
         booksRead: Int,
         streakDays: Int,
-        meta: com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity?
+        meta: GardenMetaEntity?
     ) {
         viewModelScope.launch {
             readStatsRepository.observeWeekRecords(weekStart, weekEnd).collect { records ->
@@ -217,4 +219,5 @@ private data class StudyStatsData(
     val booksRead: Int,
     val streakDays: Int
 )
+
 

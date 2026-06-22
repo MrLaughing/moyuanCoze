@@ -211,8 +211,8 @@ class SyncWorker(
         gardenRepository: GardenRepository,
         plantRepository: PlantRepository,
         totalReadMinutes: Int
-    ): Result {
-        return try {
+    ): Unit {
+        try {
             val meta = gardenRepository.observeMeta().first() ?: return
             
             // 确定补算起始日期
@@ -514,5 +514,6 @@ interface SyncWorkerEntryPoint {
     fun readStatsRepository(): ReadStatsRepository
     fun weatherRepository(): WeatherRepository
 }
+
 
 
