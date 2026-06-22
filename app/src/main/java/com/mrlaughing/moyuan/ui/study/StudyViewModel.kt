@@ -3,7 +3,7 @@ package com.mrlaughing.moyuan.ui.study
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity
-import com.mrlaughing.moyuan.data.local.db.entity.ReadStatsEntity
+import com.mrlaughing.moyuan.data.repository.ReadStats
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -213,11 +213,12 @@ data class BookItem(
  * 书案统计组合数据
  */
 private data class StudyStatsData(
-    val stats: ReadStatsEntity?,
+    val stats: ReadStats?,
     val meta: GardenMetaEntity?,
     val totalReadMinutes: Int,
     val booksRead: Int,
     val streakDays: Int
 )
+
 
 
