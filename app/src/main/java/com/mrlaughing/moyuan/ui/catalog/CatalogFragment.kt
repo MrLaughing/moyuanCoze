@@ -68,6 +68,7 @@ class CatalogFragment : Fragment() {
             // 无论已解锁还是未解锁，都可以进入详情页查看
             navigateToPlantDetail(plant.plantId)
         }
+        adapter.setFragment(this)
 
         val columns = ScreenUtils.getRecommendedGridColumns(requireContext())
         recyclerView.layoutManager = GridLayoutManager(context, columns)
@@ -131,9 +132,19 @@ class CatalogFragment : Fragment() {
      * 导航到植物详情页 - 使用 plantStringId（String）传递参数
      */
     private fun navigateToPlantDetail(plantId: Long) {
-        val direction = CatalogFragmentDirections
-            .actionCatalogFragmentToPlantDetailFragment(plantId)
-        findNavController().navigate(direction)
+        try {
+            val direction = CatalogFragmentDirections
+                .actionCatalogFragmentToPlantDetailFragment(plantId)
+            findNavController().navigate(direction)
+        } catch (e: Exception) {
+            android.util.Log.e("CatalogFragment", "导航到植物详情失败: plantId=$plantId", e)
+            // 导航失败时不崩溃，给用户提示
+            android.widget.Toast.makeText(
+                requireContext(),
+                "暂时无法查看植物详情",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
 

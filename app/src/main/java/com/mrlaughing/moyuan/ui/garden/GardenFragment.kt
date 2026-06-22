@@ -228,9 +228,13 @@ class GardenFragment : Fragment() {
      * 导航到植物详情
      */
     private fun navigateToPlantDetail(plantId: Long) {
-        val direction = GardenFragmentDirections
-            .actionGardenFragmentToPlantDetailFragment(plantId)
-        findNavController().navigate(direction)
+        try {
+            val direction = GardenFragmentDirections
+                .actionGardenFragmentToPlantDetailFragment(plantId)
+            findNavController().navigate(direction)
+        } catch (e: Exception) {
+            android.util.Log.e("GardenFragment", "导航到植物详情失败: plantId=$plantId", e)
+        }
     }
 }
 

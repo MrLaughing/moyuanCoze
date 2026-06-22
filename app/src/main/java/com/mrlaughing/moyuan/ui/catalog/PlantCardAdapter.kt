@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.LifecycleOwner
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.mrlaughing.moyuan.R
@@ -24,6 +24,7 @@ class PlantCardAdapter(
 ) : RecyclerView.Adapter<PlantCardAdapter.ViewHolder>() {
 
     private var items: List<CatalogPlantItem> = emptyList()
+    private var fragment: Fragment? = null
 
     // 暖色调颜色定义
     private val unlockedNameColor = 0xFF2C2416.toInt()      // ink_dark
@@ -33,6 +34,14 @@ class PlantCardAdapter(
     private val lockedNameColor = 0xFFA89F91.toInt()        // ink_light
     private val lockedLevelColor = 0xFFA89F91.toInt()       // ink_light
     private val lockedStarsColor = 0xFFD4C9B8.toInt()       // border/ink_wash
+
+    /**
+     * 绑定 Fragment 用于获取 lifecycleScope
+     * 必须在创建 adapter 后调用
+     */
+    fun setFragment(fragment: Fragment) {
+        this.fragment = fragment
+    }
 
     fun submitList(newItems: List<CatalogPlantItem>) {
         items = newItems
@@ -50,6 +59,11 @@ class PlantCardAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        fragment = null
+    }
 
     /**
      * 根据等级数字获取等级名称
@@ -94,7 +108,11 @@ class PlantCardAdapter(
                 imageGradient.setBackgroundResource(R.drawable.bg_card_image_gradient_unlocked)
 
                 itemView.setOnClickListener {
-                    onPlantClick(item)
+                    try {
+                        onPlantClick(item)
+                    } catch (e: Exception) {
+                        android.util.Log.e("PlantCardAdapter", "点击植物卡片失败", e)
+                    }
                 }
             } else {
                 // 未解锁：灰色剪影
@@ -124,17 +142,18 @@ class PlantCardAdapter(
         }
 
         /**
-         * 加载植物图片 - 使用 plantStringId 直接加载，稳定可靠
+         * 加载植物图片 - 使用 Fragment 的 lifecycleScope
          */
         private fun loadPlantImage(item: CatalogPlantItem) {
-            val context = itemView.context
-            // 使用Activity的lifecycleScope代替裸Thread，避免Fragment销毁后崩溃
-            (context as? LifecycleOwner)?.lifecycleScope?.launch {
+            val ctx = itemView.context ?: return
+            val scope = fragment?.viewLifecycleOwner?.lifecycleScope ?: return
+            
+            scope.launch {
                 val bitmap = withContext(Dispatchers.IO) {
                     try {
-                        // 使用 loadByStringId 直接传入字符串ID，不再依赖 Long 索引映射
-                        PlantImageLoader.loadByStringId(context, item.plantStringId, item.level, 0)
+                        PlantImageLoader.loadByStringId(ctx, item.plantStringId, item.level, 0)
                     } catch (e: Exception) {
+                        android.util.Log.e("PlantCard", "加载植物图片失败: ${item.plantStringId}", e)
                         null
                     }
                 }
@@ -147,16 +166,18 @@ class PlantCardAdapter(
         }
 
         /**
-         * 加载剪影图 - 使用 plantStringId 直接加载
+         * 加载剪影图
          */
         private fun loadSilhouette(item: CatalogPlantItem) {
-            val context = itemView.context
-            (context as? LifecycleOwner)?.lifecycleScope?.launch {
+            val ctx = itemView.context ?: return
+            val scope = fragment?.viewLifecycleOwner?.lifecycleScope ?: return
+            
+            scope.launch {
                 val bitmap = withContext(Dispatchers.IO) {
                     try {
-                        // 使用 loadSilhouetteByStringId 直接传入字符串ID
-                        PlantImageLoader.loadSilhouetteByStringId(context, item.plantStringId)
+                        PlantImageLoader.loadSilhouetteByStringId(ctx, item.plantStringId)
                     } catch (e: Exception) {
+                        android.util.Log.e("PlantCard", "加载剪影图失败: ${item.plantStringId}", e)
                         null
                     }
                 }

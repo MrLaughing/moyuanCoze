@@ -2,6 +2,7 @@ package com.mrlaughing.moyuan.render
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -115,6 +116,16 @@ object PlantImageLoader {
     }
 
     private fun loadFromAssets(context: Context, assetPath: String): Bitmap? {
+        // 方式1：直接用 InputStream 解码，避免 Glide 的 Fragment 生命周期问题
+        try {
+            context.assets.open(assetPath).use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)?.let { return it }
+            }
+        } catch (e: Exception) {
+            // Asset 不存在或解码失败，降级到 Glide
+        }
+
+        // 方式2：Glide 降级
         return try {
             Glide.with(context)
                 .asBitmap()
@@ -125,6 +136,8 @@ object PlantImageLoader {
             null
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
+            null
+        } catch (e: Exception) {
             null
         }
     }
