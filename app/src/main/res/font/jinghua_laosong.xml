@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 结构阅读层 — 京华老宋(缺失字元已用霞鹜文楷Medium替代) -->
+<!-- 结构阅读层 — 思源宋体(Noto Serif SC)替代原京华老宋 -->
 <!-- 页面标题、分区标题、正文描述、设置项 -->
 <font-family xmlns:android="http://schemas.android.com/apk/res/android">
     <font
-        android:font="@font/lxgw_wenkai_medium"
+        android:font="@font/noto_serif_sc_regular"
         android:fontStyle="normal"
-        android:fontWeight="500" />
+        android:fontWeight="400" />
+    <font
+        android:font="@font/noto_serif_sc_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700" />
 </font-family>
