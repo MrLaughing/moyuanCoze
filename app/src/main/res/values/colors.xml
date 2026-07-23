@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 墨园水墨风格配色体系 -->
+    <!-- 基于宣纸暖色背景 + 浓墨强调的暖色调 -->
+
+    <!-- 核心墨色 -->
+    <color name="ink_dark">#202321</color>          <!-- 浓墨：深色文本/强调 -->
+    <color name="ink_medium">#737873</color>       <!-- 中墨：次要文本 -->
+    <color name="ink_light">#989D98</color>        <!-- 淡墨：辅助文本 -->
+    <color name="ink_wash">#D1D1D6</color>         <!-- 墨晕：淡色填充 -->
+
+    <!-- 纸色背景 -->
+    <color name="paper_bg">#F5F7F3</color>         <!-- 宣纸暖色：主背景 -->
+    <color name="paper_wash">#FAFAFB</color>       <!-- 淡晕：渐变上 -->
+    <color name="paper_dark">#ECECEF</color>        <!-- 深纸：渐变下 -->
+    <color name="xuan_paper">#FFFFFF</color>         <!-- 亮纸：卡片背景 -->
+
+    <!-- 品牌强调色：克制的墨绿 + 少量暖色 -->
+    <color name="accent_green">#2F6B58</color>
+    <color name="accent_green_pressed">#255446</color>
+    <color name="accent_green_soft">#E1EEE7</color>
+    <color name="accent_warm">#C77757</color>
+    <color name="quiet_gold">#E5B84B</color>
+    <color name="shadow_soft">#14000000</color>
+
+    <!-- 表面色 -->
+    <color name="surface">#EFEFF1</color>           <!-- 表面色：输入框/次要背景 -->
+    <color name="surface_light">#F9F9FA</color>     <!-- 浅表面 -->
+
+    <!-- 边框分割线 -->
+    <color name="border">#DFE4DF</color>           <!-- 分割线/边框 -->
+    <color name="border_light">#EDF0ED</color>     <!-- 浅边框 -->
+
+    <!-- 文本色 -->
+    <color name="text_primary">#202321</color>     <!-- 主文本（浓墨） -->
+    <color name="text_secondary">#737873</color>    <!-- 次要文本 -->
+    <color name="text_tertiary">#98989D</color>     <!-- 辅助文本 -->
+    <color name="text_on_dark">#FFFFFF</color>       <!-- 深色背景上的文字 -->
+
+    <!-- 保留原有灰度色（用于兼容性） -->
+    <color name="pure_black">#2C2416</color>        <!-- 纯黑替代为浓墨 -->
+    <color name="deep_gray">#57534E</color>         <!-- 深灰 -->
+    <color name="medium_gray">#78716C</color>       <!-- 中灰 -->
+    <color name="light_gray">#A8A29E</color>        <!-- 浅灰 -->
+    <color name="silver_gray">#D4C9B8</color>       <!-- 银灰 -->
+    <color name="super_light_gray">#E8E0D0</color> <!-- 超浅灰 -->
+    <color name="page_background">#F4F1EA</color>    <!-- 页面背景 -->
+    <color name="white">#FFFFFF</color>             <!-- 纯白 -->
+
+    <!-- 16级灰度参考 -->
+    <color name="gray_0">#000000</color>
+    <color name="gray_1">#111111</color>
+    <color name="gray_2">#222222</color>
+    <color name="gray_3">#333333</color>
+    <color name="gray_4">#444444</color>
+    <color name="gray_5">#555555</color>
+    <color name="gray_6">#666666</color>
+    <color name="gray_7">#777777</color>
+    <color name="gray_8">#888888</color>
+    <color name="gray_9">#999999</color>
+    <color name="gray_10">#AAAAAA</color>
+    <color name="gray_11">#BBBBBB</color>
+    <color name="gray_12">#CCCCCC</color>
+    <color name="gray_13">#DDDDDD</color>
+    <color name="gray_14">#EEEEEE</color>
+    <color name="gray_15">#FFFFFF</color>
+
+    <!-- 季节配色（四季变化） -->
+    <!-- 春 -->
+    <color name="season_spring_sky">#F0EBE0</color>
+    <color name="season_spring_wash">#E8E4D9</color>
+    <color name="season_spring_mountain">#C4B998</color>
+    <color name="season_spring_accent">#D4BFA0</color>
+    <color name="season_spring_foliage">#A8B89A</color>
+    <color name="season_spring_ground">#D6D3CC</color>
+    <!-- 夏 -->
+    <color name="season_summer_sky">#EDECE3</color>
+    <color name="season_summer_wash">#E0E0D2</color>
+    <color name="season_summer_mountain">#8FA895</color>
+    <color name="season_summer_accent">#7F9A7F</color>
+    <color name="season_summer_foliage">#6B8F6B</color>
+    <color name="season_summer_ground">#C8C8B8</color>
+    <!-- 秋 -->
+    <color name="season_autumn_sky">#F2EDE0</color>
+    <color name="season_autumn_wash">#EBE0CC</color>
+    <color name="season_autumn_mountain">#B89878</color>
+    <color name="season_autumn_accent">#C49A6C</color>
+    <color name="season_autumn_foliage">#A08050</color>
+    <color name="season_autumn_ground">#D0C4B0</color>
+    <!-- 冬 -->
+    <color name="season_winter_sky">#E8E8EC</color>
+    <color name="season_winter_wash">#E0E0E8</color>
+    <color name="season_winter_mountain">#9EA8B8</color>
+    <color name="season_winter_accent">#B0B8C8</color>
+    <color name="season_winter_foliage">#8890A0</color>
+    <color name="season_winter_ground">#C8C8D0</color>
+
+    <!-- 天气效果色 -->
+    <color name="weather_rain">#78716C</color>       <!-- 雨丝 -->
+    <color name="weather_fog">#A8A29E</color>         <!-- 雾气 -->
+    <color name="weather_cloud">#78716C</color>       <!-- 阴云 -->
+    <color name="weather_moon">#D6D3CC</color>        <!-- 月光 -->
+    <color name="weather_snow">#C4B998</color>         <!-- 雪花 -->
+
+    <!-- 装饰色 -->
+    <color name="accent_petal">#E8C4C4</color>        <!-- 花瓣（春） -->
+    <color name="accent_leaf">#C49A6C</color>         <!-- 落叶（秋） -->
+    <color name="accent_snow">#F0F0F4</color>          <!-- 积雪（冬） -->
+</resources>

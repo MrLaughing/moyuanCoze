@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 墨园主题：NoActionBar、三字体体系、无动画、高对比度 -->
+
+    <!-- 基础应用主题 -->
+    <style name="Theme.Moyuan" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/accent_green</item>
+        <item name="colorPrimaryDark">@color/accent_green_pressed</item>
+        <item name="colorAccent">@color/accent_green</item>
+        <item name="colorOnPrimary">@color/text_on_dark</item>
+        <item name="colorOnSurface">@color/ink_dark</item>
+        <item name="android:windowBackground">@color/paper_bg</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>        <item name="android:statusBarColor">@color/paper_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/paper_bg</item>
+        <item name="android:colorControlHighlight">@color/accent_green_soft</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- 三字体体系 TextAppearance -->
+    <!-- 霞鹜文楷(文学温度层) / 京华老宋(结构阅读层) / 思源黑体(功能数据层) -->
+    <!-- ============================================ -->
+
+    <!-- 文学温度层 — 霞鹜文楷：品牌名、植物名、诗词名句、成就名 -->
+    <style name="TextAppearance.Moyuan.Literary" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="fontFamily">@font/lxgw_wenkai</item>
+    </style>
+
+    <!-- 结构阅读层 — 京华老宋：页面标题、分区标题、正文描述、设置项 -->
+    <style name="TextAppearance.Moyuan.Structural" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="fontFamily">@font/jinghua_laosong</item>
+    </style>
+
+    <!-- 功能数据层 — 思源黑体(sans-serif)：导航标签、按钮、数据数字、辅助文字 -->
+    <style name="TextAppearance.Moyuan.Functional" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Tab 文字样式 -->
+    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
+    <!-- 墨园卡片样式（带边框） -->
+    <style name="MoyuanCard">
+        <item name="android:background">@color/white</item>
+        <item name="android:padding">@dimen/spacing_md</item>
+    </style>
+
+    <!-- 圆角Pill标签样式 — 霞鹜文楷 -->
+    <style name="PillTag">
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+    </style>
+
+    <style name="PillTag.Dark">
+        <item name="android:background">@drawable/bg_pill_dark</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+    </style>
+
+    <style name="PillTag.Light">
+        <item name="android:background">@drawable/bg_pill_light</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- 花园页文字样式 -->
+    <style name="GardenTitleText">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+
+    <style name="GardenStatValue">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="GardenStatLabel">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="GardenStatUnit">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">9sp</item>
+    </style>
+
+    <!-- 浇灌按钮样式 -->
+    <style name="WaterButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/ink_dark</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+</resources>

@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>墨园 Web 设计原型</title>
+  <style>
+    @font-face {
+      font-family: "Moyuan Kai";
+      src: url("../app/src/main/res/font/lxgw_wenkai_regular.ttf") format("truetype");
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Moyuan Song";
+      src: url("../app/src/main/res/font/jinghua_laosong_regular.ttf") format("truetype");
+      font-display: swap;
+    }
+    :root {
+      color-scheme: light;
+      --ink: #202321;
+      --muted: #737873;
+      --quiet: #a1a7a1;
+      --paper: #f5f7f3;
+      --surface: #ffffff;
+      --surface-soft: #eef2ed;
+      --line: #dfe4df;
+      --green: #2f6b58;
+      --green-deep: #255446;
+      --green-soft: #e1eee7;
+      --warm: #c77757;
+      --sun: #e5b84b;
+      --shadow: 0 8px 24px rgba(31, 48, 40, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #e7ebe7;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, select { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .app {
+      width: min(100%, 480px);
+      min-height: 820px;
+      margin: 0 auto;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(31, 48, 40, 0.12);
+    }
+    .page {
+      display: none;
+      min-height: 756px;
+      padding-bottom: 88px;
+    }
+    .page.is-active { display: block; }
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px 20px 10px;
+      position: relative;
+      z-index: 4;
+    }
+    .brand h1, .section-title {
+      margin: 0;
+      font-family: "Moyuan Song", serif;
+      font-weight: 500;
+    }
+    .brand h1 { font-size: 28px; }
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-family: "Moyuan Kai", serif;
+      font-size: 14px;
+    }
+    .season-status { display: flex; gap: 8px; }
+    .chip {
+      min-width: 42px;
+      min-height: 36px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.84);
+      color: var(--ink);
+    }
+    .garden-stage {
+      height: 500px;
+      margin-top: -6px;
+      position: relative;
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .garden-stage::after {
+      content: "";
+      position: absolute;
+      inset: auto 10% 9% 10%;
+      height: 15%;
+      border-radius: 50%;
+      background: rgba(47, 73, 58, 0.06);
+      filter: blur(14px);
+      pointer-events: none;
+    }
+    .garden-map { position: absolute; inset: 0; z-index: 1; }
+    .plot {
+      position: absolute;
+      width: var(--tile);
+      height: var(--tile);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      transition: filter 160ms ease;
+    }
+    .plot:hover, .plot:focus-visible { filter: brightness(1.05); }
+    .plot img { position: absolute; object-fit: contain; pointer-events: none; }
+    .plot-lawn { inset: 0; width: 100%; height: 100%; z-index: var(--lawn-depth); filter: saturate(0.9) brightness(1.02); }
+    .plot-plant {
+      width: 60%;
+      height: 60%;
+      left: 20%;
+      top: 4%;
+      z-index: var(--plant-depth);
+      filter: drop-shadow(0 4px 3px rgba(25, 35, 29, 0.18));
+    }
+    .ambient {
+      position: absolute;
+      border-radius: 50%;
+      width: 8px;
+      height: 8px;
+      background: rgba(229, 184, 75, 0.46);
+      box-shadow: 0 0 0 6px rgba(229, 184, 75, 0.09);
+      animation: drift 7s ease-in-out infinite alternate;
+      z-index: 2;
+    }
+    .ambient.a { left: 15%; top: 31%; }
+    .ambient.b { right: 17%; top: 46%; animation-delay: -2s; }
+    .ambient.c { left: 48%; bottom: 12%; animation-delay: -4s; }
+    @keyframes drift { to { transform: translate(6px, -10px); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+    .garden-controls {
+      margin: -16px 16px 0;
+      position: relative;
+      z-index: 4;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.96);
+      box-shadow: var(--shadow);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 40px;
+      align-items: center;
+      min-height: 76px;
+      padding: 10px 8px 10px 14px;
+    }
+    .stat { text-align: center; border-right: 1px solid var(--line); }
+    .stat:nth-child(3) { border-right: 0; }
+    .stat span { display: block; color: var(--muted); font-size: 12px; }
+    .stat strong { display: block; margin-top: 3px; font-size: 21px; font-weight: 500; }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--surface-soft); }
+    .control-drawer { display: none; border-top: 1px solid var(--line); padding: 14px; }
+    .control-drawer.is-open { display: block; }
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .control-row:last-child { margin-bottom: 0; }
+    .control-label { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .range-control { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+    .range-control input { width: 100%; min-width: 0; accent-color: var(--green); }
+    .range-control output { min-width: 44px; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+    .segmented { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .segmented button {
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .segmented button[aria-pressed="true"] {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+    .control-stack { align-items: stretch; flex-direction: column; }
+    .control-stack .segmented { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .control-stack .segmented button { min-width: 0; padding-left: 4px; padding-right: 4px; }
+    .season-select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 5px 28px 5px 10px;
+    }
+    .water-btn {
+      width: calc(100% - 32px);
+      min-height: 50px;
+      margin: 14px 16px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(47, 107, 88, 0.18);
+    }
+    .water-btn:active { background: var(--green-deep); }
+    .selected-plant {
+      min-height: 24px;
+      padding: 3px 20px 0;
+      color: var(--muted);
+      font-family: "Moyuan Kai", serif;
+      text-align: center;
+    }
+    .content-page { padding: 20px 18px 104px; }
+    .page-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+    .section-title { font-size: 25px; }
+    .page-meta { color: var(--muted); font-size: 13px; }
+    .catalog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .plant-card {
+      min-width: 0;
+      padding: 8px 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 160ms ease, transform 160ms ease;
+    }
+    .plant-card:hover, .plant-card:focus-visible { border-color: var(--green); transform: translateY(-2px); }
+    .plant-card img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+    .plant-card strong { display: block; font-family: "Moyuan Kai", serif; font-weight: 500; }
+    .plant-card span { display: block; margin-top: 2px; color: var(--quiet); font-size: 11px; }
+    .plant-dialog {
+      width: min(calc(100% - 32px), 400px);
+      max-height: calc(100% - 48px);
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 24px 70px rgba(22, 35, 28, 0.28);
+      overflow: auto;
+    }
+    .plant-dialog::backdrop { background: rgba(24, 31, 27, 0.46); }
+    .dialog-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      background: rgba(255,255,255,0.88);
+    }
+    .detail-visual {
+      height: 250px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-soft);
+      overflow: hidden;
+    }
+    .detail-visual img { width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 8px 8px rgba(28,42,34,0.16)); }
+    .detail-visual.is-locked img { filter: grayscale(1) brightness(0.3); opacity: 0.24; }
+    .detail-copy { padding: 20px; }
+    .detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .detail-heading h3 { margin: 0; font: 500 24px "Moyuan Kai", serif; }
+    .detail-status { color: var(--green); font-size: 12px; }
+    .detail-status.is-locked { color: var(--muted); }
+    .detail-description { margin: 16px 0 0; color: var(--muted); line-height: 1.7; }
+    .detail-lore { margin: 14px 0 0; padding-left: 12px; border-left: 2px solid var(--sun); font-family: "Moyuan Kai", serif; line-height: 1.7; }
+    .detail-action {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+    }
+    .detail-action[hidden] { display: none; }
+    .study-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .metric {
+      min-height: 76px;
+      padding: 14px;
+      border-left: 3px solid var(--green);
+      background: var(--surface);
+    }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin-top: 7px; font-size: 20px; font-weight: 500; }
+    .subhead { margin: 26px 0 10px; font-family: "Moyuan Song", serif; font-size: 17px; font-weight: 500; }
+    .week-chart {
+      height: 150px;
+      display: flex;
+      align-items: end;
+      justify-content: space-around;
+      gap: 8px;
+      padding: 18px 12px 8px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .bar { flex: 1; display: grid; align-content: end; gap: 6px; height: 100%; text-align: center; color: var(--muted); font-size: 11px; }
+    .bar i { display: block; width: 100%; min-height: 4px; border-radius: 4px 4px 1px 1px; background: var(--green); }
+    .book-row, .setting-row, .achievement-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 60px;
+      border-bottom: 1px solid var(--line);
+    }
+    .book-mark { width: 5px; height: 34px; border-radius: 3px; background: var(--warm); }
+    .row-copy { flex: 1; min-width: 0; }
+    .row-copy strong { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-copy span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .profile-hero { display: flex; align-items: center; gap: 14px; padding: 4px 0 18px; }
+    .avatar { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: #fff; font: 500 24px "Moyuan Kai", serif; }
+    .profile-copy h3 { margin: 0; font: 500 20px "Moyuan Kai", serif; }
+    .profile-copy p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .achievement-seal { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--green-soft); color: var(--green-deep); font-family: "Moyuan Kai", serif; }
+    .nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.98);
+      z-index: 10;
+    }
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .nav button[aria-selected="true"] { color: var(--green); }
+    .nav svg { width: 21px; height: 21px; }
+    @media (max-width: 380px) {
+      .garden-stage { height: 460px; }
+      .brand p { font-size: 12px; }
+      .stats { grid-template-columns: repeat(3, 1fr) 34px; }
+      .catalog-grid { gap: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="moyuanPrototype">
+    <section class="page is-active" id="page-garden" aria-labelledby="gardenTitle">
+      <header class="topbar">
+        <div class="brand">
+          <h1 id="gardenTitle">墨园</h1>
+          <p>让阅读，在时间里生长</p>
+        </div>
+        <div class="season-status" aria-label="季节和天气">
+          <span class="chip" id="seasonChip">夏</span>
+          <span class="chip">晴</span>
+        </div>
+      </header>
+      <div class="garden-stage" id="gardenStage" aria-label="完整菱形阅读花圃">
+        <div class="garden-map" id="gardenMap"></div>
+        <i class="ambient a" aria-hidden="true"></i>
+        <i class="ambient b" aria-hidden="true"></i>
+        <i class="ambient c" aria-hidden="true"></i>
+      </div>
+      <div class="selected-plant" id="selectedPlant">距下一次相遇还差 58 分钟</div>
+      <section class="garden-controls" aria-label="花园概况和布局">
+        <div class="stats">
+          <div class="stat"><span>今日阅读</span><strong>42<small> 分</small></strong></div>
+          <div class="stat"><span>连续天数</span><strong>7<small> 天</small></strong></div>
+          <div class="stat"><span>园中植物</span><strong id="plantCount">25/25</strong></div>
+          <button class="icon-btn" id="drawerToggle" aria-expanded="false" aria-label="花园设置"><i data-lucide="sliders-horizontal" aria-hidden="true"></i></button>
+        </div>
+        <div class="control-drawer" id="controlDrawer">
+          <div class="control-row control-stack">
+            <span class="control-label">花圃方阵</span>
+            <div class="segmented" id="densityControls" aria-label="花圃规模"></div>
+          </div>
+          <div class="control-row">
+            <label class="control-label" for="plantedRange">已种植</label>
+            <div class="range-control">
+              <input id="plantedRange" type="range" min="3" max="25" value="25">
+              <output id="plantedValue" for="plantedRange">25/25</output>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label" for="seasonSelect">四季草坪</label>
+            <select class="season-select" id="seasonSelect">
+              <option>春</option><option selected>夏</option><option>秋</option><option>冬</option>
+            </select>
+          </div>
+        </div>
+      </section>
+      <button class="water-btn" id="waterButton">浇灌 · 今日阅读 42 分钟</button>
+    </section>
+
+    <section class="page content-page" id="page-catalog" aria-labelledby="catalogTitle">
+      <header class="page-head"><h2 class="section-title" id="catalogTitle">图鉴</h2><span class="page-meta">已发现 12/50</span></header>
+      <div class="catalog-grid" id="catalogGrid"></div>
+    </section>
+
+    <section class="page content-page" id="page-study" aria-labelledby="studyTitle">
+      <header class="page-head"><h2 class="section-title" id="studyTitle">书案</h2><span class="page-meta">2026年7月</span></header>
+      <div class="study-stats">
+        <div class="metric"><span>今日阅读</span><strong>42 分钟</strong></div>
+        <div class="metric"><span>连续阅读</span><strong>7 天</strong></div>
+        <div class="metric"><span>累计阅读</span><strong>126 小时</strong></div>
+        <div class="metric"><span>阅读书目</span><strong>18 本</strong></div>
+      </div>
+      <h3 class="subhead">本周阅读</h3>
+      <div class="week-chart" id="weekChart"></div>
+      <h3 class="subhead">最近阅读</h3>
+      <div class="book-row"><span class="book-mark"></span><div class="row-copy"><strong>置身事内</strong><span>今天 · 42 分钟 · 阅读进度 68%</span></div></div>
+      <div class="book-row"><span class="book-mark" style="background:var(--sun)"></span><div class="row-copy"><strong>万历十五年</strong><span>昨天 · 35 分钟 · 阅读进度 31%</span></div></div>
+      <div class="book-row"><span class="book-mark" style="background:var(--green)"></span><div class="row-copy"><strong>美的历程</strong><span>7月18日 · 28 分钟 · 阅读进度 92%</span></div></div>
+    </section>
+
+    <section class="page content-page" id="page-profile" aria-labelledby="profileTitle">
+      <header class="page-head"><h2 class="section-title" id="profileTitle">我的</h2><span class="page-meta">墨园 2.0</span></header>
+      <div class="profile-hero"><div class="avatar">墨</div><div class="profile-copy"><h3>我的墨园</h3><p>12 株植物 · 连续阅读 7 天</p></div></div>
+      <h3 class="subhead">成就</h3>
+      <div class="achievement-row"><span class="achievement-seal">初</span><div class="row-copy"><strong>初心</strong><span>墨香初识，书卷初开</span></div><span class="page-meta">已获得</span></div>
+      <div class="achievement-row"><span class="achievement-seal">芳</span><div class="row-copy"><strong>寻芳</strong><span>发现 10 株植物</span></div><span class="page-meta">10/10</span></div>
+      <div class="achievement-row"><span class="achievement-seal">恒</span><div class="row-copy"><strong>不辍</strong><span>连续阅读 7 天</span></div><span class="page-meta">7/7</span></div>
+      <h3 class="subhead">连接与设置</h3>
+      <div class="setting-row"><i data-lucide="book-open" aria-hidden="true"></i><div class="row-copy"><strong>微信读书</strong><span>已连接 · 今天 08:00 同步</span></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+      <div class="setting-row"><i data-lucide="clock-3" aria-hidden="true"></i><div class="row-copy"><strong>同步时间</strong><span>每天 08:00</span></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+      <div class="setting-row"><i data-lucide="info" aria-hidden="true"></i><div class="row-copy"><strong>关于墨园</strong><span>让阅读，在时间里生长</span></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+    </section>
+
+    <dialog class="plant-dialog" id="plantDialog" aria-labelledby="detailPlantName">
+      <form method="dialog">
+        <button class="icon-btn dialog-close" value="cancel" aria-label="关闭植物详情"><i data-lucide="x" aria-hidden="true"></i></button>
+      </form>
+      <div class="detail-visual" id="detailVisual"><img id="detailPlantImage" alt=""></div>
+      <div class="detail-copy">
+        <div class="detail-heading"><h3 id="detailPlantName"></h3><span class="detail-status" id="detailStatus"></span></div>
+        <p class="detail-description" id="detailDescription"></p>
+        <p class="detail-lore" id="detailLore"></p>
+        <button class="detail-action" id="detailAction" type="button">放入花园</button>
+      </div>
+    </dialog>
+
+    <nav class="nav" aria-label="主导航">
+      <button data-page="garden" aria-selected="true"><i data-lucide="sprout" aria-hidden="true"></i><span>花园</span></button>
+      <button data-page="catalog" aria-selected="false"><i data-lucide="library-big" aria-hidden="true"></i><span>图鉴</span></button>
+      <button data-page="study" aria-selected="false"><i data-lucide="book-open-text" aria-hidden="true"></i><span>书案</span></button>
+      <button data-page="profile" aria-selected="false"><i data-lucide="circle-user-round" aria-hidden="true"></i><span>我的</span></button>
+    </nav>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const root = document.getElementById('moyuanPrototype');
+    const plantNames = ['芭蕉','柏','彼岸花','并蒂莲','侧柏','菖蒲','大花绣球','非洲百合','桂花','海棠','海桐','黑心金光菊','黄杨','金叶女贞','菊','腊梅','兰花','连翘','莲','灵芝','柳枝稷','猫薄荷','玫瑰','梅','牡丹','菩提','牵牛花','三色堇','山茶花','芍药','鼠尾草','水仙','丝兰','松','昙花','文竹','香雪球','向日葵','小须芒草','薰衣草','夜合花','夜来香','银杏','玉簪','郁金香','圆锥绣球','月见草','竹子','紫藤','紫锥花'];
+    const layouts = [
+      { count: 9, cols: 3, rows: 3, label: '3×3' },
+      { count: 16, cols: 4, rows: 4, label: '4×4' },
+      { count: 25, cols: 5, rows: 5, label: '5×5' },
+      { count: 36, cols: 6, rows: 6, label: '6×6' },
+      { count: 49, cols: 7, rows: 7, label: '7×7' }
+    ];
+    const catalogDetails = {
+      '芭蕉': ['宽大的叶片舒展如扇，为园中增添热带风情。', '窗前谁种芭蕉树，阴满中庭。'],
+      '柏': ['苍劲挺拔，四季常青，是庭院中的君子树。', '岁寒，然后知松柏之后凋也。'],
+      '彼岸花': ['红艳似火的花瓣卷曲如丝，花开不见叶。', '花开彼岸，叶落黄泉，生生相错。'],
+      '并蒂莲': ['一茎双花，相伴而生，寓意同心同德。', '一茎双花，同心同德。'],
+      '侧柏': ['枝叶扁平如扇，树姿古朴端庄。', '古木静守书斋，年轮收藏时光。'],
+      '菖蒲': ['水边细叶如剑，清雅幽香，有文人风骨。', '菖蒲乃文房清供，最宜伴读。'],
+      '大花绣球': ['球形花序饱满圆润，花色随土壤变幻。', '花团锦簇，如同读书时的心情百转千回。'],
+      '非洲百合': ['蓝色花序如烟花，花茎挺拔优雅。', '蓝色花朵如墨水泼洒，是书桌上的精灵。'],
+      '桂花': ['金黄小花藏于叶间，秋日飘香。', '古时科举折桂，寓意读书人金榜题名。'],
+      '海棠': ['胭脂色的花朵缀满枝头，明媚动人。', '只恐夜深花睡去，故烧高烛照红妆。'],
+      '海桐': ['圆润绿叶四季不凋，白花清香怡人。', '书斋窗外最安静的伴读之树。'],
+      '黑心金光菊': ['金黄花瓣围簇深褐花心，如灿烂小太阳。', '像一只只会发光的眼睛，注视翻动的书页。'],
+      '黄杨': ['叶片细小光亮，耐修剪，是盆景良材。', '黄杨木质细腻，每片叶子都像一枚书签。'],
+      '金叶女贞': ['金黄色叶片在阳光下熠熠生辉。', '像书页边缘烫金的装饰。'],
+      '菊': ['秋日百花杀尽时，此花独自绽放。', '采菊东篱下，悠然见南山。'],
+      '腊梅': ['寒冬腊月凌霜绽放，幽香袭人。', '遥知不是雪，为有暗香来。'],
+      '兰花': ['素雅高洁，幽香清远，花中君子。', '与善人居，如入芝兰之室。'],
+      '连翘': ['早春满枝金黄，是最早报春的使者。', '满枝碎金，是春日书案上的第一抹亮色。']
+    };
+    let activeLayout = layouts[2];
+    let plantedCount = activeLayout.count;
+    let activeSeason = '夏';
+    const assetPath = name => `../app/src/main/assets/plants/${encodeURIComponent(name)}.png`;
+
+    function renderDensityControls() {
+      const host = document.getElementById('densityControls');
+      host.replaceChildren(...layouts.map(layout => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = layout.label;
+        button.setAttribute('aria-label', `${layout.label} · ${layout.count}`);
+        button.setAttribute('aria-pressed', String(layout.count === activeLayout.count));
+        button.addEventListener('click', () => {
+          activeLayout = layout;
+          plantedCount = layout.count;
+          renderDensityControls();
+          renderGarden();
+        });
+        return button;
+      }));
+    }
+
+    function renderGarden() {
+      const map = document.getElementById('gardenMap');
+      const stage = document.getElementById('gardenStage');
+      const width = stage.clientWidth || 430;
+      const height = stage.clientHeight || 500;
+      const spreadX = 0.47;
+      const spreadY = 0.23;
+      const spanUnits = 1 + (activeLayout.cols + activeLayout.rows - 2) * spreadX;
+      const tile = Math.min(146, width * 0.88 / spanUnits, height * 0.68 / (1 + (activeLayout.cols + activeLayout.rows - 2) * spreadY));
+      const centerX = width * 0.5;
+      const centerY = height * 0.48;
+      const rowCenter = (activeLayout.rows - 1) / 2;
+      const colCenter = (activeLayout.cols - 1) / 2;
+      const fillOrder = [];
+      for (let row = 0; row < activeLayout.rows; row++) {
+        for (let col = 0; col < activeLayout.cols; col++) {
+          const dr = row - rowCenter;
+          const dc = col - colCenter;
+          fillOrder.push({ row, col, radius: dr * dr + dc * dc, vertical: Math.abs(dr), dc, dr });
+        }
+      }
+      fillOrder.sort((a, b) =>
+        a.radius - b.radius ||
+        a.vertical - b.vertical ||
+        a.dc - b.dc ||
+        a.dr - b.dr
+      );
+      const plantRankByCell = new Map(fillOrder.map((cell, rank) => [`${cell.row}:${cell.col}`, rank]));
+      const buttons = [];
+      for (let row = 0; row < activeLayout.rows; row++) {
+        for (let col = 0; col < activeLayout.cols; col++) {
+          const index = row * activeLayout.cols + col;
+          if (index >= activeLayout.count) continue;
+          const plantRank = plantRankByCell.get(`${row}:${col}`);
+          const planted = plantRank < plantedCount;
+          const name = planted ? plantNames[plantRank] : '';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'plot';
+          button.style.setProperty('--tile', `${tile}px`);
+          button.style.setProperty('--lawn-depth', String(row + col + 1));
+          button.style.setProperty('--plant-depth', String(row + col + 101));
+          button.style.left = `${centerX + (col - row) * tile * spreadX - tile / 2}px`;
+          button.style.top = `${centerY + (col + row - (activeLayout.cols + activeLayout.rows - 2) / 2) * tile * spreadY - tile / 2}px`;
+          button.setAttribute('aria-label', planted ? name : '空草坪');
+          button.innerHTML = `<img class="plot-lawn" src="${assetPath(activeSeason)}" alt="">${planted ? `<img class="plot-plant" src="${assetPath(name)}" alt="">` : ''}`;
+          button.addEventListener('click', () => {
+            document.getElementById('selectedPlant').textContent = planted
+              ? `${name} · 已在${activeSeason}日花圃中生长`
+              : '空草坪 · 等待下一株植物';
+          });
+          buttons.push(button);
+        }
+      }
+      map.replaceChildren(...buttons);
+      document.getElementById('plantCount').textContent = `${plantedCount}/${activeLayout.count}`;
+      const plantedRange = document.getElementById('plantedRange');
+      plantedRange.max = String(activeLayout.count);
+      plantedRange.value = String(plantedCount);
+      document.getElementById('plantedValue').textContent = `${plantedCount}/${activeLayout.count}`;
+    }
+
+    function renderCatalog() {
+      const host = document.getElementById('catalogGrid');
+      host.replaceChildren(...plantNames.map((name, index) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'plant-card';
+        const unlocked = index < 12;
+        card.innerHTML = unlocked
+          ? `<img src="${assetPath(name)}" alt="${name}"><strong>${name}</strong><span>已发现</span>`
+          : `<div style="aspect-ratio:1;display:grid;place-items:center;color:var(--quiet)"><i data-lucide="lock-keyhole" aria-hidden="true"></i></div><strong>${name}</strong><span>等待相遇</span>`;
+        card.setAttribute('aria-label', `查看${name}详情`);
+        card.addEventListener('click', () => openPlantDetail(name, unlocked));
+        return card;
+      }));
+    }
+
+    function openPlantDetail(name, unlocked) {
+      const detail = catalogDetails[name] || ['这株植物正在等待与你相遇。', '继续阅读，让时间带来下一次发现。'];
+      const dialog = document.getElementById('plantDialog');
+      const visual = document.getElementById('detailVisual');
+      const image = document.getElementById('detailPlantImage');
+      const status = document.getElementById('detailStatus');
+      const action = document.getElementById('detailAction');
+      image.src = assetPath(name);
+      image.alt = name;
+      document.getElementById('detailPlantName').textContent = name;
+      document.getElementById('detailDescription').textContent = unlocked ? detail[0] : '这株植物尚未被发现，继续阅读会在新的里程碑随机相遇。';
+      document.getElementById('detailLore').textContent = unlocked ? detail[1] : '植物的故事会在相遇后展开。';
+      visual.classList.toggle('is-locked', !unlocked);
+      status.classList.toggle('is-locked', !unlocked);
+      status.textContent = unlocked ? '已发现' : '尚未发现';
+      action.hidden = !unlocked;
+      action.textContent = '放入花园';
+      dialog.showModal();
+    }
+
+    function renderWeek() {
+      const values = [32, 48, 0, 65, 42, 88, 20];
+      const days = ['一','二','三','四','五','六','日'];
+      document.getElementById('weekChart').replaceChildren(...values.map((value, index) => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.innerHTML = `<i style="height:${Math.max(4, value)}%"></i><span>${days[index]}</span>`;
+        return bar;
+      }));
+    }
+
+    document.getElementById('drawerToggle').addEventListener('click', event => {
+      const drawer = document.getElementById('controlDrawer');
+      const open = drawer.classList.toggle('is-open');
+      event.currentTarget.setAttribute('aria-expanded', String(open));
+    });
+    document.getElementById('seasonSelect').addEventListener('change', event => {
+      activeSeason = event.target.value;
+      document.getElementById('seasonChip').textContent = activeSeason;
+      renderGarden();
+    });
+    document.getElementById('plantedRange').addEventListener('input', event => {
+      plantedCount = Number(event.target.value);
+      renderGarden();
+    });
+    document.getElementById('waterButton').addEventListener('click', event => {
+      const original = event.currentTarget.textContent;
+      event.currentTarget.textContent = '浇灌完成 · 花圃已更新';
+      setTimeout(() => { event.currentTarget.textContent = original; }, 1600);
+    });
+    document.getElementById('detailAction').addEventListener('click', event => {
+      event.currentTarget.textContent = event.currentTarget.textContent === '放入花园' ? '已在花园' : '放入花园';
+    });
+    root.querySelectorAll('.nav button').forEach(button => {
+      button.addEventListener('click', () => {
+        root.querySelectorAll('.nav button').forEach(item => item.setAttribute('aria-selected', String(item === button)));
+        root.querySelectorAll('.page').forEach(page => page.classList.toggle('is-active', page.id === `page-${button.dataset.page}`));
+      });
+    });
+
+    renderDensityControls();
+    renderGarden();
+    renderCatalog();
+    renderWeek();
+    new ResizeObserver(renderGarden).observe(document.getElementById('gardenStage'));
+    if (window.lucide) window.lucide.createIcons();
+  </script>
+</body>
+</html>

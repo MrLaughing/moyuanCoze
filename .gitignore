@@ -1,0 +1,38 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+app/build/
+build/
+
+# Gradle
+.gradle/
+
+# Local config
+local.properties
+
+# IDE
+*.iml
+.idea/
+.DS_Store
+captures/
+artifacts/
+
+# Keystore
+*.jks
+*.keystore
+
+# Project-specific
+.codebuddy/
+.local/
+.agents/
+garden_screenshot.png

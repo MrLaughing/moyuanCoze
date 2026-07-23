@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 印章背景-未解锁：灰色圆角方块 -->
+    <solid android:color="@color/ink_light" />
+    <corners android:radius="8dp" />
+</shape>

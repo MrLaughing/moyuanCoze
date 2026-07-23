@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/paper_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 标题行：书案 + 日期 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="12dp"
+            android:background="@color/white">
+
+            <!-- "书案"页面标题 — 京华老宋(结构阅读层) -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/nav_study"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:fontFamily="@font/jinghua_laosong"
+                android:textStyle="bold" />
+
+            <!-- 日期 — 思源黑体(功能数据层) -->
+            <TextView
+                android:id="@+id/text_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif" />
+
+        </LinearLayout>
+
+        <!-- 4个数据卡片：2×2网格 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:padding="12dp">
+
+            <!-- 今日阅读 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <!-- "今日阅读"标签 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_today_read"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 数值 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_today_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+            <!-- 连续天数 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <!-- "连续天数"标签 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_streak_days"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 数值 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_streak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
+
+            <!-- 累计阅读 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <!-- "累计阅读"标签 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_total_read"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 数值 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_total_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+            <!-- 已读书目 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <!-- "已读书目"标签 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_books_read"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 数值 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_books_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 图鉴进度卡片（整行） -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:minHeight="@dimen/stat_card_min_height"
+                android:background="@drawable/bg_card"
+                android:padding="12dp"
+                android:layout_margin="4dp">
+
+                <!-- "图鉴进度"标签 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_catalog_progress"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 数值 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_catalog_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="4/50 (8%)" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 每周阅读标题 + 周导航（水墨风格横条） -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/bg_card"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <!-- 周导航左箭头（墨色） -->
+            <ImageButton
+                android:id="@+id/btn_prev_week"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_chevron_left"
+                android:contentDescription="上一周"
+                android:scaleType="centerInside"
+                app:tint="@color/ink_dark" />
+
+            <!-- 周范围/标题 — 京华老宋(结构阅读层)，居中显示 -->
+            <TextView
+                android:id="@+id/text_week_range"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_weekly_overview"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:fontFamily="@font/jinghua_laosong"
+                android:gravity="center"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+            <!-- 周导航右箭头（墨色） -->
+            <ImageButton
+                android:id="@+id/btn_next_week"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_chevron_right"
+                android:contentDescription="下一周"
+                android:scaleType="centerInside"
+                app:tint="@color/ink_dark" />
+
+        </LinearLayout>
+
+        <!-- 每周阅读柱状图 -->
+        <com.mrlaughing.moyuan.ui.study.WeekOverviewView
+            android:id="@+id/week_overview"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/week_chart_height"
+            android:background="@drawable/bg_card"
+            android:padding="8dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- "最近阅读"标题 — 京华老宋(结构阅读层) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/label_recent_books"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/jinghua_laosong"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_empty_books"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:padding="20dp"
+            android:gravity="center"
+            android:text="@string/empty_recent_books"
+            android:textColor="@color/text_tertiary"
+            android:textSize="13sp"
+            android:fontFamily="@font/jinghua_laosong"
+            android:background="@drawable/bg_card"
+            android:visibility="gone" />
+
+        <!-- 最近阅读书目列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_books"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="16dp"
+            android:nestedScrollingEnabled="false" />
+
+    </LinearLayout>
+
+</ScrollView>

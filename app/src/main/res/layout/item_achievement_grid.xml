@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <FrameLayout
+        android:id="@+id/frame_ink_badge"
+        android:layout_width="36dp"
+        android:layout_height="36dp">
+        <View
+            android:id="@+id/view_badge_ring"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_ink_badge_ring" />
+        <com.mrlaughing.moyuan.ui.profile.ink.InkIconView
+            android:id="@+id/ink_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/text_achievement_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#333333"
+        android:textSize="11sp"
+        android:fontFamily="@font/lxgw_wenkai"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginTop="4dp"
+        tools:text="初心" />
+
+</LinearLayout>

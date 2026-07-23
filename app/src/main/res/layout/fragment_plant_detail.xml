@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/paper_bg"
+    android:orientation="vertical">
+
+    <!-- 顶栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_height"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="@color/paper_bg">
+
+        <!-- 返回按钮 -->
+        <ImageButton
+            android:id="@+id/button_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_chevron_left"
+            android:contentDescription="@string/button_back"
+            android:padding="10dp"
+            app:tint="@color/text_primary"
+            android:background="?attr/selectableItemBackground" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 植物名标题 -->
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- 顶栏底部分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp">
+
+            <!-- 植物大图 -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/plant_detail_image_height"
+                android:layout_marginTop="0dp">
+
+                <!-- 宣纸背景 -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/xuan_paper" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="top"
+                    android:background="@color/border_light" />
+
+                <!-- 植物图片 -->
+                <ImageView
+                    android:id="@+id/image_plant_detail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/desc_plant_image" />
+
+            </FrameLayout>
+
+            <!-- 文化小传卡 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/paper_bg"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- "文化小传"标签 -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="文化小传"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 分割线 -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/border" />
+
+                <!-- 植物描述 -->
+                <TextView
+                    android:id="@+id/text_plant_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/ink_medium"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/jinghua_laosong"
+                    android:lineSpacingExtra="4dp" />
+
+                <!-- 诗文引用（lore） -->
+                <TextView
+                    android:id="@+id/text_plant_lore"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textColor="@color/ink_medium"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:lineSpacingExtra="4dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="@color/accent_green_soft" />
+
+                <!-- 解锁条件 -->
+                <TextView
+                    android:id="@+id/text_unlock_condition"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+            </LinearLayout>
+
+            <!-- 放入花园 / 移出花园 按钮（仅已解锁植物显示） -->
+            <TextView
+                android:id="@+id/button_garden_toggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_on_dark"
+                android:textSize="14sp"
+                android:fontFamily="@font/lxgw_wenkai"
+                android:background="@drawable/bg_button_primary"
+                android:visibility="gone"
+                tools:text="放入花园"
+                tools:visibility="visible" />
+
+            <!-- 隐藏视图（兼容旧代码） -->
+            <TextView
+                android:id="@+id/text_plant_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#FFFFF5"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/button_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="✕"
+        android:textColor="#999999"
+        android:textSize="16sp"
+        android:padding="4dp" />
+
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp">
+        <View
+            android:id="@+id/view_dialog_ring"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_ink_badge_ring_dialog" />
+        <com.mrlaughing.moyuan.ui.profile.ink.InkIconView
+            android:id="@+id/ink_icon_dialog"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/text_dialog_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="#1A1A1A"
+        android:textSize="18sp"
+        android:fontFamily="@font/lxgw_wenkai" />
+
+    <TextView
+        android:id="@+id/text_dialog_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#333333"
+        android:textSize="14sp"
+        android:fontFamily="@font/jinghua_laosong"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/text_dialog_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif" />
+
+</LinearLayout>

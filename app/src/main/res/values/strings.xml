@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">墨园</string>
+
+    <!-- 底部导航 -->
+    <string name="nav_garden">花园</string>
+    <string name="nav_catalog">图鉴</string>
+    <string name="nav_study">书案</string>
+    <string name="nav_profile">我的</string>
+    <string name="nav_plant_detail">植物详情</string>
+
+    <!-- 花园 -->
+    <string name="label_today_read">今日阅读</string>
+    <string name="label_streak_days">连续天数</string>
+    <string name="label_garden_visible">园中植物</string>
+    <string name="label_next_discovery">下一次发现</string>
+    <string name="label_garden_mode">花园模式</string>
+    <string name="label_garden_density">花园密度</string>
+    <string name="garden_plant_count">%1$d/%2$d</string>
+    <!-- 图鉴 -->
+    <string name="label_unlocked">已解锁</string>
+    <string name="label_locked">未解锁</string>
+    <string name="label_put_in_garden">放入花园</string>
+    <string name="label_remove_from_garden">移出花园</string>
+    <string name="label_mode_auto">自动</string>
+    <string name="label_mode_custom">自定义</string>
+    <string name="msg_unlock_condition">解锁条件：%s</string>
+    <string name="label_unlock_condition_minutes">需 %d 分钟</string>
+    <string name="msg_random_discovery">继续阅读，下一次里程碑会随机发现一株植物</string>
+    <string name="catalog_discovered_count">已发现 %1$d/%2$d</string>
+    <string name="catalog_filter_discovered">已发现</string>
+    <string name="catalog_filter_undiscovered">未发现</string>
+    <string name="catalog_open_plant_detail">查看%1$s详情</string>
+    <string name="plant_discovered">已发现</string>
+    <string name="plant_discovered_on">发现于 %1$s</string>
+    <string name="plant_undiscovered_description">这株植物尚未与你相遇。</string>
+    <string name="plant_undiscovered_lore">它的故事会在发现之后慢慢展开。</string>
+
+    <!-- 书案 -->
+    <string name="label_total_read">累计阅读</string>
+    <string name="label_books_read">阅读书目</string>
+    <string name="label_weekly_overview">每周阅读</string>
+    <string name="label_recent_books">最近阅读</string>
+    <string name="empty_recent_books">同步微信读书后，最近阅读的书会出现在这里</string>
+    <string name="label_catalog_progress">图鉴进度</string>
+
+    <!-- 个人中心 -->
+    <string name="label_garden_overview">花园概况</string>
+    <string name="label_weread_auth">微信读书</string>
+    <string name="label_authorized">已授权</string>
+    <string name="label_unauthorized">未授权</string>
+    <string name="label_last_sync">上次同步：%s</string>
+    <string name="label_sync_time">同步时间</string>
+    <string name="label_sync_now">立即同步</string>
+    <string name="label_about">关于</string>
+    <string name="label_sync_settings">同步设置</string>
+    <string name="label_about_moyuan">关于墨园</string>
+    <string name="brand_tagline">让阅读，在时间里生长</string>
+
+    <!-- 成就系统 -->
+    <string name="label_achievements">成就</string>
+    <string name="label_achievements_count">%d枚</string>
+    <string name="label_achievement_count_format">%1$d/%2$d</string>
+    <string name="label_view_catalog">查看图鉴</string>
+    <string name="label_settings">设置</string>
+    <string name="label_unlocked_date">✓ 已解锁于%s</string>
+    <string name="label_remaining">距解锁还需%d</string>
+    <string name="label_cat_all">全部</string>
+    <string name="label_cat_reading">阅读</string>
+    <string name="label_cat_growth">养成</string>
+    <string name="label_cat_milestone">里程碑</string>
+    <string name="label_plants_progress" formatted="false">%d / %d 植物</string>
+
+    <!-- 植物详情 -->
+    <string name="button_back">← 返回</string>
+
+    <!-- 通用 -->
+    <string name="desc_plant_image">植物图片</string>
+    <string name="desc_garden_scene">我的阅读花园</string>
+    <string name="desc_profile_plant">墨园代表植物</string>
+    <string name="msg_sync_complete">同步完成</string>
+    <string name="msg_sync_failed">同步失败</string>
+    <string name="sync_in_progress">正在同步阅读数据</string>
+    <string name="sync_queued">已加入同步队列，联网后自动继续</string>
+    <string name="sync_cancelled">同步已取消，可重新尝试</string>
+    <string name="watering_in_progress">正在同步阅读数据…</string>
+    <string name="watering_ready">浇灌 · 今日阅读 %d 分钟</string>
+    <string name="watering_connect">连接微信读书后开始浇灌</string>
+    <string name="watering_complete">浇灌完成，花园已更新</string>
+    <string name="watering_already_done">今天的花园已经浇灌过了</string>
+    <string name="watering_cancelled">本次浇灌已取消</string>
+    <string name="about_content">墨园\n\n一款把阅读时光种成花园的轻养成应用。\n\n让每一次阅读，在时间里留下安静而可见的生长。</string>
+    <string name="notification_channel_garden">花园动态</string>
+    <string name="notification_channel_garden_description">墨园新植物解锁提醒</string>
+
+    <!-- 季节 -->
+    <string name="season_spring">春</string>
+    <string name="season_summer">夏</string>
+    <string name="season_autumn">秋</string>
+    <string name="season_winter">冬</string>
+
+    <!-- 天气 -->
+    <string name="weather_sunny">晴</string>
+    <string name="weather_rainy">雨</string>
+    <string name="weather_snowy">雪</string>
+    <string name="weather_foggy">雾</string>
+
+    <!-- 引导页 -->
+    <string name="label_onboarding_skip">跳过</string>
+    <string name="label_onboarding_next">继续</string>
+    <string name="label_onboarding_start">开始我的墨园</string>
+</resources>
