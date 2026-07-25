@@ -72,7 +72,7 @@
     <string name="label_plants_progress" formatted="false">%d / %d 植物</string>
 
     <!-- 植物详情 -->
-    <string name="button_back">← 返回</string>
+    <string name="button_back">返回</string>
 
     <!-- 通用 -->
     <string name="desc_plant_image">植物图片</string>
@@ -109,4 +109,7 @@
     <string name="label_onboarding_skip">跳过</string>
     <string name="label_onboarding_next">继续</string>
     <string name="label_onboarding_start">开始我的墨园</string>
+
+    <!-- 全收集奖励：培育新苗 -->
+    <string name="bonus_seedling_earned">图鉴已圆满，又获得 %1$d 次「培育新苗」机会，可在图鉴挑选一株同种副本放入花园</string>
 </resources>

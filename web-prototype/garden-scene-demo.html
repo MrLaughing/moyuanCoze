@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨园 · 花园场景重设计 · 动态演示 v3.4k 远山高低错落</title>
+<style>
+  :root{
+    --paper:#F7F4EC; --ink:#2F3B33; --ink-2:#5C6B5F; --accent:#4A6B57;
+    --card:#FFFFFF; --line:#E4DFD2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    background:#EDE9DE; font-family:"LXGW WenKai","Kaiti SC","STKaiti","KaiTi",serif;
+    display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:18px 12px 40px;
+    color:var(--ink);
+  }
+  h1{font-size:20px; letter-spacing:4px; margin-bottom:2px; font-weight:600}
+  .sub{font-size:12px; color:var(--ink-2); letter-spacing:2px; margin-bottom:14px}
+  .stage-wrap{
+    width:400px; max-width:96vw; border-radius:22px; overflow:hidden;
+    box-shadow:0 18px 50px rgba(47,59,51,.28), 0 2px 8px rgba(47,59,51,.15);
+    background:#000; position:relative;
+  }
+  canvas{display:block; width:100%; height:auto; touch-action:none}
+  .hud{
+    position:absolute; left:0; right:0; top:0; padding:14px 18px 0;
+    display:flex; justify-content:space-between; align-items:flex-start; pointer-events:none;
+  }
+  .hud .brand{font-size:17px; letter-spacing:3px; color:rgba(47,59,51,.85); text-shadow:0 1px 2px rgba(255,255,255,.5)}
+  .hud .meta{font-size:11px; text-align:right; color:rgba(47,59,51,.62); letter-spacing:1px; line-height:1.7}
+  .hud.night .brand{color:rgba(240,238,228,.88); text-shadow:none}
+  .hud.night .meta{color:rgba(240,238,228,.55)}
+  .panel{
+    width:400px; max-width:96vw; margin-top:14px; background:var(--card);
+    border:1px solid var(--line); border-radius:16px; padding:14px 16px 16px;
+  }
+  .row{display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap}
+  .row:last-child{margin-bottom:0}
+  .lab{font-size:12px; color:var(--ink-2); width:34px; letter-spacing:2px; flex:none}
+  .chip{
+    font-family:inherit; font-size:13px; padding:5px 13px; border-radius:999px;
+    border:1px solid var(--line); background:#FBF9F3; color:var(--ink-2);
+    cursor:pointer; letter-spacing:1px; transition:all .18s;
+  }
+  .chip.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .slider-row{display:flex; align-items:center; gap:10px; flex:1}
+  input[type=range]{flex:1; accent-color:var(--accent)}
+  .hourVal{font-size:12px; color:var(--ink); width:52px; text-align:right; font-variant-numeric:tabular-nums}
+  .note{font-size:11px; color:#9AA294; margin-top:10px; line-height:1.8; letter-spacing:.5px}
+</style>
+</head>
+<body>
+  <h1>墨 园</h1>
+  <div class="sub">花园首页场景 · 重设计动态演示 v3.4k 远山高低错落</div>
+
+  <div class="stage-wrap">
+    <canvas id="stage" width="800" height="1300"></canvas>
+    <div class="hud" id="hud">
+      <div class="brand">墨园</div>
+      <div class="meta" id="hudMeta">春 · 晴<br>今日已读 42 分钟</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row"><span class="lab">季节</span>
+      <button class="chip s on" data-s="SPRING">春</button>
+      <button class="chip s" data-s="SUMMER">夏</button>
+      <button class="chip s" data-s="AUTUMN">秋</button>
+      <button class="chip s" data-s="WINTER">冬</button>
+    </div>
+    <div class="row"><span class="lab">天气</span>
+      <button class="chip w on" data-w="CLEAR">晴</button>
+      <button class="chip w" data-w="CLOUDY">多云</button>
+      <button class="chip w" data-w="RAIN">雨</button>
+      <button class="chip w" data-w="SNOW">雪</button>
+      <button class="chip w" data-w="FOG">雾</button>
+    </div>
+    <div class="row"><span class="lab">时辰</span>
+      <div class="slider-row">
+        <input type="range" id="hour" min="0" max="23.5" step="0.5" value="10">
+        <span class="hourVal" id="hourVal">10:00 昼</span>
+      </div>
+    </div>
+    <div class="row"><span class="lab">规模</span>
+      <button class="chip g" data-g="3">初庭 3×3</button>
+      <button class="chip g on" data-g="4">雅庭 4×4</button>
+      <button class="chip g" data-g="5">盛庭 5×5</button>
+    </div>
+    <div class="row"><span class="lab">月相</span>
+      <button class="chip p" data-p="0.12">蛾眉月</button>
+      <button class="chip p" data-p="0.40">盈凸</button>
+      <button class="chip p on" data-p="0.50">满月</button>
+      <button class="chip p" data-p="0.60">亏凸</button>
+    </div>
+    <div class="note">
+      ✋ 用鼠标 / 手指划过植物——它们会随你的抚触轻轻摇动（v3.3-fix：摆幅已收柔）。<br>
+      ⛰️ v3.4b <b>远山</b>整体抬高、山脊更参差（多频噪声 + 加大振幅），并移除山脊<b>松树 / 小亭</b>。<br>
+      试试：春昼（蝴蝶+花瓣+粉霞）｜夏 20:30（流萤）｜秋 17:30（落日+落叶）｜冬 + 雪 + 夜（雪夜）。
+    </div>
+  </div>
+
+<script>
+"use strict";
+const CV = document.getElementById('stage');
+const CTX = CV.getContext('2d');
+const W = CV.width, H = CV.height;
+const ASSET = '../app/src/main/assets/plants/';
+
+/* ══════════ 状态 ══════════ */
+const state = { season:'SPRING', weather:'CLEAR', hour:10, grid:4, phase:0.50 };
+const pointer = { x:-9999, y:-9999 };
+
+/* ══════════ 时辰天空关键帧 ══════════ */
+const SKY_KEYS = [
+  [ 0.0, '#353D46', '#4A5258', 0.28, '#39424B'],
+  [ 4.5, '#3A424A', '#535B60', 0.30, '#3D454E'],
+  [ 6.0, '#C9C3B4', '#E7D9C0', 0.72, '#8A9088'],
+  [ 7.5, '#EFEBDD', '#F2ECDB', 0.97, '#9AA79B'],
+  [12.0, '#F4F1E6', '#EFEADA', 1.00, '#9EAA9E'],
+  [16.5, '#F2EDDF', '#EFE6D2', 0.96, '#9CA898'],
+  [18.0, '#E5D4BC', '#EFCFAA', 0.80, '#A29584'],
+  [19.3, '#6E6A66', '#8C7B6C', 0.52, '#5E5F5C'],
+  [20.5, '#3E4650', '#525A60', 0.32, '#414A53'],
+  [24.0, '#353D46', '#4A5258', 0.28, '#39424B'],
+];
+
+/* ══════════ 四季调色板（v3.1：拉开差异） ══════════ */
+const SEASON_TINT = {
+  SPRING:{ sky:'#DFF0D4', mist:'#EAF3E2', accent:'#F5DCD8', ground:'#9DBE93', name:'春' }, // 嫩绿天 + 淡粉霞
+  SUMMER:{ sky:'#CFE9DA', mist:'#D8EDE0', accent:'#BFE3CE', ground:'#6FA97F', name:'夏' }, // 翠绿浓荫
+  AUTUMN:{ sky:'#F4E3C2', mist:'#F3E6CB', accent:'#EFCF9E', ground:'#C8A46E', name:'秋' }, // 杏黄暖阳
+  WINTER:{ sky:'#D9E3EC', mist:'#E2EAF1', accent:'#C9D8E6', ground:'#C3CDD6', name:'冬' }, // 冷青雪意
+};
+const WEATHER_NAME = { CLEAR:'晴', CLOUDY:'多云', RAIN:'雨', SNOW:'雪', FOG:'雾' };
+
+/* ══════════ 工具 ══════════ */
+function hex2rgb(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function mixHex(h1,h2,t){
+  const a=hex2rgb(h1), b=hex2rgb(h2);
+  return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`;
+}
+function mixRgbHex(rgbStr, hex, t){
+  const m = rgbStr.match(/\d+/g).map(Number), b = hex2rgb(hex);
+  return `rgb(${Math.round(lerp(m[0],b[0],t))},${Math.round(lerp(m[1],b[1],t))},${Math.round(lerp(m[2],b[2],t))})`;
+}
+function skyAt(hour){
+  let i=0;
+  while(i<SKY_KEYS.length-1 && hour>SKY_KEYS[i+1][0]) i++;
+  const A=SKY_KEYS[i], B=SKY_KEYS[Math.min(i+1,SKY_KEYS.length-1)];
+  const t=(hour-A[0])/Math.max(0.001,(B[0]-A[0]));
+  return { top:mixHex(A[1],B[1],t), hor:mixHex(A[2],B[2],t), light:lerp(A[3],B[3],t), ink:mixHex(A[4],B[4],t) };
+}
+function isNight(h){ return h>=19.5 || h<5.5; }
+function phaseName(h){ if(h<5.5) return '夜'; if(h<7.5) return '晨'; if(h<17) return '昼'; if(h<19.5) return '暮'; return '夜'; }
+function sRand(seed){ let s=seed>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; }; }
+
+/* ══════════ 素材 ══════════ */
+const seasonTile = {}; const plantImg = {};
+const DEMO_PLANTS = ['梅','竹子','松','牡丹','莲','菊','桂花','银杏','海棠','紫藤','芍药','山茶花','腊梅','菖蒲','玉簪','薰衣草','郁金香','水仙','兰花','向日葵','芭蕉','柏','菩提','玫瑰','昙花'];
+const TALL = new Set(['松','柏','竹子','银杏','菩提','芭蕉','紫藤','梅','腊梅']);
+const LOW  = new Set(['薰衣草','郁金香','水仙','兰花','玉簪','菖蒲','山茶花']);
+function loadImg(src){ return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=src; }); }
+async function loadAssets(){
+  const seasons={SPRING:'春',SUMMER:'夏',AUTUMN:'秋',WINTER:'冬'};
+  await Promise.all(Object.entries(seasons).map(async ([k,n])=>{ seasonTile[k]=await loadImg(ASSET+encodeURIComponent(n)+'.png'); }));
+  await Promise.all(DEMO_PLANTS.map(async n=>{ plantImg[n]=await loadImg(ASSET+encodeURIComponent(n)+'.png'); }));
+}
+
+/* ══════════ 布局：透视版（v3.3-fix2：间距收紧，避免 v3.3-fix 那种花圃过宽） ══════════ */
+function layoutCells(n, w, h){
+  const cells=[];
+  const usableW = w*0.94, usableH = h*0.50;
+  const tile = Math.min(usableW/(n*1.04), usableH/(n*0.70));
+  const stepX = tile*0.50, stepY = tile*0.285;          // v3.3-fix3b 间距松回一点：fix3 过紧，取原值(0.56/0.315)与fix3(0.44/0.245)中间偏松
+  const cx = w/2, cy = h*0.520 + usableH/2 - (n-1)*stepY - tile*0.20;
+  const maxD = Math.max(1, 2*(n-1));
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+    const depth=r+c;
+    const persp = 0.84 + 0.30*(depth/maxD);             // 后排 0.84 → 前排 1.14
+    cells.push({ row:r, col:c,
+      x: cx + (c-r)*stepX,
+      y: cy + (c+r)*stepY,
+      size: tile*persp, base:tile, depth, persp,
+      stepX, stepY });
+  }
+  return cells;
+}
+function fillOrder(n){
+  const center=(n-1)/2;
+  const tmp=[];
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++)
+    tmp.push({r,c, d:Math.max(Math.abs(r-center),Math.abs(c-center)), depth:r+c});
+  return tmp.sort((a,b)=> a.d-b.d || a.depth-b.depth || a.c-b.c).map(o=>o.r*n+o.c);
+}
+
+/* ══════════ L1 天空 ══════════ */
+function drawSky(sky, tint, weather){
+  let top=sky.top, hor=sky.hor;
+  const dayness=sky.light;                               // 夜里季节色收敛，白天放开
+  top = mixRgbHex(top, tint.sky, 0.10+0.12*dayness);
+  hor = mixRgbHex(hor, tint.sky, 0.14+0.20*dayness);
+  hor = mixRgbHex(hor, tint.accent, 0.24*dayness);       // 季节霞色：春粉 / 夏翠 / 秋杏 / 冬青
+  if(weather==='RAIN'){ top=mixRgbHex(top,'#6E7674',0.22); hor=mixRgbHex(hor,'#7C8480',0.20); }
+  if(weather==='SNOW'){ top=mixRgbHex(top,'#C9CFD6',0.18); hor=mixRgbHex(hor,'#D2D8DE',0.16); }
+  if(weather==='FOG'){  top=mixRgbHex(top,'#C9C9C0',0.25); hor=mixRgbHex(hor,'#D2D2C8',0.28); }
+  const g=CTX.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,top); g.addColorStop(0.42,hor); g.addColorStop(1,mixRgbHex(hor,'#F2EFE4',0.5));
+  CTX.fillStyle=g; CTX.fillRect(0,0,W,H);
+  CTX.save(); CTX.globalAlpha=0.05;
+  const rnd=sRand(7);
+  CTX.strokeStyle='#8B8878'; CTX.lineWidth=1;
+  for(let i=0;i<26;i++){ const y=rnd()*H; CTX.beginPath(); CTX.moveTo(rnd()*W*0.3,y); CTX.lineTo(W-rnd()*W*0.3,y+rnd()*6-3); CTX.stroke(); }
+  CTX.restore();
+}
+
+/* ══════════ L2 天体（v3.3-fix：白天太阳更显眼、夜月更柔） ══════════ */
+function drawCelestial(hour, weather, t){
+  const night=isNight(hour);
+  if(weather==='RAIN'||weather==='FOG') return;
+  if(!night && hour>=6 && hour<17 && weather!=='SNOW'){
+    const p=(hour-6)/11; const cx=W*(0.80+0.06*Math.sin(p*Math.PI)); const cy=H*(0.085-0.02*Math.sin(p*Math.PI));
+    const dim = weather==='CLOUDY'?0.55:1;
+    // 外圈大气晕
+    const halo=CTX.createRadialGradient(cx,cy,8,cx,cy,140);
+    halo.addColorStop(0,`rgba(252,228,168,${0.55*dim})`);
+    halo.addColorStop(0.18,`rgba(248,216,148,${0.30*dim})`);
+    halo.addColorStop(1,'rgba(248,216,148,0)');
+    CTX.fillStyle=halo; CTX.beginPath(); CTX.arc(cx,cy,140,0,7); CTX.fill();
+    // 中圈柔光
+    const mid=CTX.createRadialGradient(cx,cy,4,cx,cy,55);
+    mid.addColorStop(0,`rgba(252,236,180,${0.95*dim})`);
+    mid.addColorStop(0.5,`rgba(244,212,138,${0.55*dim})`);
+    mid.addColorStop(1,'rgba(244,212,138,0)');
+    CTX.fillStyle=mid; CTX.beginPath(); CTX.arc(cx,cy,55,0,7); CTX.fill();
+    // 主体（更饱和的金黄）
+    CTX.fillStyle=`rgba(232,180,96,${dim})`; CTX.beginPath(); CTX.arc(cx,cy,24,0,7); CTX.fill();
+    // 高光
+    CTX.fillStyle=`rgba(252,240,210,${0.95*dim})`; CTX.beginPath(); CTX.arc(cx-7,cy-7,9,0,7); CTX.fill();
+    // 暖色天空加亮（向下晕）
+    const gband=CTX.createLinearGradient(0,H*0.04,0,H*0.22);
+    gband.addColorStop(0,`rgba(248,222,160,${0.16*dim})`);
+    gband.addColorStop(1,'rgba(248,222,160,0)');
+    CTX.fillStyle=gband; CTX.fillRect(0,H*0.04,W,H*0.18);
+  }
+  if(hour>=17 && hour<19.5){
+    const p=(hour-17)/2.5;
+    const cx=W*0.16, cy=H*0.145+p*H*0.05, r=W*0.032;
+    const glow=CTX.createRadialGradient(cx,cy,r*0.3,cx,cy,r*3.5);
+    glow.addColorStop(0,'rgba(224,120,88,0.5)'); glow.addColorStop(0.4,'rgba(230,150,100,0.18)'); glow.addColorStop(1,'rgba(230,150,100,0)');
+    CTX.fillStyle=glow; CTX.beginPath(); CTX.arc(cx,cy,r*3.5,0,7); CTX.fill();
+    CTX.fillStyle='rgba(214,104,74,0.85)'; CTX.beginPath(); CTX.arc(cx,cy,r,0,7); CTX.fill();
+    CTX.fillStyle='rgba(240,160,110,0.55)'; CTX.beginPath(); CTX.arc(cx-r*0.2,cy-r*0.25,r*0.4,0,7); CTX.fill();
+    const band=CTX.createLinearGradient(0,H*0.06,0,H*0.30);
+    band.addColorStop(0,'rgba(232,148,96,0)'); band.addColorStop(0.6,`rgba(232,148,96,${0.16*(1-p*0.5)})`); band.addColorStop(1,'rgba(232,148,96,0)');
+    CTX.fillStyle=band; CTX.fillRect(0,H*0.06,W,H*0.24);
+  }
+  if(night){
+    // 月亮放到左上角，避开右上角的"今日已读"统计文字
+    const mx=W*0.18, my=H*0.13, r=30;
+    const breath=0.85+0.15*Math.sin(t*0.4);
+    // 光晕收敛：旧版 110 让边缘糊掉，缩到 55 让月牙轮廓清晰
+    const g=CTX.createRadialGradient(mx,my,4,mx,my,50);
+    g.addColorStop(0,`rgba(236,232,214,${0.30*breath})`); g.addColorStop(0.6,`rgba(236,232,214,${0.10*breath})`); g.addColorStop(1,'rgba(236,232,214,0)');
+    CTX.fillStyle=g; CTX.beginPath(); CTX.arc(mx,my,55,0,7); CTX.fill();
+    CTX.save();
+    // 月相：phase ∈ [0,1]，0=新月, 0.5=满月, 1=新月
+    // 算法：外圆 - 挖洞椭圆（evenodd），挖洞椭圆的横向半径由 |cos(phase·2π)| 决定
+    //   蛾眉月 phase=0.08: ellW ≈ 0.88r（挖大半）→ 右侧细月牙
+    //   满月   phase=0.50: ellW = 0         → 整圆
+    //   亏凸   phase=0.70: ellW ≈ 0.59r（挖右半）→ 左侧盈凸
+    // 挖洞椭圆中心向左/右偏移 (r-ellW)，盈月挖左（亮区在右）、亏月挖右（亮区在左）
+    const phase = (state.phase||0.50);
+    const age = phase * 29.53;
+    if (age > 0.5 && age < 29){
+      // v3.4f 月相重写：旧 evenodd 算法因椭圆高度=r 与外圆半径相同，椭圆垂直完全在外圆内，
+      //   evenodd 只在水平方向区分 → 亮面被切成"中间暗椭圆 + 两侧各一个月牙"（用户截图复现）。
+      // 改为标准算法：亮面 = 外圆半周 + 半椭圆弧闭合（半椭圆从顶到底或底到顶），
+      //   椭圆 x 半径 rx = r·|cos(2π·phase)|，凸向由 phase 决定
+      //     蛾眉(phase<0.25) 内弧向右凸（大椭圆，暗面大半）→ 右侧细月牙
+      //     盈凸(0.25<phase<0.5) 内弧向左凸（进暗半）→ 右侧大半
+      //     满月(phase=0.5) 直接整圆
+      //     亏凸(0.5<phase<0.75) 内弧向右凸（进暗半）→ 左侧大半
+      //     残月(phase>0.75) 内弧向左凸（大椭圆）→ 左侧细月牙
+      const rx = r * Math.abs(Math.cos(phase * Math.PI * 2));
+      CTX.fillStyle = `rgba(232,228,206,${0.94*breath})`;
+      CTX.beginPath();
+      if (Math.abs(phase - 0.5) < 1e-3) {
+        // 满月：整圆
+        CTX.moveTo(mx, my - r);
+        CTX.arc(mx, my, r, 0, Math.PI*2);
+      } else if (phase < 0.5) {
+        // 盈月（亮在右）：外圆右半（顶→底顺时针）+ 椭圆弧（底→顶）
+        CTX.moveTo(mx, my - r);
+        CTX.arc(mx, my, r, -Math.PI/2, Math.PI/2, false);
+        CTX.ellipse(mx, my, rx, r, 0, Math.PI/2, -Math.PI/2, phase < 0.25);
+      } else {
+        // 亏月（亮在左）：外圆左半（顶→底逆时针）+ 椭圆弧（底→顶）
+        CTX.moveTo(mx, my - r);
+        CTX.arc(mx, my, r, -Math.PI/2, Math.PI/2, true);
+        CTX.ellipse(mx, my, rx, r, 0, Math.PI/2, -Math.PI/2, phase < 0.75);
+      }
+      CTX.fill();
+    } else {
+      // 接近新月：画淡淡的轮廓（仍可辨识月亮位置）
+      CTX.fillStyle=`rgba(180,176,156,${0.18*breath})`;
+      CTX.beginPath(); CTX.arc(mx, my, r*0.95, 0, 7); CTX.fill();
+    }
+    CTX.restore();
+    const rnd=sRand(42);
+    for(let i=0;i<26;i++){
+      const sx=rnd()*W, sy=rnd()*H*0.30, ph=rnd()*6.28, sz=0.8+rnd()*1.4;
+      const a=0.25+0.45*Math.abs(Math.sin(t*0.6+ph));
+      CTX.fillStyle=`rgba(238,236,222,${a})`;
+      CTX.beginPath(); CTX.arc(sx,sy,sz,0,7); CTX.fill();
+    }
+  }
+}
+
+/* ══════════ L3 远山（v3.4b：两层 + 柔化 + 更高更参差·去树亭） ══════════
+   两层远山（远淡近实），竖向渐变柔化山顶无硬边。
+   本轮按用户要求：整体抬高、山脊更参差（振幅加大 + 多频噪声叠加），并移除山脊松树与小亭。 */
+function drawMountains(sky, season, weather, t){
+  const tint = SEASON_TINT[season];
+  // 远山淡黛蓝：季节雾色 → 淡蓝灰（hex ↔ hex），再与天空夜色混合
+  const daiBlue = mixHex(tint.mist, '#8EA7B6', 0.55);
+  const mixRgb = (s1, s2, t)=>{ const a=s1.match(/\d+/g).map(Number), b=s2.match(/\d+/g).map(Number);
+    return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
+  const daiDark = mixRgb(daiBlue, sky.ink, 0.30*(1-sky.light));
+  const baseY = H*0.402;
+  const rgbArr = s => s.match(/\d+/g).map(Number);
+
+  const layers = [
+    { peak:H*0.248, amp:H*0.072, alpha:0.38+0.06*(1-sky.light),
+      col:mixRgb(daiBlue, sky.ink, 0.10),
+      drift:t*0.5, seed:17, trees:false },
+    { peak:H*0.296, amp:H*0.058, alpha:0.55+0.07*(1-sky.light),
+      col:mixRgb(daiDark, sky.ink, 0.06),
+      drift:t*0.9, seed:41, trees:false },
+  ];
+
+  layers.forEach(L=>{
+    const segs=20, pts=[];
+    for(let i=0;i<=segs;i++){
+      const px=(i/segs)*W;
+      const u=i/segs;                                  // 0..1，与分段数无关
+      // 错落有致：带符号多频叠加（保留真实峰谷；之前用 abs 把谷翻成峰，故"全是凸起、无错落感"）
+      // 长波(1)微定大势 → 3 峰主骨架 → 5 峰副峰(与 3 拍频成非对称) → 8 细节褶皱
+      const TAU=Math.PI*2;
+      const noise=Math.sin(u*TAU*1 + L.seed      )*0.22      // 长波：轻微整体大势（不垄断）
+                 +Math.sin(u*TAU*3 + L.seed*1.3  )*0.38      // 3 峰：主峰骨架
+                 +Math.sin(u*TAU*5 + L.seed*2.1  )*0.25      // 5 峰：副峰（与 3 拍频 → 多个高低点）
+                 +Math.sin(u*TAU*8 + L.seed*2.7  )*0.15;     // 8 细节：细微褶皱
+      const n=Math.max(0, Math.min(1, (noise+1)*0.5));        // 归一化到 0..1
+      pts.push([px, L.peak - L.amp*(0.08+0.95*n)]);           // 谷更深、峰更高 → 错落有致
+    }
+    const shift=(L.drift%W);
+    const groundBlend=baseY + H*0.05;                  // 封底点下移，被地面晕染覆盖，避免 baseY 水平硬色带（不变）
+    CTX.save();
+    const [cr,cg,cb]=rgbArr(L.col);
+    const grad=CTX.createLinearGradient(0, L.peak-L.amp, 0, groundBlend+H*0.04);
+    grad.addColorStop(0,   `rgba(${cr},${cg},${cb},0)`);
+    grad.addColorStop(0.45,`rgba(${cr},${cg},${cb},${L.alpha})`);
+    grad.addColorStop(1,   `rgba(${cr},${cg},${cb},0)`);     // 底部 alpha→0，淡入地面（不变）
+    CTX.fillStyle=grad;
+    // 山脚低频起伏（与山脊呼应）——消除"直的山脚水平线"（不变）
+    const footAmp=H*0.035;
+    const footY=(u)=> groundBlend + (Math.sin(u*2.3+L.seed*0.5)*0.7 + Math.sin(u*4.7+L.seed*1.3)*0.30)*footAmp;
+    for(let rep=-1;rep<=1;rep++){
+      // —— 填充山体（封顶淡出、山脚起伏，与地平线自然衔接，不变）——
+      CTX.beginPath();
+      pts.forEach(([px,py],i)=>{
+        const X=-shift+rep*W+px;
+        if(i===0){ CTX.moveTo(X, py); }
+        else{
+          const [qx,qy]=pts[i-1];
+          const mx=-shift+rep*W+(qx+px)/2;
+          CTX.quadraticCurveTo(mx, Math.min(qy,py)-L.amp*0.05, X, py);  // 凸点更小 → 轮廓更柔顺秀美
+        }
+      });
+      // 山脚：从右到左，低频起伏（不再是水平直线）
+      for(let i=pts.length-1;i>=0;i--){
+        CTX.lineTo(-shift+rep*W+pts[i][0], footY(i/(pts.length-1)));
+      }
+      CTX.closePath(); CTX.fill();
+      // —— 新增：清晰秀美的山脊描边（仅顶部轮廓，不影响山脚与地平线衔接）——
+      CTX.beginPath();
+      pts.forEach(([px,py],i)=>{
+        const X=-shift+rep*W+px;
+        if(i===0){ CTX.moveTo(X, py); }
+        else{
+          const [qx,qy]=pts[i-1];
+          const mx=-shift+rep*W+(qx+px)/2;
+          CTX.quadraticCurveTo(mx, Math.min(qy,py)-L.amp*0.05, X, py);
+        }
+      });
+      CTX.lineWidth=1.3;
+      CTX.lineJoin='round'; CTX.lineCap='round';
+      CTX.strokeStyle=mixRgb(L.col, sky.ink, 0.30);
+      CTX.globalAlpha=0.55;
+      CTX.stroke();
+      CTX.globalAlpha=1;
+    }
+    CTX.restore();
+  });
+
+  // 远山脚下薄雾：柔化山脚与下方空白带的衔接（顶/底 alpha 均渐隐到 0——这是 v3.4e 教训的正确做法，
+  // 不会再像之前那条 fillRect 产生水平硬边）。雾色取地面暖白，让远山"沉"入地平雾、自然融入下方。
+  const hzTop=baseY - H*0.015, hzBot=baseY + H*0.14;
+  const hz=CTX.createLinearGradient(0, hzTop, 0, hzBot);
+  hz.addColorStop(0,   'rgba(243,240,231,0)');
+  hz.addColorStop(0.45,`rgba(243,240,231,${0.18+0.05*sky.light})`);
+  hz.addColorStop(1,   'rgba(243,240,231,0)');
+  CTX.fillStyle=hz;
+  CTX.fillRect(0, hzTop, W, hzBot-hzTop);
+}
+
+function drawClouds(t, night){
+  const rnd=sRand(99);
+  for(let i=0;i<3;i++){
+    const speed=4+i*2.4, y=H*(0.06+i*0.05), scale=0.7+i*0.25;
+    const x=((rnd()*W + t*speed) % (W*1.4)) - W*0.2;
+    CTX.save(); CTX.globalAlpha=night?0.10:0.34;
+    CTX.fillStyle=night?'#DDE2E6':'#FFFFFF';
+    [[0,0,60],[45,8,44],[-48,10,40],[20,-14,38]].forEach(([dx,dy,r])=>{
+      CTX.beginPath(); CTX.ellipse(x+dx*scale,y+dy*scale,r*scale,r*scale*0.62,0,0,7); CTX.fill();
+    });
+    CTX.restore();
+  }
+}
+
+/* ══════════ L7 天气粒子 ══════════ */
+function drawRain(t){
+  const rnd=sRand(555); CTX.save();
+  CTX.strokeStyle='rgba(150,168,178,0.5)'; CTX.lineWidth=1.6; CTX.lineCap='round';
+  for(let i=0;i<70;i++){
+    const x0=rnd()*W*1.2-W*0.1, sp=620+rnd()*260, ph=rnd()*H, len=26+rnd()*16;
+    const y=((t*sp+ph)%(H*1.05))-len;
+    const drift=Math.sin(t*0.3)*30;
+    CTX.beginPath(); CTX.moveTo(x0+drift*(y/H),y); CTX.lineTo(x0+drift*(y/H)-len*0.18,y+len); CTX.stroke();
+  }
+  const g=CTX.createLinearGradient(0,H*0.9,0,H);
+  g.addColorStop(0,'rgba(180,195,200,0)'); g.addColorStop(1,'rgba(180,195,200,0.18)');
+  CTX.fillStyle=g; CTX.fillRect(0,H*0.9,W,H*0.1);
+  CTX.restore();
+}
+function drawSnow(t){
+  const rnd=sRand(777); CTX.save();
+  for(let i=0;i<60;i++){
+    const x0=rnd()*W, sp=46+rnd()*40, ph=rnd()*H, sway=18+rnd()*22, swp=rnd()*6.28, r=2+rnd()*2.6;
+    const y=((t*sp+ph)%(H*1.06))-10;
+    const x=x0+Math.sin(t*0.8+swp+y*0.008)*sway;
+    CTX.fillStyle=`rgba(250,251,253,${0.5+rnd()*0.4})`;
+    CTX.beginPath(); CTX.arc(x,y,r,0,7); CTX.fill();
+  }
+  CTX.restore();
+}
+function drawFog(t){
+  // 1) 地面柔雾：竖向渐变，近地浓、向上淡出（顶/底 alpha→0，无水平硬带——遵循 v3.4e 教训）
+  const base=CTX.createLinearGradient(0, H*0.22, 0, H);
+  base.addColorStop(0,    'rgba(225,225,216,0)');
+  base.addColorStop(0.55, 'rgba(228,228,219,0.10)');
+  base.addColorStop(1,    'rgba(228,228,219,0.26)');
+  CTX.fillStyle=base; CTX.fillRect(0, H*0.22, W, H*0.78);
+  // 2) 多团软雾（径向渐变，边缘天然透明），缓慢横向漂移、上下轻浮——像真实雾团而非横条
+  for(let i=0;i<6;i++){
+    const y=H*(0.34+0.11*i)+Math.sin(t*0.18+i*1.7)*H*0.025;
+    const drift=(t*(5+i*1.6))%(W+480)-240;
+    const x=i*W*0.21+drift+W*0.1;
+    const rw=W*(0.30+(i%3)*0.06);
+    const rh=rw*(0.34+(i%2)*0.05);            // 扁椭圆、柔和
+    const a=0.15-i*0.015;
+    CTX.save(); CTX.translate(x,y); CTX.scale(1, rh/rw);
+    const g=CTX.createRadialGradient(0,0,0, 0,0,rw);
+    g.addColorStop(0,   `rgba(233,233,225,${a})`);
+    g.addColorStop(0.55,`rgba(230,230,221,${a*0.5})`);
+    g.addColorStop(1,   'rgba(230,230,221,0)');
+    CTX.fillStyle=g; CTX.beginPath(); CTX.arc(0,0,rw,0,7); CTX.fill(); CTX.restore();
+  }
+}
+
+/* ══════════ L8 四季氛围粒子 ══════════ */
+function drawPetals(t){
+  const rnd=sRand(333);
+  for(let i=0;i<16;i++){
+    const x0=rnd()*W, sp=56+rnd()*36, ph=rnd()*H, sway=30+rnd()*30, swp=rnd()*6.28, sz=7+rnd()*7, rp=rnd()*6.28;
+    const y=((t*sp+ph)%(H*0.92))+H*0.04;
+    const x=x0+Math.sin(t*0.7+swp+y*0.006)*sway;
+    const rot=t*(0.8+rnd()*0.8)+rp;
+    CTX.save(); CTX.translate(x,y); CTX.rotate(rot); CTX.globalAlpha=0.6;
+    CTX.fillStyle='#E8CFCB';
+    CTX.beginPath();
+    CTX.moveTo(0,-sz*0.5);
+    CTX.quadraticCurveTo(-sz*0.55,-sz*0.62,-sz*0.5,-sz*0.05);
+    CTX.quadraticCurveTo(-sz*0.5,sz*0.42,0,sz*0.55);
+    CTX.quadraticCurveTo(sz*0.5,sz*0.42,sz*0.5,-sz*0.05);
+    CTX.quadraticCurveTo(sz*0.55,-sz*0.62,0,-sz*0.5);
+    CTX.fill();
+    CTX.restore();
+  }
+}
+function drawLeaves(t){
+  const rnd=sRand(444);
+  for(let i=0;i<14;i++){
+    const x0=rnd()*W, sp=66+rnd()*44, ph=rnd()*H, sway=36+rnd()*34, swp=rnd()*6.28, sz=8+rnd()*8;
+    const y=((t*sp+ph)%(H*0.92))+H*0.04;
+    const x=x0+Math.sin(t*0.9+swp+y*0.007)*sway;
+    const rot=Math.sin(t*1.4+swp)*1.2;
+    CTX.save(); CTX.translate(x,y); CTX.rotate(rot); CTX.globalAlpha=0.62;
+    CTX.fillStyle=['#C89A5E','#B9854C','#D2A968'][i%3];
+    CTX.beginPath();
+    CTX.moveTo(0,-sz);
+    CTX.quadraticCurveTo(sz*0.62,-sz*0.2,0,sz*0.7);
+    CTX.quadraticCurveTo(-sz*0.62,-sz*0.2,0,-sz);
+    CTX.fill();
+    CTX.strokeStyle='rgba(140,100,56,0.5)'; CTX.lineWidth=1;
+    CTX.beginPath(); CTX.moveTo(0,-sz*0.7); CTX.lineTo(0,sz*0.5); CTX.stroke();
+    CTX.restore();
+  }
+}
+function drawFireflies(t){
+  const rnd=sRand(888);
+  for(let i=0;i<22;i++){
+    const bx=W*(0.1+rnd()*0.8), by=H*(0.50+rnd()*0.42);
+    const ax=26+rnd()*44, ay=16+rnd()*26, p1=rnd()*6.28, p2=rnd()*6.28, fs=0.25+rnd()*0.4;
+    const x=bx+Math.sin(t*fs+p1)*ax+Math.sin(t*fs*2.3+p2)*ax*0.3;
+    const y=by+Math.cos(t*fs*0.8+p2)*ay;
+    const glow=0.35+0.65*Math.pow(Math.abs(Math.sin(t*(0.7+fs)+p1)),3);
+    const g=CTX.createRadialGradient(x,y,0,x,y,14);
+    g.addColorStop(0,`rgba(238,230,164,${0.9*glow})`);
+    g.addColorStop(0.35,`rgba(226,216,140,${0.34*glow})`);
+    g.addColorStop(1,'rgba(226,216,140,0)');
+    CTX.fillStyle=g; CTX.beginPath(); CTX.arc(x,y,14,0,7); CTX.fill();
+    CTX.fillStyle=`rgba(248,244,204,${glow})`; CTX.beginPath(); CTX.arc(x,y,2.2,0,7); CTX.fill();
+  }
+}
+
+/* ══════════ 飞鸟 v3.1 重绘：小身体 + 上下拍动的双翅，沿弧线斜掠爬升 ══════════ */
+function drawBirds(t){
+  const cyc=22, p=(t%cyc)/cyc;
+  if(p>0.38) return;
+  const prog=p/0.38;
+  const ease=prog;                                     // 匀速掠过
+  const bx=W*(-0.12+ease*1.24);
+  const by=H*(0.17 - ease*0.07 - Math.sin(ease*Math.PI)*0.015);  // 微弧线爬升
+  CTX.save();
+  [[0,0,1],[40,16,0.82],[-36,22,0.72],[74,34,0.58]].forEach(([dx,dy,s],i)=>{
+    const x=bx+dx, y=by+dy+Math.sin(t*3.2+i*1.7)*2.5;   // 各自轻微起伏
+    const flap=Math.sin(t*9+i*1.3);                     // 拍翅相位
+    const wing=13*s;
+    // 身体：小水滴形（头朝右前方）
+    CTX.fillStyle='rgba(86,82,76,0.72)';
+    CTX.beginPath();
+    CTX.ellipse(x, y, 6.5*s, 2.8*s, -0.28, 0, 7);
+    CTX.fill();
+    // 头 + 喙
+    CTX.beginPath(); CTX.arc(x+6*s, y-2.4*s, 2.4*s, 0, 7); CTX.fill();
+    CTX.beginPath();
+    CTX.moveTo(x+8.2*s, y-2.6*s); CTX.lineTo(x+10.6*s, y-1.9*s); CTX.lineTo(x+8.2*s, y-1.2*s);
+    CTX.closePath(); CTX.fill();
+    // 双翅：从背部向斜上/斜下拍动（一上一下 → 真实拍翅）
+    CTX.strokeStyle='rgba(86,82,76,0.68)'; CTX.lineWidth=2.6*s; CTX.lineCap='round';
+    CTX.beginPath();
+    CTX.moveTo(x-1*s, y-1*s);
+    CTX.quadraticCurveTo(x-wing*0.45, y-wing*(0.55+0.5*flap), x-wing*1.05, y-wing*(0.30+0.62*flap));
+    CTX.stroke();
+    CTX.beginPath();
+    CTX.moveTo(x+1*s, y-1*s);
+    CTX.quadraticCurveTo(x+wing*0.30, y-wing*(0.50+0.42*flap), x+wing*0.78, y-wing*(0.22+0.55*flap));
+    CTX.stroke();
+    // 尾羽
+    CTX.lineWidth=1.8*s;
+    CTX.beginPath(); CTX.moveTo(x-6*s,y+0.5*s); CTX.lineTo(x-10*s,y+2.6*s); CTX.stroke();
+  });
+  CTX.restore();
+}
+
+/* ══════════ 蝴蝶（春/夏 昼间）——灵动感 ══════════ */
+const bfState = [];
+function drawButterflies(t, season){
+  const cols = season==='SPRING' ? ['#E5B8C8','#D8A8B8'] : ['#C8D8E8','#B8CCE0'];
+  for(let i=0;i<2;i++){
+    const st = bfState[i] || (bfState[i] = { mode:'fly', until:3+i*2.5, px:0, py:0, amt:0, dir:1 });
+    // 飞行轨迹（不变）
+    const fx=W*(0.30+0.40*i)+Math.sin(t*0.45+i*2.4)*W*0.16+Math.sin(t*1.3+i)*14;
+    const fy=H*(0.64+0.05*i)+Math.cos(t*0.62+i*1.8)*H*0.05;
+    // 状态机：飞行 → 随机降落到花圃一点停留（总时长含滑入/滑出 ≈2s，视觉静止 ~1s）→ 再飞 4–9s
+    if(st.mode==='fly'){
+      if(t > st.until){
+        st.mode='rest';
+        st.until = t + 1.8 + Math.random()*0.6;          // 总停留 ~1.8–2.4s（含滑入/滑出），视觉静止 ~1s
+        st.px = W*(0.22+0.56*Math.random());             // 花圃内 x
+        st.py = H*(0.70+0.14*Math.random());             // 花圃内 y（植物上方）
+        st.dir = (fx < st.px) ? 1 : -1;                  // 朝降落点
+      }
+    } else {
+      if(t > st.until){ st.mode='fly'; st.until = t + 4 + Math.random()*5; }
+    }
+    // 平滑过渡：0=飞 1=停（滑入/滑出，不瞬移）
+    const target = st.mode==='rest' ? 1 : 0;
+    st.amt += (target - st.amt) * 0.07;
+    if(st.amt<0.001) st.amt=0; else if(st.amt>0.999) st.amt=1;
+    const x = fx + (st.px - fx)*st.amt;
+    const y = fy + (st.py - fy)*st.amt;
+    const dir = st.mode==='rest' ? st.dir : (Math.cos(t*0.45+i*2.4)>0?1:-1);
+    const fly = 1 - st.amt;                              // 1 飞行中 / 0 停留
+    const flap=Math.sin(t*10+i*3);
+    const bank=flap*0.7*(0.15+0.85*fly);                 // 停留时几乎不扇
+    const foldY=1 - 0.20*st.amt;                         // 停留时仅轻微纵收（保留翅膀可读）
+    const restRot=-0.55;                                 // 翅膀向上微抬（"刚合拢"），仍清晰可见
+    CTX.save();
+    CTX.translate(x,y);
+    CTX.rotate(0.16*(0.4+0.6*fly));                      // 飞行低头俯冲，停留放平
+    CTX.scale(dir,foldY);
+    CTX.globalAlpha=0.92;
+    // 身体：细长纺锤（头在 +x），侧视飞行姿态
+    CTX.fillStyle='rgba(90,80,76,0.85)';
+    CTX.beginPath(); CTX.ellipse(0,0, 7, 1.7, 0, 0, 7); CTX.fill();
+    CTX.beginPath(); CTX.arc(6.4,0,1.7,0,7); CTX.fill();                 // 头
+    CTX.strokeStyle='rgba(90,80,76,0.7)'; CTX.lineWidth=0.7;
+    CTX.beginPath(); CTX.moveTo(7,0); CTX.quadraticCurveTo(10,-3,11,-6); CTX.stroke();   // 触角
+    CTX.beginPath(); CTX.moveTo(7,0); CTX.quadraticCurveTo(10,3,11,6); CTX.stroke();
+    // 翅膀：飞行角 ↔ 收拢角 插值（侧视，近翅 + 远翅）
+    const wingCol=cols[i%2];
+    const wingR=(-0.95 - bank*0.5)*(1-st.amt) + restRot*st.amt;
+    CTX.save(); CTX.translate(2,0); CTX.rotate(wingR);
+    CTX.fillStyle=wingCol; CTX.globalAlpha=0.6;
+    CTX.beginPath(); CTX.ellipse(0,0, 9.5*(1+0.10*st.amt), 4.6*(1+0.10*st.amt), 0, 0, 7); CTX.fill(); CTX.restore();
+    const wingN=(-0.45 - bank*0.5)*(1-st.amt) + restRot*st.amt;
+    CTX.save(); CTX.translate(2,0); CTX.rotate(wingN);
+    CTX.fillStyle=wingCol; CTX.globalAlpha=0.95;
+    CTX.beginPath(); CTX.ellipse(0,0, 12*(1+0.10*st.amt), 5.6*(1+0.10*st.amt), 0, 0, 7); CTX.fill();
+    CTX.fillStyle='rgba(255,255,255,0.45)';
+    CTX.beginPath(); CTX.ellipse(-3,-1,2,1.3,0,0,7); CTX.fill(); CTX.restore();   // 翅斑
+    CTX.restore();
+  }
+}
+
+/* 地面淡墨晕染：草坪砖之前铺一层随季节微染的柔和底色，给花圃"地"的层次
+   （v3.4c 误删后按原始意图重建：沿等距钻石四顶点铺径向渐变，中心偏亮、边缘偏暗，夜色略收） */
+function drawGroundWash(cells, season, sky){
+  const tint=SEASON_TINT[season];
+  const byY=cells.slice().sort((a,b)=>a.y-b.y);
+  const A=byY[0], D=byY[byY.length-1];                    // 北 / 南顶点
+  const byX=cells.slice().sort((a,b)=>a.x-b.x);
+  const L=byX[0], R=byX[byX.length-1];                    // 西 / 东顶点
+  const cx=(A.x+L.x+R.x+D.x)/4, cy=(A.y+L.y+R.y+D.y)/4;
+  const rad=Math.max(Math.hypot(R.x-A.x,R.y-A.y), Math.hypot(D.x-A.x,D.y-A.y))*0.55;
+  const g=CTX.createRadialGradient(cx,cy,rad*0.15, cx,cy,rad);
+  g.addColorStop(0,   mixHex(tint.ground, '#FFFFFF', 0.22));
+  g.addColorStop(0.7, tint.ground);
+  g.addColorStop(1,   mixHex(tint.ground, '#3A3326', 0.40));
+  CTX.save();
+  CTX.globalAlpha=0.92*(0.6+0.4*sky.light);
+  CTX.fillStyle=g;
+  CTX.beginPath();
+  CTX.moveTo(A.x,A.y); CTX.lineTo(R.x,R.y); CTX.lineTo(D.x,D.y); CTX.lineTo(L.x,L.y); CTX.closePath();
+  CTX.fill();
+  CTX.restore();
+}
+
+
+/* ══════════ L6 花园 ══════════ */
+const pEnergy=[];                                        // 指针抚触能量（每株）
+function drawGarden(t, sky){
+  const n=state.grid;
+  const cells=layoutCells(n, W, H);
+  const tile=seasonTile[state.season];
+  const PLANT_FACTOR = 0.62;                              // v3.3-fix：植物整体缩放，3×3 不再过大
+  const TILE_FACTOR  = 0.90;                              // 草坪砖略收
+  const night=isNight(state.hour);
+
+  drawGroundWash(cells, state.season, sky);              // 淡墨晕染地面
+
+  // 草坪砖：留缝、缩小，每块独立可辨
+  if(tile){
+    cells.slice().sort((a,b)=>a.depth-b.depth||a.x-b.x).forEach(c=>{
+      const s=c.size*TILE_FACTOR;
+      CTX.globalAlpha=0.96;
+      CTX.drawImage(tile, c.x-s/2, c.y-s/2, s, s);
+    });
+    CTX.globalAlpha=1;
+  }
+
+  // 植物：环形填充 + 高后低前 + 指针抚触摆动（统一按 PLANT_FACTOR 缩放）
+  const order=fillOrder(n);
+  const usable=Math.min(DEMO_PLANTS.length, order.length);
+  const chosen=DEMO_PLANTS.slice(0,usable);
+  const byCellDepth=order.slice(0,usable).map(idx=>({idx, depth:cells[idx].depth})).sort((a,b)=>a.depth-b.depth);
+  const sorted=[...chosen].sort((a,b)=>{
+    const ra=TALL.has(a)?0:LOW.has(a)?2:1, rb=TALL.has(b)?0:LOW.has(b)?2:1; return ra-rb;
+  });
+  const placement=byCellDepth.map((slot,i)=>({cell:cells[slot.idx], name:sorted[i]}));
+  placement.sort((a,b)=>a.cell.depth-b.cell.depth||a.cell.x-b.cell.x);
+  placement.forEach((p,i)=>{
+    const im=plantImg[p.name]; if(!im) return;
+    const s=p.cell.size*PLANT_FACTOR;
+    // 指针抚触能量：靠近则蓄能，离开缓释（v3.2 调柔：峰值摆幅 ~3.7px，不再过激）
+    const px=p.cell.x, py=p.cell.y-s*0.55;
+    const dist=Math.hypot(pointer.x-px, pointer.y-py);
+    const target=Math.max(0, 1-dist/150);
+    pEnergy[i]=Math.max((pEnergy[i]||0)*0.945, target);
+    const e=pEnergy[i];
+    const sway=Math.sin(t*1.1+i*0.72)*Math.min(1.7,s*0.008)*(1+e*1.35)
+             + Math.sin(t*5.2+i)*e*0.8;
+    const rot=sway*0.003*(1+e*1.1);
+    CTX.save();
+    CTX.translate(px, p.cell.y+Math.abs(sway)*0.10);
+    CTX.rotate(rot);
+    CTX.drawImage(im, -s/2+sway*0.5, -s*0.80, s*(1+e*0.02), s*(1+e*0.02));
+    CTX.restore();
+  });
+
+  // 夜色/光照统一压暗层
+  const dim=1-sky.light;
+  if(dim>0.02){
+    CTX.fillStyle=`rgba(30,38,48,${dim*0.42})`;
+    CTX.fillRect(0,0,W,H);
+  }
+}
+
+/* v3.3-fix：移除 v3.3 实验性背景主树 / 苔点 / 蹲踞 / 鹿威し——它们没撑起氛围，反而让画面空。
+   保留：飞石 / 平滑雾（这两个 v3.3 改进是真的好；木灯笼已按用户要求移除）。
+   恢复：v3.1 干净的氛围层 + 透视为直线的栅栏。 */
+
+function drawVignette(){
+  // v3.3 柔边暗角：内圈完全透明、外圈极淡，不再有可见的环带
+  const g=CTX.createRadialGradient(W/2,H*0.55,W*0.50,W/2,H*0.55,W*1.05);
+  g.addColorStop(0,'rgba(0,0,0,0)');
+  g.addColorStop(0.7,'rgba(40,44,38,0.03)');
+  g.addColorStop(1,'rgba(40,44,38,0.10)');
+  CTX.fillStyle=g; CTX.fillRect(0,0,W,H);
+}
+
+/* ══════════ 主循环 ══════════ */
+let start=performance.now();
+function frame(now){
+  const t=(now-start)/1000;
+  const sky=skyAt(state.hour);
+  const night=isNight(state.hour);
+  const tint=SEASON_TINT[state.season];
+
+  drawSky(sky, tint, state.weather);
+  drawCelestial(state.hour, state.weather, t);
+  drawMountains(sky, state.season, state.weather, t);
+  if(state.weather==='CLOUDY') drawClouds(t, night);
+  drawGarden(t, sky);
+  if(state.weather==='RAIN') drawRain(t);
+  if(state.weather==='SNOW') drawSnow(t);
+  if(state.weather==='FOG')  drawFog(t);
+  const noPrecip = state.weather==='CLEAR'||state.weather==='CLOUDY';
+  if(state.season==='SPRING' && noPrecip) drawPetals(t);
+  if(state.season==='AUTUMN' && noPrecip) drawLeaves(t);
+  if(state.season==='SUMMER' && night && noPrecip) drawFireflies(t);
+  if(!night && noPrecip && state.hour>=6 && state.hour<17){
+    drawBirds(t);
+    if(state.season==='SPRING'||state.season==='SUMMER') drawButterflies(t, state.season);
+  }
+  drawVignette();
+
+  requestAnimationFrame(frame);
+}
+
+/* ══════════ 指针交互 ══════════ */
+function toCanvasXY(e){
+  const r=CV.getBoundingClientRect();
+  return [ (e.clientX-r.left)*(W/r.width), (e.clientY-r.top)*(H/r.height) ];
+}
+CV.addEventListener('pointermove', e=>{ [pointer.x,pointer.y]=toCanvasXY(e); });
+CV.addEventListener('pointerdown', e=>{ [pointer.x,pointer.y]=toCanvasXY(e); });
+CV.addEventListener('pointerleave', ()=>{ pointer.x=-9999; pointer.y=-9999; });
+
+/* ══════════ 控件 ══════════ */
+function bindChips(cls, apply){
+  document.querySelectorAll('.chip.'+cls).forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.chip.'+cls).forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); apply(b); updateHud();
+    };
+  });
+}
+bindChips('s',b=>state.season=b.dataset.s);
+bindChips('w',b=>state.weather=b.dataset.w);
+bindChips('g',b=>state.grid=parseInt(b.dataset.g));
+bindChips('p',b=>state.phase=parseFloat(b.dataset.p));
+const hourEl=document.getElementById('hour'), hourVal=document.getElementById('hourVal');
+hourEl.oninput=()=>{
+  state.hour=parseFloat(hourEl.value);
+  const hh=Math.floor(state.hour), mm=(state.hour%1)?'30':'00';
+  hourVal.textContent=`${String(hh).padStart(2,'0')}:${mm} ${phaseName(state.hour)}`;
+  updateHud();
+};
+function updateHud(){
+  const hud=document.getElementById('hud');
+  hud.classList.toggle('night', isNight(state.hour));
+  document.getElementById('hudMeta').innerHTML=
+    `${SEASON_TINT[state.season].name} · ${WEATHER_NAME[state.weather]}<br>今日已读 42 分钟`;
+}
+
+loadAssets().then(()=>{ updateHud(); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>

@@ -36,3 +36,9 @@ artifacts/
 .local/
 .agents/
 garden_screenshot.png
+
+# Local workspace data (agent memory / logs / temp screenshots / reference assets)
+.workbuddy/
+.websrv.log
+web-prototype/test-shots/
+lawn-backgrounds/

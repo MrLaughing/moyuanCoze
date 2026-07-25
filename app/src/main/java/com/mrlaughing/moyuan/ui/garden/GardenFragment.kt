@@ -22,6 +22,8 @@ import com.google.android.material.button.MaterialButton
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.data.model.Season
+import com.mrlaughing.moyuan.render.GardenArranger
+import com.mrlaughing.moyuan.render.GardenLayout
 import com.mrlaughing.moyuan.render.GardenRenderer
 import com.mrlaughing.moyuan.render.PlantRenderInfo
 import com.mrlaughing.moyuan.sync.SyncScheduler
@@ -59,6 +61,9 @@ class GardenFragment : Fragment() {
     private lateinit var tabModeCustom: TextView
     private var isPanelExpanded = false
     private var isWatering = false
+    private var lastGardenPlants = emptyList<PlantUiItem>()
+    private var lastDormantStage = 0
+    private var lastSeenBonusSeedlings = -1
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -107,6 +112,13 @@ class GardenFragment : Fragment() {
         }
         rendererView.setOnPlantMoveListener { plantId, targetSlot ->
             viewModel.movePlantToSlot(plantId, targetSlot)
+        }
+
+        // 首次布局完成后再渲染一次，避免宽高为 0 时花园空白（首帧竞态）
+        rendererView.addOnLayoutChangeListener { _, left, top, right, bottom, _, _, _, _ ->
+            val w = right - left
+            val h = bottom - top
+            if (w > 0 && h > 0) renderPlants(lastGardenPlants, lastDormantStage)
         }
 
         // 点击天气刷新（重新获取天气并更新花园）
@@ -265,7 +277,20 @@ class GardenFragment : Fragment() {
         updateModeStyles(state.gardenMode)
 
         // 渲染植物（使用网格布局）
-        renderPlants(state.plants)
+        lastGardenPlants = state.plants
+        lastDormantStage = state.dormantStage
+        renderPlants(state.plants, state.dormantStage)
+
+        // 全收集后「培育新苗」提醒（设计文稿 2.0 §2.4）：
+        // 数量增长时轻量提示一次，不打断当前操作
+        if (lastSeenBonusSeedlings >= 0 && state.bonusSeedlings > lastSeenBonusSeedlings) {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.bonus_seedling_earned, state.bonusSeedlings),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        lastSeenBonusSeedlings = state.bonusSeedlings
     }
 
     /**
@@ -288,7 +313,7 @@ class GardenFragment : Fragment() {
     /**
      * 将植物列表渲染到 GardenRendererView（网格布局）
      */
-    private fun renderPlants(plants: List<PlantUiItem>) {
+    private fun renderPlants(plants: List<PlantUiItem>, dormantStage: Int = 0) {
         if (plants.isEmpty()) {
             rendererView.updatePlants(emptyList())
             return
@@ -299,31 +324,49 @@ class GardenFragment : Fragment() {
             val h = rendererView.height
             if (w <= 0 || h <= 0) return@post
 
-            // 计算网格布局位置（使用当前 gridCols/gridRows）
-            val positions = GardenRenderer.calculateGridPositions(
-                GardenRenderer.gridCols * GardenRenderer.gridRows,
-                w,
-                h
-            )
-
-            val renderInfo = plants.mapIndexed { index, plant ->
-                val positionIndex = plant.gardenSlot ?: index
-                positions.getOrNull(positionIndex)?.let { position ->
-                    position.copy(
+            val isAutoMode = plants.all { it.gardenSlot == null }
+            val renderInfo = if (isAutoMode) {
+                // 自动排列：中心向外环形填充 + 高大后排、低矮前排（规范第 3 节）
+                val cells = GardenLayout.calculate(
+                    GardenRenderer.gridCols, GardenRenderer.gridRows, w, h
+                )
+                GardenArranger.arrangeByHeight(plants, cells) { it.heightRank }
+                    .map { (plant, cell) ->
+                        PlantRenderInfo(
+                            bitmap = plant.bitmap,
+                            x = cell.centerX,
+                            y = cell.centerY,
+                            scale = cell.tileSize * 0.60f / 10f,
+                            plantId = plant.plantId,
+                            plantName = plant.name,
+                            level = plant.level,
+                            witherStage = dormantStage
+                        )
+                    }
+            } else {
+                // 自定义模式：严格按用户指定的 gardenSlot（fillRank 序）摆放
+                val positions = GardenRenderer.calculateGridPositions(
+                    GardenRenderer.gridCols * GardenRenderer.gridRows,
+                    w,
+                    h
+                )
+                plants.mapIndexed { index, plant ->
+                    val positionIndex = plant.gardenSlot ?: index
+                    positions.getOrNull(positionIndex)?.copy(
                         bitmap = plant.bitmap,
                         plantId = plant.plantId,
                         plantName = plant.name,
-                        level = plant.level
-                    )
-                } ?: run {
-                    PlantRenderInfo(
+                        level = plant.level,
+                        witherStage = dormantStage
+                    ) ?: PlantRenderInfo(
                         bitmap = plant.bitmap,
                         x = w * 0.5f,
                         y = h * 0.5f,
                         scale = 0.8f,
                         plantId = plant.plantId,
                         plantName = plant.name,
-                        level = plant.level
+                        level = plant.level,
+                        witherStage = dormantStage
                     )
                 }
             }

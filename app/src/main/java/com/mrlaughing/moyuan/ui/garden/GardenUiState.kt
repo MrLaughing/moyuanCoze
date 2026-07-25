@@ -39,11 +39,15 @@ data class GardenUiState(
     val streakDays: Int = 0,
     val dateText: String = "",
     val totalUnlocked: Int = 0,
-    val totalPlants: Int = 20,
+    val totalPlants: Int = 50,
     val accumulatedMinutes: Int = 0,
     val nextUnlockThreshold: Int? = null,
     val isAuthorized: Boolean = false,
     val requiredSlots: Int = 0,
+    /** 休眠阶段(规范第7节)：由最近阅读日推演，仅用于花园植物视觉淡出，不触动数值 */
+    val dormantStage: Int = 0,
+    /** 全收集后已获得的「培育新苗」机会数（设计文稿 2.0 §2.4），未全收集恒为 0 */
+    val bonusSeedlings: Int = 0,
     /** 当前选中的园圃布局索引（在 GRID_LAYOUTS 中的位置） */
     val gridLayoutIndex: Int = DEFAULT_GRID_INDEX,
     /** 花园展示模式 */
@@ -59,5 +63,7 @@ data class PlantUiItem(
     val name: String,
     val level: Int,
     val bitmap: Bitmap? = null,
-    val gardenSlot: Int? = null
+    val gardenSlot: Int? = null,
+    /** 身高等级（HeightTier.rank：0 低 / 1 中 / 2 高），用于自动排列高后低前 */
+    val heightRank: Int = 1
 )

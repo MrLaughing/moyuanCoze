@@ -98,6 +98,57 @@ class GardenEngineTest {
         )
     }
 
+    // ─── 全收集后「培育新苗」奖励（设计文稿 2.0 §2.4）───────────
+
+    @Test
+    fun bonusSeedlingIsZeroBeforeFullCollection() {
+        assertEquals(0, UnlockEngine.bonusSeedlingCount(50_000, allUnlocked = false))
+        assertEquals(0, UnlockEngine.bonusSeedlingCount(30_000, allUnlocked = true))
+    }
+
+    @Test
+    fun bonusSeedlingCountsEveryIntervalAfterFullCollection() {
+        // 满园阈值 = 30000，间隔 700
+        assertEquals(1, UnlockEngine.bonusSeedlingCount(30_700, allUnlocked = true))
+        assertEquals(1, UnlockEngine.bonusSeedlingCount(31_399, allUnlocked = true))
+        assertEquals(2, UnlockEngine.bonusSeedlingCount(31_400, allUnlocked = true))
+        assertEquals(14, UnlockEngine.bonusSeedlingCount(39_800, allUnlocked = true))
+    }
+
+    @Test
+    fun nextSeedlingThresholdAdvancesByInterval() {
+        assertEquals(30_700, UnlockEngine.getNextSeedlingThreshold(30_000))
+        assertEquals(31_400, UnlockEngine.getNextSeedlingThreshold(30_701))
+        // 全收集前也应给出首个延伸阈值
+        assertEquals(30_700, UnlockEngine.getNextSeedlingThreshold(10_000))
+    }
+
+    @Test
+    fun fullCollectionThresholdEqualsHighestPlantThreshold() {
+        val expected = PlantDefinitions.all.maxOf { it.unlockThreshold }
+        assertEquals(expected, UnlockEngine.fullCollectionThreshold())
+    }
+
+    @Test
+    fun dormantStageStaysZeroForRecentReading() {
+        assertEquals(0, GardenEngine.dormantStage(today, today))
+        assertEquals(0, GardenEngine.dormantStage(today.minusDays(2), today))
+        assertEquals(0, GardenEngine.dormantStage(today.minusDays(3), today))
+    }
+
+    @Test
+    fun dormantStageEscalatesWithReadingGap() {
+        assertEquals(1, GardenEngine.dormantStage(today.minusDays(5), today))
+        assertEquals(2, GardenEngine.dormantStage(today.minusDays(10), today))
+        assertEquals(3, GardenEngine.dormantStage(today.minusDays(20), today))
+        assertEquals(3, GardenEngine.dormantStage(today.minusDays(60), today))
+    }
+
+    @Test
+    fun dormantStageNeverNegativeForFutureDate() {
+        assertEquals(0, GardenEngine.dormantStage(today.plusDays(3), today))
+    }
+
     private fun recalculate(
         meta: EngineMeta,
         date: LocalDate,

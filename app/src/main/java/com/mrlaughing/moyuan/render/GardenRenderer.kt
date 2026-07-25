@@ -135,12 +135,13 @@ object GardenRenderer {
         }
     }
     /** 绘制植物 PNG 位图 */
-    fun drawPlantBitmap(canvas: Canvas, bmp: Bitmap, x: Float, y: Float, scale: Float) {
+    fun drawPlantBitmap(canvas: Canvas, bmp: Bitmap, x: Float, y: Float, scale: Float, alpha: Int = 255) {
         val size = 10f * scale
         val left = x - size / 2f
         val top = y - size * 0.80f
         val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply {
             isDither = true
+            this.alpha = alpha
         }
         canvas.drawBitmap(
             bmp,
@@ -632,7 +633,7 @@ object GardenRenderer {
         val h = height.toFloat()
 
         when (weather) {
-            Weather.CLEAR -> drawClearEffect(canvas, w, h)
+            Weather.CLEAR -> Unit // 晴天无叠加特效（太阳已在装饰层绘制）
             Weather.CLOUDY -> drawCloudEffect(canvas, w, h)
             Weather.OVERCAST -> drawCloudEffect(canvas, w, h)
             Weather.DRIZZLE -> drawRainEffect(canvas, w, h, isDrizzle = true)
@@ -886,10 +887,6 @@ object GardenRenderer {
         bottomPath.quadTo(w * 0.7f, h * 0.55f, w, h * 0.57f)
         bottomPath.lineTo(w, h * 0.78f); bottomPath.lineTo(0f, h * 0.78f); bottomPath.close()
         canvas.drawPath(bottomPath, bottomPaint)
-    }
-
-    private fun drawClearEffect(canvas: Canvas, w: Float, h: Float) {
-        // 晴天的简约装饰（太阳已在 drawWeatherAndDecorations 中绘制）
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1302,14 +1299,79 @@ object GardenRenderer {
         ambientPhase: Float = 0f
     ) {
         plants.sortedWith(compareBy<PlantRenderInfo> { it.y }.thenBy { it.x }).forEach { plant ->
-            val bitmap = plant.bitmap
-                ?.takeUnless { it.isRecycled }
-                ?: plantPngCache[plant.plantName]?.takeUnless { it.isRecycled }
-                ?: return@forEach
             val phaseOffset = (plant.plantId % 7).toFloat() * 0.72f
             val floatOffset = sin(ambientPhase + phaseOffset) *
                 minOf(2.5f, plant.scale * 0.24f)
-            drawPlantBitmap(canvas, bitmap, plant.x, plant.y + floatOffset, plant.scale)
+            val drawY = plant.y + floatOffset
+            val bitmap = plant.bitmap
+                ?.takeUnless { it.isRecycled }
+                ?: plantPngCache[plant.plantName]?.takeUnless { it.isRecycled }
+            if (bitmap == null) {
+                // 规范第11节：图片加载失败时显示稳定的植物轮廓占位，不改变卡片尺寸
+                drawPlantPlaceholder(canvas, plant, drawY)
+                return@forEach
+            }
+            drawPlantBitmap(canvas, bitmap, plant.x, drawY, plant.scale, alpha = witherAlpha(plant.witherStage))
+            if (plant.witherStage >= 3) drawSpiderWeb(canvas, plant, drawY)
         }
+    }
+
+    /** 休眠(规范第7节)：按阶段返回整体不透明度，只影响视觉、不触动任何数值 */
+    private fun witherAlpha(stage: Int): Int = when (stage) {
+        0 -> 255
+        1 -> 204 // 4~6 天：0.8
+        2 -> 153 // 7~14 天：0.6
+        else -> 102 // 15 天以上：0.4（维持，不再继续恶化）
+    }
+
+    /** 植物 PNG 缺失时的程序化占位：柔和圆底 + 植物名首字，尺寸与正常植物一致 */
+    private fun drawPlantPlaceholder(canvas: Canvas, plant: PlantRenderInfo, y: Float) {
+        val size = 10f * plant.scale
+        val cx = plant.x
+        val cy = y - size * 0.40f
+        val r = size * 0.30f
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = Color.argb(38, 47, 107, 88)
+        }
+        canvas.drawCircle(cx, cy, r, fill)
+        val border = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            color = Color.argb(120, 115, 138, 122)
+            strokeWidth = 1.5f
+        }
+        canvas.drawCircle(cx, cy, r, border)
+        val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(170, 90, 110, 96)
+            textSize = size * 0.26f
+            textAlign = Paint.Align.CENTER
+            isFakeBoldText = true
+        }
+        val label = if (plant.plantName.length > 2) plant.plantName.substring(0, 2) else plant.plantName
+        canvas.drawText(label, cx, cy + text.textSize * 0.34f, text)
+    }
+
+    /** 长期不阅读(15 天+)的轻微蛛网装饰，仍是纯视觉，不暗示惩罚 */
+    private fun drawSpiderWeb(canvas: Canvas, plant: PlantRenderInfo, y: Float) {
+        val size = 10f * plant.scale
+        val cx = plant.x
+        val cy = y - size * 0.40f
+        val r = size * 0.34f
+        val line = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            color = Color.argb(55, 200, 200, 200)
+            strokeWidth = 1f
+        }
+        for (i in 0 until 3) {
+            val a = i * 2.094f + 0.4f
+            canvas.drawLine(cx, cy, cx + cos(a) * r, cy + sin(a) * r, line)
+        }
+        val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            color = Color.argb(40, 200, 200, 200)
+            strokeWidth = 1f
+        }
+        canvas.drawCircle(cx, cy, r * 0.6f, ring)
+        canvas.drawCircle(cx, cy, r, ring)
     }
 }

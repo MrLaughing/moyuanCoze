@@ -33,4 +33,23 @@ class GardenLayoutTest {
         assertTrue(front.centerY > back.centerY)
         assertTrue(front.depth > back.depth)
     }
+
+    @Test
+    fun `even four by four starts from central two by two`() {
+        val cells = GardenLayout.calculate(4, 4, 1080, 2200)
+        val first = cells.single { it.fillRank == 0 }
+        // 规范第3节：偶数方阵从中央 2x2 起填，首格必落在中央两行两列内
+        assertTrue(first.row in 1..2)
+        assertTrue(first.column in 1..2)
+    }
+
+    @Test
+    fun `depth grows monotonically from back to front`() {
+        val cells = GardenLayout.calculate(5, 5, 1080, 2200)
+        val byDepth = cells.sortedBy { it.depth }
+        for (i in 0 until byDepth.size - 1) {
+            assertTrue(byDepth[i].depth <= byDepth[i + 1].depth)
+            assertTrue(byDepth[i].centerY <= byDepth[i + 1].centerY + 1f)
+        }
+    }
 }

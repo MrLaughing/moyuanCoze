@@ -28,7 +28,7 @@ object AchievementDefinitions {
         AchievementDef("first_sprout", CATEGORY_GROWTH, "留印", "墨园初开，留印为证", "解锁首株植物", 1),
         AchievementDef("unlock_10", CATEGORY_GROWTH, "寻芳", "寻芳不觉醉流霞", "解锁10株植物", 10),
         AchievementDef("unlock_all", CATEGORY_GROWTH, "归园", "归园田居，心远地自偏", "解锁全部50株植物", 50),
-        AchievementDef("garden_full", CATEGORY_GROWTH, "满园", "满园深浅色，照水复宜风", "将10株植物放入花园", 10),
+        AchievementDef("garden_full", CATEGORY_GROWTH, "满园", "满园深浅色，照水复宜风", "将49株植物放入花园", 49),
         AchievementDef("streak_7", CATEGORY_MILESTONE, "不辍", "七日持之以恒，笔耕不辍", "连续阅读7天", 7),
         AchievementDef("streak_30", CATEGORY_MILESTONE, "星辰", "三十日仰望星空，星辰指路", "连续阅读30天", 30)
     )

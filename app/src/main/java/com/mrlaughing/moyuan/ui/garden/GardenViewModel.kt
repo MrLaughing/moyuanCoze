@@ -6,12 +6,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.model.PlantHeightTiers
 import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.data.model.Weather
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.WeatherRepository
+import com.mrlaughing.moyuan.engine.GardenEngine
 import com.mrlaughing.moyuan.engine.season.SeasonEngine
+import com.mrlaughing.moyuan.engine.unlock.UnlockEngine
 import com.mrlaughing.moyuan.util.formatCN
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -88,6 +91,10 @@ class GardenViewModel @Inject constructor(
                 userPrefs.wereadToken
             ) { gardenState, mode, token ->
                 val meta = gardenState.meta
+                val lastReadDate = meta?.lastReadDate
+                    ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                    ?: LocalDate.now().minusDays(1)
+                val dormantStage = GardenEngine.dormantStage(lastReadDate, LocalDate.now())
                 val todayReadMinutes = meta?.todayReadMinutes ?: 0
                 val streakDays = meta?.streakDays ?: 0
                 val accumulatedMinutes = meta?.accumulatedMinutes ?: 0
@@ -116,9 +123,15 @@ class GardenViewModel @Inject constructor(
                             (entity.gardenOrder - 1).coerceAtLeast(index)
                         } else {
                             null
-                        }
+                        },
+                        heightRank = PlantHeightTiers.tierFor(entity.plantId).rank
                     )
                 }
+                // 全收集后的「培育新苗」机会（设计文稿 2.0 §2.4）
+                val bonusSeedlings = UnlockEngine.bonusSeedlingCount(
+                    accumulatedMinutes = accumulatedMinutes,
+                    allUnlocked = totalUnlocked >= PlantDefinitions.all.size
+                )
                 val requiredSlots = if (mode == GardenMode.CUSTOM) {
                     displayEntities.maxOfOrNull { it.gardenOrder } ?: 0
                 } else {
@@ -142,7 +155,9 @@ class GardenViewModel @Inject constructor(
                     accumulatedMinutes = accumulatedMinutes,
                     nextUnlockThreshold = nextThreshold,
                     isAuthorized = !token.isNullOrBlank(),
-                    requiredSlots = requiredSlots
+                    requiredSlots = requiredSlots,
+                    dormantStage = dormantStage,
+                    bonusSeedlings = bonusSeedlings
                 )
             }.collect { state ->
                 _uiState.value = state

@@ -43,7 +43,7 @@ class MoyuanApp : Application() {
      * 
      * 检查 firstLaunch 标志，如果是首次启动：
      * 1. 初始化花园元数据
-     * 2. 初始化所有 27 种植物的锁定状态
+     * 2. 初始化所有 50 种植物的锁定状态
      * 3. 设置 firstLaunch = false
      */
     private fun initFirstLaunch() {

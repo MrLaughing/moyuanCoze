@@ -6,6 +6,7 @@ import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.engine.season.SeasonEngine
 import com.mrlaughing.moyuan.engine.unlock.UnlockEngine
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 /**
  * 墨园总调度引擎（2.0 收敛版）
@@ -49,6 +50,21 @@ object GardenEngine {
             season = season,
             newlyUnlocked = newlyUnlocked
         )
+    }
+
+    /**
+     * 休眠阶段(规范第7节)：由"最近一次实际阅读日"推演，仅用于视觉淡出，不触动任何数值。
+     * 0: ≤3 天(无变化)  1: 4~6 天(0.8)  2: 7~14 天(0.6)  3: ≥15 天(0.4，维持)
+     */
+    fun dormantStage(lastReadDate: LocalDate, today: LocalDate): Int {
+        if (lastReadDate > today) return 0
+        val days = lastReadDate.until(today, ChronoUnit.DAYS).toInt()
+        return when {
+            days <= 3 -> 0
+            days <= 6 -> 1
+            days <= 14 -> 2
+            else -> 3
+        }
     }
 
     // ─── 内部方法 ──────────────────────────────────────────────

@@ -86,4 +86,42 @@ object UnlockEngine {
     fun getNextUnlockThreshold(meta: EngineMeta): Int? {
         return distinctThresholds().firstOrNull { meta.accumulatedMinutes < it }
     }
+
+    // ─── 全收集后的奖励：培育新苗（设计文稿 2.0 §2.4）────────────────
+
+    /**
+     * 全收集后延伸阈值间隔（分钟）。
+     * 延续图鉴末段的解锁节奏（约每 700 分钟一株），
+     * 保证全收集后的阅读仍有稳定的正向反馈。
+     */
+    const val SEEDLING_INTERVAL_MINUTES = 700
+
+    /** 全收集所需的累计阅读分钟数（图鉴最高阈值） */
+    fun fullCollectionThreshold(): Int = distinctThresholds().last()
+
+    /**
+     * 已获得的「培育新苗」机会总数。
+     *
+     * 仅在图鉴全收集（50 株全部解锁）后开始累计：
+     * 累计分钟每超出最高阈值 [SEEDLING_INTERVAL_MINUTES] 分钟，+1 次机会。
+     *
+     * @param accumulatedMinutes 累计阅读分钟
+     * @param allUnlocked        图鉴是否已全收集
+     */
+    fun bonusSeedlingCount(accumulatedMinutes: Int, allUnlocked: Boolean): Int {
+        if (!allUnlocked) return 0
+        val over = accumulatedMinutes - fullCollectionThreshold()
+        if (over <= 0) return 0
+        return over / SEEDLING_INTERVAL_MINUTES
+    }
+
+    /**
+     * 下一次「培育新苗」的累计分钟阈值（仅全收集后有意义）。
+     */
+    fun getNextSeedlingThreshold(accumulatedMinutes: Int): Int {
+        val base = fullCollectionThreshold()
+        if (accumulatedMinutes < base) return base + SEEDLING_INTERVAL_MINUTES
+        val crossed = (accumulatedMinutes - base) / SEEDLING_INTERVAL_MINUTES
+        return base + (crossed + 1) * SEEDLING_INTERVAL_MINUTES
+    }
 }
