@@ -152,22 +152,22 @@ object GardenRenderer {
     }
 
     /** 内部：按条件绘制天气装饰元素 */
-    private fun drawWeatherDecorations(canvas: Canvas, width: Int, height: Int, weather: Weather, season: Season, currentHour: Int) {
+    private fun drawWeatherDecorations(canvas: Canvas, width: Int, height: Int, weather: Weather, season: Season, currentHour: Int, moonPhase: Float = 0.5f) {
         val w = width.toFloat(); val h = height.toFloat()
         val isClearOrCloudy = weather == Weather.CLEAR || weather == Weather.CLOUDY
         val isRainOrSnow = weather == Weather.RAIN || weather == Weather.DRIZZLE || weather == Weather.SNOW || weather == Weather.THUNDERSTORM
 
         // 太阳 | 晴/多云天 6:00~18:00
         val showSun = isClearOrCloudy && currentHour in 6..17
-        if (showSun) drawSun(canvas, w, h)
+        if (showSun) drawSun(canvas, w, h, currentHour, weather)
 
         // 落日 | 17:00~19:00
         val showSunset = currentHour in 17..18
-        if (showSunset) drawSunset(canvas, w, h)
+        if (showSunset) drawSunset(canvas, w, h, currentHour)
 
         // 月亮 | 19:00~5:00
         val showMoon = currentHour >= 19 || currentHour < 5
-        if (showMoon) drawMoon(canvas, w, h)
+        if (showMoon) drawMoon(canvas, w, h, moonPhase)
 
         // 飞鸟 | 晴/多云天 6:00~18:00
         val showBirds = isClearOrCloudy && currentHour in 6..17
@@ -184,87 +184,145 @@ object GardenRenderer {
     }
 
     /** 公开 API：供外部调用的装饰绘制入口 */
-    fun drawWeatherAndDecorations(canvas: Canvas, width: Int, height: Int, weather: Weather, season: Season, currentHour: Int = java.time.LocalTime.now().hour) {
-        drawWeatherDecorations(canvas, width, height, weather, season, currentHour)
+    fun drawWeatherAndDecorations(canvas: Canvas, width: Int, height: Int, weather: Weather, season: Season, currentHour: Int = java.time.LocalTime.now().hour, moonPhase: Float = 0.5f) {
+        drawWeatherDecorations(canvas, width, height, weather, season, currentHour, moonPhase)
     }
 
-    private fun drawSun(canvas: Canvas, w: Float, h: Float) {
-        // 暖黄半透太阳：大光晕融入背景 + 放射线 + 暖金主体
-        val cx = w * 0.88f; val cy = h * 0.05f; val r = 34f  // 28*1.2
-        // 外层超大光晕（融入背景，光晕大小不变）
-        val outerGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#E8D4A0"); alpha = 15 }
-        canvas.drawCircle(cx, cy, 98f, outerGlow)  // 28*3.5=98
-        // 中层暖黄
-        val midGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#E8D090"); alpha = 25 }
-        canvas.drawCircle(cx, cy, 70f, midGlow)  // 28*2.5=70
-        // 内层暖白
-        val innerGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F0E4C8"); alpha = 40 }
-        canvas.drawCircle(cx, cy, 42f, innerGlow)  // 28*1.5=42
-        // 放射线
-        val rayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeWidth = 1.5f; color = Color.parseColor("#D4C490"); alpha = 70 }
-        val rayPaint2 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeWidth = 1.0f; color = Color.parseColor("#D0BC80"); alpha = 45 }
-        val rayLengths = floatArrayOf(1.8f, 2.6f, 1.4f, 2.2f, 1.6f, 2.8f, 1.3f, 2.4f, 1.7f, 2.0f, 1.5f, 2.5f)
-        for (i in 0 until 12) {
-            val a = i * 0.5236f; val len = rayLengths[i]
-            val p = if (i % 2 == 0) rayPaint else rayPaint2
-            canvas.drawLine(cx + cos(a) * r * 0.9f, cy + sin(a) * r * 0.9f, cx + cos(a) * r * len, cy + sin(a) * r * len, p)
+    // ── 视觉辅助：颜色混合 / 变暗 / 昼夜亮度 ──
+    private val INK = Color.parseColor("#2A2A2A") // 墨色（夜色混合用）
+    private fun mixColor(c1: Int, c2: Int, t: Float): Int {
+        val r1 = Color.red(c1); val g1 = Color.green(c1); val b1 = Color.blue(c1)
+        val r2 = Color.red(c2); val g2 = Color.green(c2); val b2 = Color.blue(c2)
+        return Color.rgb(
+            (r1 + (r2 - r1) * t).toInt().coerceIn(0, 255),
+            (g1 + (g2 - g1) * t).toInt().coerceIn(0, 255),
+            (b1 + (b2 - b1) * t).toInt().coerceIn(0, 255)
+        )
+    }
+    private fun darken(c: Int, ratio: Float) = mixColor(c, INK, ratio)
+    private fun dayLight(hour: Int): Float = when {
+        hour in 7..17 -> 1f
+        hour in 18..20 -> 0.45f
+        hour in 5..6 -> 0.45f
+        else -> 0.18f
+    }
+
+    /** 太阳：缩小至满月大小 + 渐变光晕（对齐 web 原型 v3.4） */
+    private fun drawSun(canvas: Canvas, w: Float, h: Float, currentHour: Int, weather: Weather) {
+        val p = ((currentHour - 6).coerceIn(0, 11)) / 11f
+        val cx = w * (0.80f + 0.06f * sin(p * Math.PI.toFloat()))
+        val cy = h * (0.085f - 0.02f * sin(p * Math.PI.toFloat()))
+        val dim = if (weather == Weather.CLOUDY || weather == Weather.OVERCAST) 0.55f else 1f
+        val sf = w / 800f // 原型以 800 宽为基准
+        // 外圈大气晕
+        val haloPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = RadialGradient(cx, cy, 140f * sf,
+                intArrayOf(Color.argb((0.55f * dim * 255).toInt(), 252, 228, 168),
+                            Color.argb((0.30f * dim * 255).toInt(), 248, 216, 148),
+                            Color.argb(0, 248, 216, 148)),
+                floatArrayOf(0f, 0.18f, 1f), Shader.TileMode.CLAMP)
         }
-        // 太阳主体（暖金色半透）
-        val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#C8B878"); alpha = 140 }
-        canvas.drawCircle(cx, cy, r * 0.55f, body)
+        canvas.drawCircle(cx, cy, 140f * sf, haloPaint)
+        // 中圈柔光
+        val midPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = RadialGradient(cx, cy, 55f * sf,
+                intArrayOf(Color.argb((0.95f * dim * 255).toInt(), 252, 236, 180),
+                            Color.argb((0.55f * dim * 255).toInt(), 244, 212, 138),
+                            Color.argb(0, 244, 212, 138)),
+                floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawCircle(cx, cy, 55f * sf, midPaint)
+        // 主体（饱和金黄）—— 缩小至满月大小
+        val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((dim * 255).toInt(), 232, 180, 96) }
+        canvas.drawCircle(cx, cy, 24f * sf, body)
         // 高光
-        val highlight = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F4EED8"); alpha = 100 }
-        canvas.drawCircle(cx - r * 0.10f, cy - r * 0.10f, r * 0.20f, highlight)
+        val hi = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.95f * dim * 255).toInt(), 252, 240, 210) }
+        canvas.drawCircle(cx - 7f * sf, cy - 7f * sf, 9f * sf, hi)
+        // 暖色天空加亮（向下晕，顶/底 alpha→0）
+        val band = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, h * 0.04f, 0f, h * 0.22f,
+                Color.argb((0.16f * dim * 255).toInt(), 248, 222, 160),
+                Color.argb(0, 248, 222, 160), Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, h * 0.04f, w, h * 0.22f, band)
     }
 
-    private fun drawMoon(canvas: Canvas, w: Float, h: Float) {
-        val mx = w * 0.85f; val my = h * 0.07f; val r = 20f
-        // 弯月：用 Path.op(DIFFERENCE) 切出月牙形状
-        val outerPath = Path()
-        outerPath.addCircle(mx, my, r, Path.Direction.CW)
-        val innerPath = Path()
-        innerPath.addCircle(mx + r * 0.38f, my - r * 0.18f, r * 0.82f, Path.Direction.CW)
-        val moonPath = Path()
-        moonPath.op(outerPath, innerPath, Path.Op.DIFFERENCE)
-        val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#C8B878"); alpha = 140 }
-        canvas.drawPath(moonPath, body)
-        // 暖黄半透光晕（类似太阳风格）
-        val glow1 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#E8D4A0"); alpha = 15 }
-        canvas.drawCircle(mx, my, r * 2.2f, glow1)
-        val glow2 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#E8D090"); alpha = 25 }
-        canvas.drawCircle(mx, my, r * 1.4f, glow2)
-        val glow3 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F0E4C8"); alpha = 40 }
-        canvas.drawCircle(mx, my, r * 0.8f, glow3)
+    /** 月亮：标准月相算法（外圆半周 + 半椭圆弧，凸向随 phase）—— 对齐 web 原型 v3.4f */
+    private fun drawMoon(canvas: Canvas, w: Float, h: Float, moonPhase: Float) {
+        val mx = w * 0.82f; val my = h * 0.085f; val r = w * 0.038f
+        val breath = 0.92f
+        // 光晕（收敛，避免糊掉月牙轮廓）
+        val glow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = RadialGradient(mx, my, 50f * (w / 800f),
+                intArrayOf(Color.argb((0.30f * breath * 255).toInt(), 236, 232, 214),
+                            Color.argb((0.10f * breath * 255).toInt(), 236, 232, 214),
+                            Color.argb(0, 236, 232, 214)),
+                floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawCircle(mx, my, 50f * (w / 800f), glow)
+
+        val phase = moonPhase.coerceIn(0f, 1f)
+        val age = phase * 29.53f
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb((0.94f * breath * 255).toInt(), 232, 228, 206)
+        }
+        if (age > 0.5f && age < 29f) {
+            val rx = r * kotlin.math.abs(cos(phase * 2 * Math.PI.toFloat()))
+            val path = Path()
+            path.moveTo(mx, my - r)
+            if (kotlin.math.abs(phase - 0.5f) < 1e-3f) {
+                // 满月：整圆
+                path.addCircle(mx, my, r, Path.Direction.CW)
+            } else if (phase < 0.5f) {
+                // 盈月（亮在右）：外圆右半 + 椭圆弧
+                path.arcTo(RectF(mx - r, my - r, mx + r, my + r), -90f, 180f, false)
+                val sweep = if (phase < 0.25f) -180f else 180f
+                path.arcTo(RectF(mx - rx, my - r, mx + rx, my + r), 90f, sweep, false)
+            } else {
+                // 亏月（亮在左）：外圆左半 + 椭圆弧
+                path.arcTo(RectF(mx - r, my - r, mx + r, my + r), -90f, 180f, true)
+                val sweep = if (phase < 0.75f) -180f else 180f
+                path.arcTo(RectF(mx - rx, my - r, mx + rx, my + r), 90f, sweep, false)
+            }
+            path.close()
+            canvas.drawPath(path, paint)
+        } else {
+            // 接近新月：画淡淡轮廓（仍可辨识月亮位置）
+            paint.alpha = (0.18f * breath * 255).toInt()
+            canvas.drawCircle(mx, my, r * 0.95f, paint)
+        }
     }
 
-    private fun drawSunset(canvas: Canvas, w: Float, h: Float) {
-        // 落日：坐落在远山左峰上，完整圆形 + 淡红晕
-        val peakY = h * 0.055f
-        val cx = w * 0.08f
-        val r = h * 0.006f
-        val cy = peakY
-
-        // 天空红晕（更透）
-        val skyGlow1 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#D04030"); alpha = 3 }
-        canvas.drawCircle(cx, cy, r * 6.0f, skyGlow1)
-        val skyGlow2 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#C83828"); alpha = 6 }
-        canvas.drawCircle(cx, cy, r * 3.5f, skyGlow2)
-        val skyGlow3 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#B83020"); alpha = 10 }
-        canvas.drawCircle(cx, cy, r * 2.0f, skyGlow3)
-
-        // 完整圆形落日（更透）
-        val sunsetPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#C83828"); alpha = 60 }
-        canvas.drawCircle(cx, cy, r, sunsetPaint)
-
-        // 落日高光
-        val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#E05040"); alpha = 35 }
-        canvas.drawCircle(cx, cy - r * 0.2f, r * 0.5f, highlightPaint)
-
-        // 淡淡光影
-        val groundGlow = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#D04030"); alpha = 5 }
-        canvas.drawRect(RectF(cx - r * 6.0f, cy, cx + r * 6.0f, cy + h * 0.06f), groundGlow)
-        val groundGlow2 = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#C83828"); alpha = 3 }
-        canvas.drawRect(RectF(cx - r * 10.0f, cy + h * 0.01f, cx + r * 10.0f, cy + h * 0.12f), groundGlow2)
+    /** 落日：坐落在远山左峰，完整圆形 + 淡红晕（对齐 web 原型 v3.4） */
+    private fun drawSunset(canvas: Canvas, w: Float, h: Float, currentHour: Int) {
+        val p = ((currentHour - 17).coerceIn(0, 2)) / 2.5f
+        val cx = w * 0.16f
+        val cy = h * (0.145f + p * 0.05f)
+        val r = w * 0.032f
+        // 天空红晕
+        val glow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = RadialGradient(cx, cy, r * 3.5f,
+                intArrayOf(Color.argb(128, 224, 120, 88),
+                            Color.argb(46, 230, 150, 100),
+                            Color.argb(0, 230, 150, 100)),
+                floatArrayOf(0f, 0.4f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawCircle(cx, cy, r * 3.5f, glow)
+        // 完整圆形落日
+        val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(217, 214, 104, 74) }
+        canvas.drawCircle(cx, cy, r, body)
+        // 高光
+        val hi = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(140, 240, 160, 110) }
+        canvas.drawCircle(cx - r * 0.2f, cy - r * 0.25f, r * 0.4f, hi)
+        // 淡淡光影（顶/底 alpha→0）
+        val band = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, h * 0.06f, 0f, h * 0.30f,
+                intArrayOf(Color.argb(0, 232, 148, 96),
+                    Color.argb((0.16f * (1 - p * 0.5f) * 255).toInt(), 232, 148, 96),
+                    Color.argb(0, 232, 148, 96)),
+                floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, h * 0.06f, w, h * 0.30f, band)
     }
 
     private fun drawBirds(canvas: Canvas, w: Float, h: Float) {
@@ -394,12 +452,19 @@ object GardenRenderer {
         height: Int,
         season: Season,
         weather: Weather,
-        currentHour: Int = java.time.LocalTime.now().hour
+        currentHour: Int = java.time.LocalTime.now().hour,
+        moonPhase: Float = 0.5f
     ) {
         val colors = SEASON_COLORS[season] ?: SEASON_COLORS[Season.SPRING]!!
+        val light = dayLight(currentHour)
         drawPremiumBackdrop(canvas, width, height, colors)
         drawWeatherEffect(canvas, width, height, weather, colors)
-        drawWeatherDecorations(canvas, width, height, weather, season, currentHour)
+        // 远山（两层）：接入场景（之前为死代码未调用）—— 对齐 web 原型 v3.4
+        drawMountainLayer(canvas, width.toFloat(), height.toFloat(), colors, isFarLayer = true, light = light)
+        drawMountainLayer(canvas, width.toFloat(), height.toFloat(), colors, isFarLayer = false, light = light)
+        // 轻微环境地面雾（顶/底 alpha→0，不压远山）
+        drawAmbientFog(canvas, width.toFloat(), height.toFloat())
+        drawWeatherDecorations(canvas, width, height, weather, season, currentHour, moonPhase)
         drawGardenLawns(canvas, width, height, season)
     }
     private fun drawPremiumBackdrop(
@@ -456,88 +521,177 @@ object GardenRenderer {
                 )
             }
     }
-    /**
-     * 绘制水墨风格背景
-     */
-    private fun drawBackgroundLayer(
-        canvas: Canvas,
-        width: Int,
-        height: Int,
-        colors: SeasonColors,
-        season: Season
-    ) {
-        val w = width.toFloat()
-        val h = height.toFloat()
+    // (drawBackgroundLayer 已移除：远山改为由 drawScene 直接调用 drawMountainLayer，
+    //  避免与 drawPremiumBackdrop 重复绘制背景；季节装饰由 drawScene 的 drawWeatherEffect 负责)
 
-        // 创建渐变背景
-        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        val bgGradient = LinearGradient(
-            0f, 0f, 0f, h,
-            colors.sky, colors.wash,
-            Shader.TileMode.CLAMP
-        )
-        bgPaint.shader = bgGradient
-        canvas.drawRect(0f, 0f, w, h, bgPaint)
-
-        // 绘制远山层1（最远，最淡）
-        drawMountainLayer(canvas, w, h, colors, isFarLayer = true)
-
-        // 绘制近山层
-        drawMountainLayer(canvas, w, h, colors, isFarLayer = false)
-
-        // 绘制季节装饰
-        when (season) {
-            Season.SPRING -> drawSpringPetals(canvas, w, h)
-            Season.AUTUMN -> drawAutumnLeaves(canvas, w, h)
-            Season.WINTER -> drawWinterSnowCap(canvas, w, h, colors)
-            Season.SUMMER -> { /* 无特殊装饰 */ }
+    /** 远山：噪声错落山脊 + 竖向渐变填充(顶/底 alpha→0) + 山脚薄雾 + 山脊描边 —— 对齐 web 原型 v3.4k */
+    private fun drawMountainLayer(canvas: Canvas, w: Float, h: Float, colors: SeasonColors, isFarLayer: Boolean, light: Float) {
+        val peak: Float; val amp: Float; val baseColor: Int; val layerAlpha: Float
+        if (isFarLayer) {
+            peak = h * 0.22f; amp = h * 0.07f; baseColor = colors.mountainFar
+            layerAlpha = 0.38f + 0.06f * (1f - light)
+        } else {
+            peak = h * 0.27f; amp = h * 0.06f; baseColor = colors.mountain
+            layerAlpha = 0.55f + 0.07f * (1f - light)
         }
-    }
+        val seed = if (isFarLayer) 17f else 41f
+        val baseY = h * 0.40f
+        val groundBlend = baseY + h * 0.05f
 
-    private fun drawMountainLayer(canvas: Canvas, w: Float, h: Float, colors: SeasonColors, isFarLayer: Boolean) {
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            if (isFarLayer) {
-                color = colors.mountainFar
-                alpha = 64
-            } else {
-                color = colors.mountain
-                alpha = 100
+        // 带符号多频噪声山脊（错落有致：长波大势 + 3/5 峰拍频 + 8 细节，非 abs 翻转）
+        val segs = 20
+        val pts = ArrayList<PointF>(segs + 1)
+        for (i in 0..segs) {
+            val px = (i.toFloat() / segs) * w
+            val u = i.toFloat() / segs
+            val TAU = 2f * Math.PI.toFloat()
+            val noise = sin(u * TAU * 1f + seed) * 0.22f
+                      + sin(u * TAU * 3f + seed * 1.3f) * 0.38f
+                      + sin(u * TAU * 5f + seed * 2.1f) * 0.25f
+                      + sin(u * TAU * 8f + seed * 2.7f) * 0.15f
+            val n = ((noise + 1f) * 0.5f).coerceIn(0f, 1f)
+            pts.add(PointF(px, peak - amp * (0.08f + 0.95f * n)))
+        }
+
+        val cr = Color.red(baseColor); val cg = Color.green(baseColor); val cb = Color.blue(baseColor)
+        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        fillPaint.shader = LinearGradient(0f, peak - amp, 0f, groundBlend + h * 0.04f,
+            intArrayOf(Color.argb(0, cr, cg, cb),
+                Color.argb((layerAlpha * 255).toInt(), cr, cg, cb),
+                Color.argb(0, cr, cg, cb)),
+            floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        val footAmp = h * 0.035f
+        fun footY(u: Float) = groundBlend + (sin(u * 2.3f + seed * 0.5f) * 0.7f + sin(u * 4.7f + seed * 1.3f) * 0.30f) * footAmp
+
+        // 填充山体（山脊 quad 平滑 + 山脚低频起伏，与地平线自然衔接）
+        val path = Path()
+        for (i in pts.indices) {
+            val cur = pts[i]
+            if (i == 0) path.moveTo(cur.x, cur.y)
+            else {
+                val prev = pts[i - 1]
+                val mxC = (prev.x + cur.x) / 2f
+                path.quadTo(mxC, (if (prev.y < cur.y) prev.y else cur.y) - amp * 0.05f, cur.x, cur.y)
             }
         }
+        for (i in pts.lastIndex downTo 0) {
+            path.lineTo(pts[i].x, footY(i.toFloat() / segs))
+        }
+        path.close()
+        canvas.drawPath(path, fillPaint)
 
-        // 秀美起伏山峦：smooth quad曲线（向左延伸）
-        val path = Path()
-        if (isFarLayer) {
-            // 远山：从左侧更远处开始，3个起伏峰峦
-            path.moveTo(-w * 0.15f, h * 0.16f)
-            path.quadTo(w * 0.0f, h * 0.05f, w * 0.15f, h * 0.10f)
-            path.quadTo(w * 0.28f, h * 0.04f, w * 0.42f, h * 0.09f)
-            path.quadTo(w * 0.55f, h * 0.06f, w * 0.68f, h * 0.11f)
-            path.quadTo(w * 0.82f, h * 0.05f, w, h * 0.10f)
-            path.lineTo(w, h * 0.16f)
-            path.quadTo(w * 0.75f, h * 0.14f, w * 0.5f, h * 0.16f)
-            path.quadTo(w * 0.25f, h * 0.13f, -w * 0.15f, h * 0.16f)
-        } else {
-            // 近山：向左延伸
-            path.moveTo(-w * 0.15f, h * 0.21f)
-            path.quadTo(w * 0.05f, h * 0.07f, w * 0.22f, h * 0.13f)
-            path.quadTo(w * 0.40f, h * 0.06f, w * 0.58f, h * 0.12f)
-            path.quadTo(w * 0.75f, h * 0.08f, w, h * 0.14f)
-            path.lineTo(w, h * 0.21f)
-            path.quadTo(w * 0.6f, h * 0.19f, w * 0.3f, h * 0.21f)
-            path.quadTo(w * 0.1f, h * 0.18f, -w * 0.15f, h * 0.21f)
+        // 清晰秀美的山脊描边（仅顶部轮廓，不影响山脚与地平线衔接）
+        val ridge = Path()
+        for (i in pts.indices) {
+            val cur = pts[i]
+            if (i == 0) ridge.moveTo(cur.x, cur.y)
+            else {
+                val prev = pts[i - 1]
+                val mxC = (prev.x + cur.x) / 2f
+                ridge.quadTo(mxC, (if (prev.y < cur.y) prev.y else cur.y) - amp * 0.05f, cur.x, cur.y)
+            }
         }
-        path.close()
-        canvas.drawPath(path, paint)
-        // 浅色描边
+        val ridgeW = (h * 0.001f).coerceAtLeast(1.1f)
         val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE; strokeWidth = 0.8f; strokeCap = Paint.Cap.ROUND
-            color = paint.color; alpha = (paint.alpha * 1.3f).toInt().coerceAtMost(255)
+            style = Paint.Style.STROKE; strokeWidth = ridgeW; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
+            color = darken(baseColor, 0.30f); alpha = (0.55f * 255).toInt()
         }
-        canvas.drawPath(path, strokePaint)
-        path.close()
-        canvas.drawPath(path, paint)
+        canvas.drawPath(ridge, strokePaint)
+
+        // 山脚薄雾：顶/底 alpha→0（柔化山脚与下方空白带的衔接，无水平硬边）
+        val hzTop = baseY - h * 0.015f
+        val hzBot = baseY + h * 0.14f
+        val hz = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, hzTop, 0f, hzBot,
+                intArrayOf(Color.argb(0, 243, 240, 231),
+                    Color.argb(((0.18f + 0.05f * light) * 255).toInt(), 243, 240, 231),
+                    Color.argb(0, 243, 240, 231)),
+                floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, hzTop, w, hzBot - hzTop, hz)
+    }
+
+    /** 轻微环境地面雾（顶/底 alpha→0，仅轻覆花园底部，不压远山）—— 对齐 web 原型 v3.4i */
+    private fun drawAmbientFog(canvas: Canvas, w: Float, h: Float) {
+        val base = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, h * 0.55f, 0f, h,
+                intArrayOf(Color.argb(0, 228, 228, 219),
+                    Color.argb((0.12f * 255).toInt(), 228, 228, 219),
+                    Color.argb((0.18f * 255).toInt(), 228, 228, 219)),
+                floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, h * 0.55f, w, h * 0.45f, base)
+    }
+
+    // ── 蝴蝶（春/夏/秋 昼间，侧视飞行 + 停留状态机）—— 对齐 web 原型 v3.4i/k ──
+    private data class ButterflyState(
+        var mode: String = "fly",
+        var until: Float = 0f,
+        var px: Float = 0f,
+        var py: Float = 0f,
+        var amt: Float = 0f,
+        var dir: Float = 1f
+    )
+    private val bfState = List(2) { i -> ButterflyState(until = 3f + i * 2.5f) }
+
+    /** 蝴蝶：在 GardenRendererView.onDraw 中逐帧调用（背景场景为静态缓存），t 为秒。 */
+    fun drawButterflies(canvas: Canvas, w: Float, h: Float, season: Season, weather: Weather, t: Float) {
+        if (weather == Weather.RAIN || weather == Weather.DRIZZLE || weather == Weather.SNOW ||
+            weather == Weather.THUNDERSTORM || weather == Weather.FOGGY) return
+        val cols = if (season == Season.SPRING) arrayOf("#E5B8C8", "#D8A8B8") else arrayOf("#C8D8E8", "#B8CCE0")
+        val k = w / 800f * 1.4f // 原型以 800 宽为基准，略放大适配手机屏
+        for (i in 0..1) {
+            val st = bfState[i]
+            val fx = w * (0.30f + 0.40f * i) + sin(t * 0.45f + i * 2.4f) * w * 0.16f + sin(t * 1.3f + i) * 14f * (w / 800f)
+            val fy = h * (0.64f + 0.05f * i) + cos(t * 0.62f + i * 1.8f) * h * 0.05f
+            if (st.mode == "fly") {
+                if (t > st.until) {
+                    st.mode = "rest"; st.until = t + 1.8f + kotlin.random.Random.nextFloat() * 0.6f
+                    st.px = w * (0.22f + 0.56f * kotlin.random.Random.nextFloat())
+                    st.py = h * (0.70f + 0.14f * kotlin.random.Random.nextFloat())
+                    st.dir = if (fx < st.px) 1f else -1f
+                }
+            } else {
+                if (t > st.until) { st.mode = "fly"; st.until = t + 4f + kotlin.random.Random.nextFloat() * 5f }
+            }
+            val target = if (st.mode == "rest") 1f else 0f
+            st.amt += (target - st.amt) * 0.07f
+            if (st.amt < 0.001f) st.amt = 0f else if (st.amt > 0.999f) st.amt = 1f
+            val x = fx + (st.px - fx) * st.amt
+            val y = fy + (st.py - fy) * st.amt
+            val dir = if (st.mode == "rest") st.dir else if (cos(t * 0.45f + i * 2.4f) > 0) 1f else -1f
+            val fly = 1f - st.amt
+            val flap = sin(t * 10f + i * 3f)
+            val bank = flap * 0.7f * (0.15f + 0.85f * fly)
+            val foldY = 1f - 0.20f * st.amt
+            val restRot = -0.55f
+            canvas.save()
+            canvas.translate(x, y)
+            canvas.rotate(0.16f * (0.4f + 0.6f * fly))
+            canvas.scale(dir * k, foldY * k)
+            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.85f * 255).toInt(), 90, 80, 76) }
+            // 身体（细长纺锤，头在 +x）+ 头 + 触角
+            canvas.drawOval(RectF(-7f, -1.7f, 7f, 1.7f), bodyPaint)
+            canvas.drawCircle(6.4f, 0f, 1.7f, bodyPaint)
+            val antPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.7f * 255).toInt(), 90, 80, 76); style = Paint.Style.STROKE; strokeWidth = 0.7f; strokeCap = Paint.Cap.ROUND }
+            canvas.drawLine(7f, 0f, 11f, -6f, antPaint)
+            canvas.drawLine(7f, 0f, 11f, 6f, antPaint)
+            // 翅膀：飞行角 ↔ 收拢角 插值（侧视，近翅 + 远翅）
+            val wingCol = Color.parseColor(cols[i % 2])
+            val wingR = (-0.95f - bank * 0.5f) * (1f - st.amt) + restRot * st.amt
+            canvas.save(); canvas.translate(2f, 0f); canvas.rotate(wingR)
+            val farPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = (0.6f * 255).toInt() }
+            canvas.drawOval(RectF(-9.5f * (1f + 0.1f * st.amt), -4.6f * (1f + 0.1f * st.amt), 9.5f * (1f + 0.1f * st.amt), 4.6f * (1f + 0.1f * st.amt)), farPaint)
+            canvas.restore()
+            val wingN = (-0.45f - bank * 0.5f) * (1f - st.amt) + restRot * st.amt
+            canvas.save(); canvas.translate(2f, 0f); canvas.rotate(wingN)
+            val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = (0.95f * 255).toInt() }
+            canvas.drawOval(RectF(-12f * (1f + 0.1f * st.amt), -5.6f * (1f + 0.1f * st.amt), 12f * (1f + 0.1f * st.amt), 5.6f * (1f + 0.1f * st.amt)), nearPaint)
+            val spot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.45f * 255).toInt(), 255, 255, 255) }
+            canvas.drawOval(RectF(-5f, -2.3f, -1f, 0.3f), spot)
+            canvas.restore()
+            canvas.restore()
+        }
     }
 
     private fun drawStone(canvas: Canvas, x: Float, y: Float, colors: SeasonColors, size: Float) {
@@ -853,40 +1007,37 @@ object GardenRenderer {
         canvas.drawPath(path, paint)
     }
 
+    /** 雾（FOGGY 天气）：地面柔雾 + 多团径向软雾（边缘天然透明，无硬横条）—— 对齐 web 原型 v3.4i */
     private fun drawFogEffect(canvas: Canvas, w: Float, h: Float) {
-        // 薄雾：3层淡墨轻纱
-        val fogColor = Color.parseColor("#C8C4BE")
-        val farPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = fogColor; alpha = 20 }
-        val farPath = Path(); farPath.moveTo(0f, h * 0.05f)
-        farPath.quadTo(w * 0.3f, h * 0.03f, w * 0.5f, h * 0.06f)
-        farPath.quadTo(w * 0.7f, h * 0.04f, w, h * 0.05f)
-        farPath.lineTo(w, h * 0.14f); farPath.lineTo(0f, h * 0.14f); farPath.close()
-        canvas.drawPath(farPath, farPaint)
-        val midPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = fogColor; alpha = 30 }
-        val midPath = Path(); midPath.moveTo(0f, h * 0.16f)
-        midPath.quadTo(w * 0.3f, h * 0.14f, w * 0.5f, h * 0.18f)
-        midPath.quadTo(w * 0.7f, h * 0.15f, w, h * 0.17f)
-        midPath.lineTo(w, h * 0.26f); midPath.lineTo(0f, h * 0.26f); midPath.close()
-        canvas.drawPath(midPath, midPaint)
-        val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = fogColor; alpha = 25 }
-        val nearPath = Path(); nearPath.moveTo(0f, h * 0.28f)
-        nearPath.quadTo(w * 0.3f, h * 0.26f, w * 0.5f, h * 0.30f)
-        nearPath.quadTo(w * 0.7f, h * 0.27f, w, h * 0.29f)
-        nearPath.lineTo(w, h * 0.33f); nearPath.lineTo(0f, h * 0.33f); nearPath.close()
-        canvas.drawPath(nearPath, nearPaint)
-        // 向下延伸到园圃(alpha更低，逐渐淡出)
-        val lowerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = fogColor; alpha = 18 }
-        val lowerPath = Path(); lowerPath.moveTo(0f, h * 0.35f)
-        lowerPath.quadTo(w * 0.3f, h * 0.34f, w * 0.5f, h * 0.38f)
-        lowerPath.quadTo(w * 0.7f, h * 0.35f, w, h * 0.37f)
-        lowerPath.lineTo(w, h * 0.55f); lowerPath.lineTo(0f, h * 0.55f); lowerPath.close()
-        canvas.drawPath(lowerPath, lowerPaint)
-        val bottomPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = fogColor; alpha = 12 }
-        val bottomPath = Path(); bottomPath.moveTo(0f, h * 0.55f)
-        bottomPath.quadTo(w * 0.3f, h * 0.53f, w * 0.5f, h * 0.58f)
-        bottomPath.quadTo(w * 0.7f, h * 0.55f, w, h * 0.57f)
-        bottomPath.lineTo(w, h * 0.78f); bottomPath.lineTo(0f, h * 0.78f); bottomPath.close()
-        canvas.drawPath(bottomPath, bottomPaint)
+        // 地面柔雾：竖向渐变，近地浓、向上淡出（顶/底 alpha→0，无水平硬带）
+        val base = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, h * 0.30f, 0f, h,
+                intArrayOf(Color.argb(0, 228, 228, 219),
+                    Color.argb((0.12f * 255).toInt(), 228, 228, 219),
+                    Color.argb((0.20f * 255).toInt(), 228, 228, 219)),
+                floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, h * 0.30f, w, h * 0.70f, base)
+        // 多团软雾（径向渐变，边缘天然透明），像真实雾团而非横条
+        for (i in 0..5) {
+            val y = h * (0.34f + 0.11f * i)
+            val x = w * (0.10f + i * 0.21f)
+            val rw = w * (0.30f + (i % 3) * 0.06f)
+            val rh = rw * (0.34f + (i % 2) * 0.05f)
+            val a = (0.15f - i * 0.015f).coerceAtLeast(0.04f)
+            canvas.save()
+            canvas.translate(x, y)
+            canvas.scale(1f, rh / rw)
+            val g = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                shader = RadialGradient(0f, 0f, rw,
+                    intArrayOf(Color.argb((a * 255).toInt(), 233, 233, 225),
+                                Color.argb(((a * 0.5f) * 255).toInt(), 230, 230, 221),
+                                Color.argb(0, 230, 230, 221)),
+                    floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP)
+            }
+            canvas.drawCircle(0f, 0f, rw, g)
+            canvas.restore()
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════

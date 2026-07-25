@@ -1071,3 +1071,37 @@ pts.push([px, L.peak - L.amp*(0.08+0.95*n)]);                  // 谷更深、�
 
 **Android 移植**：同步 `GardenRenderer.kt` 的 `drawMountains` 噪声函数（去掉 abs，改带符号 + 4 频率叠加）；段数同步 20；基线系数 0.08 / 振幅 0.95 同步。
 
+---
+
+## 第三十章 Android 端落地（v3.4d~v3.4k → Kotlin Canvas）
+
+将 web 原型 v3.4d~v3.4k 的五大子系统移植到 Android 端 `app/.../render/GardenRenderer.kt`（Android `Canvas` 2D），由 `ui/garden/GardenRendererView.kt` 调用。
+
+### 移植范围
+- **太阳 `drawSun`**：缩小至满月大小的金黄日轮 + 三层径向光晕（halo 140·sf / mid 55·sf / body 24·sf）；多云/阴天 `dim=0.55`；暖色天空加亮带（顶/底 alpha→0）。
+- **月亮 `drawMoon`**：标准月相算法（外圆半周 `arcTo` + 半椭圆弧，凸向随 `phase`）；接近新月画淡轮廓。
+- **落日 `drawSunset`**：左峰完整圆形落日 + 红晕 + 淡光影带。
+- **远山 `drawMountainLayer`（远/近两层）**：带符号 4 频率噪声山脊（段数 20，基线 0.08 / 振幅 0.95）+ 竖向渐变填充（顶/底 alpha→0）+ 山脊描边（≈1.1px 圆头、比山体略深的墨色、alpha 0.55）+ 山脚薄雾；**山脚/地平线衔接保持 v3.4j 不变**。
+- **雾**：`drawAmbientFog`（环境地面轻雾）+ `drawFogEffect`（FOGGY 天气：地面渐变 + 6 团径向软雾，无水平硬带）。
+- **蝴蝶 `drawButterflies`**：侧视飞行 + 停留状态机（`fly` 4–9s ↔ `rest` 1.8–2.4s），`amt` 指数平滑 0.07；逐帧 `t = SystemClock.uptimeMillis()/1000f`。
+
+### 架构要点（Android vs Web 差异）
+- Web 原型固定 800×1300 坐标系；Android 任意 `w×h`，所有尺寸按 `sf = w/800f` 缩放。
+- 静态场景（天空/山/月/雾）在 `GardenRendererView` 中以 `sceneBitmap` 缓存，仅当 `sceneDirty` 时重绘（`getOrCreateSceneBitmap` 调 `drawScene`）。
+- 蝴蝶需逐帧时间，故 `drawButterflies` 不进缓存，在 `onDraw` 中每帧调用（与 `drawPlants` 用 `ambientPhase` 动画同一机制）。
+- 月相 `moonPhase` 默认 0.5（满月）；如需真实月相由调用方传参。
+
+### 编译注意事项（关键坑）
+- **`LinearGradient` 没有 3 色标量构造器**——3 段渐变必须用数组形式：`LinearGradient(x0,y0,x1,y1, intArrayOf(c0,c1,c2), floatArrayOf(0f,0.5f,1f), Shader.TileMode.CLAMP)`，否则编译失败。已据此修正山脊填充、山脚薄雾、环境雾、FOGGY 雾、落日带共 5 处。
+- `RadialGradient` 一律用数组形式（已合规）。
+- `import android.graphics.*` 覆盖 `PointF/RectF/Path/Paint/Canvas/Shader` 等；`kotlin.random.Random` 用全限定名。
+
+### 验证
+- 本环境无 Android SDK，无法 `./gradlew assemble`；已对全部改动函数逐行语法自审（签名一致性、构造器形式、import）。
+- 需在 Android Studio 中 build 验证，并目测 春/夏/秋/冬 × 晴/雨/雾/阴 等状态。
+
+### 仍待办
+- **花圃融合**（方案② 空地→花圃过渡雾带，与 v3.4i 雾重做天然契合，推荐先做）。
+- 真实月相来源接入（当前默认满月）。
+- 原死代码 `drawBackgroundLayer` 已删除（现由 `drawScene` 直接调 `drawMountainLayer`）。
+

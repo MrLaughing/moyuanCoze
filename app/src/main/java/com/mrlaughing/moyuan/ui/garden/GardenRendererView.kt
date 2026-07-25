@@ -137,6 +137,14 @@ class GardenRendererView @JvmOverloads constructor(
             season = currentSeason,
             ambientPhase = ambientPhase
         )
+        GardenRenderer.drawButterflies(
+            canvas = canvas,
+            w = width.toFloat(),
+            h = height.toFloat(),
+            season = currentSeason,
+            weather = currentWeather,
+            t = SystemClock.uptimeMillis() / 1000f
+        )
         drawWateringFeedback(canvas)
     }
 
