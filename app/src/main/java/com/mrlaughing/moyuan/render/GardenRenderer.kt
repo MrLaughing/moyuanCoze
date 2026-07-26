@@ -545,10 +545,12 @@ object GardenRenderer {
             val px = (i.toFloat() / segs) * w
             val u = i.toFloat() / segs
             val TAU = 2f * Math.PI.toFloat()
-            val noise = sin(u * TAU * 1f + seed) * 0.22f
-                      + sin(u * TAU * 3f + seed * 1.3f) * 0.38f
-                      + sin(u * TAU * 5f + seed * 2.1f) * 0.25f
-                      + sin(u * TAU * 8f + seed * 2.7f) * 0.15f
+            val noise = (
+                sin(u * TAU * 1f + seed) * 0.22f +
+                    sin(u * TAU * 3f + seed * 1.3f) * 0.38f +
+                    sin(u * TAU * 5f + seed * 2.1f) * 0.25f +
+                    sin(u * TAU * 8f + seed * 2.7f) * 0.15f
+                )
             val n = ((noise + 1f) * 0.5f).coerceIn(0f, 1f)
             pts.add(PointF(px, peak - amp * (0.08f + 0.95f * n)))
         }
