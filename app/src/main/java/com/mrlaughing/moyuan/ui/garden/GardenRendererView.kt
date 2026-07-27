@@ -160,6 +160,14 @@ class GardenRendererView @JvmOverloads constructor(
             currentHour = hour,
             t = SystemClock.uptimeMillis() / 1000f
         )
+        // 逐帧天气粒子（雨/雪/风/雾/闪电/云）—— 从静态 sceneBitmap 中移出，避免被烤死
+        GardenRenderer.drawWeatherParticles(
+            canvas = canvas,
+            w = width.toFloat(),
+            h = height.toFloat(),
+            weather = currentWeather,
+            t = SystemClock.uptimeMillis() / 1000f
+        )
         drawWateringFeedback(canvas)
     }
 

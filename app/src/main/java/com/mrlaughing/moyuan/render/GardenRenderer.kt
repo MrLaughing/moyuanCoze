@@ -492,6 +492,23 @@ object GardenRenderer {
         if (season == Season.SUMMER && night && noPrecip) drawFireflies(canvas, w, h, t)
     }
 
+    /**
+     * 逐帧天气粒子（雨/雪/风/雾/闪电/云），按 weather 分派 —— 对齐 web 原型的主循环调度。
+     * 由 View.onDraw 在绘制静态场景缓存之后调用，使天气效果真正"活"起来。
+     */
+    fun drawWeatherParticles(canvas: Canvas, w: Float, h: Float, weather: Weather, t: Float) {
+        when (weather) {
+            Weather.CLEAR -> Unit
+            Weather.CLOUDY, Weather.OVERCAST -> drawCloudEffect(canvas, w, h, t)
+            Weather.DRIZZLE -> drawRainEffect(canvas, w, h, isDrizzle = true, t = t)
+            Weather.RAIN -> drawRainEffect(canvas, w, h, isDrizzle = false, t = t)
+            Weather.THUNDERSTORM -> { drawRainEffect(canvas, w, h, isDrizzle = false, t = t); drawLightningEffect(canvas, w, h, t) }
+            Weather.SNOW -> drawSnowEffect(canvas, w, h, t)
+            Weather.FOGGY -> drawFogEffect(canvas, w, h, t)
+            Weather.WINDY -> drawWindEffect(canvas, w, h, t)
+        }
+    }
+
 
     // 装饰色
     private val PETAL_COLOR = Color.parseColor("#E8C4C4")
@@ -527,8 +544,7 @@ object GardenRenderer {
         val colors = SEASON_COLORS[season] ?: SEASON_COLORS[Season.SPRING]!!
         val light = dayLight(currentHour)
         drawPremiumBackdrop(canvas, width, height, colors, currentHour, weather)
-        drawWeatherEffect(canvas, width, height, weather, colors)
-        // 远山（两层）：接入场景（之前为死代码未调用）—— 对齐 web 原型 v3.4
+        // 天气粒子（雨/雪/风/雾/闪电/云）已从静态缓存移出，改由 View.onDraw 每帧调用 drawWeatherParticles
         drawMountainLayer(canvas, width.toFloat(), height.toFloat(), colors, isFarLayer = true, light = light)
         drawMountainLayer(canvas, width.toFloat(), height.toFloat(), colors, isFarLayer = false, light = light)
         // 轻微环境地面雾（顶/底 alpha→0，不压远山）
@@ -621,7 +637,7 @@ object GardenRenderer {
             }
     }
     // (drawBackgroundLayer 已移除：远山改为由 drawScene 直接调用 drawMountainLayer，
-    //  避免与 drawPremiumBackdrop 重复绘制背景；季节装饰由 drawScene 的 drawWeatherEffect 负责)
+    //  避免与 drawPremiumBackdrop 重复绘制背景；天气粒子已移至 View.onDraw 逐帧调用 drawWeatherParticles)
 
     /** 远山：噪声错落山脊 + 竖向渐变填充(顶/底 alpha→0) + 山脚薄雾 + 山脊描边 —— 对齐 web 原型 v3.4k */
     private fun drawMountainLayer(canvas: Canvas, w: Float, h: Float, colors: SeasonColors, isFarLayer: Boolean, light: Float) {
@@ -880,62 +896,56 @@ object GardenRenderer {
         canvas.drawPath(path, paint)
     }
 
-    /**
-     * 绘制天气效果
-     */
-    private fun drawWeatherEffect(canvas: Canvas, width: Int, height: Int, weather: Weather, colors: SeasonColors) {
-        val w = width.toFloat()
-        val h = height.toFloat()
-
-        when (weather) {
-            Weather.CLEAR -> Unit // 晴天无叠加特效（太阳已在装饰层绘制）
-            Weather.CLOUDY -> drawCloudEffect(canvas, w, h)
-            Weather.OVERCAST -> drawCloudEffect(canvas, w, h)
-            Weather.DRIZZLE -> drawRainEffect(canvas, w, h, isDrizzle = true)
-            Weather.RAIN -> drawRainEffect(canvas, w, h, isDrizzle = false)
-            Weather.THUNDERSTORM -> { drawRainEffect(canvas, w, h, isDrizzle = false); drawLightningEffect(canvas, w, h) }
-            Weather.SNOW -> drawSnowEffect(canvas, w, h)
-            Weather.FOGGY -> drawFogEffect(canvas, w, h)
-            Weather.WINDY -> drawWindEffect(canvas, w, h)
-        }
-    }
-
-    private fun drawRainEffect(canvas: Canvas, w: Float, h: Float, isDrizzle: Boolean) {
-        // 雨：近乎垂直的斜线，贯穿天空到园圃
+    private fun drawRainEffect(canvas: Canvas, w: Float, h: Float, isDrizzle: Boolean, t: Float) {
+        // 雨：近乎垂直的斜线，随 t 持续下落（每滴不同相位）+ 微弱横向漂移
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#78716C")
-            strokeWidth = if (isDrizzle) 2.0f else 3.5f
+            color = Color.parseColor("#5A534C")
+            strokeWidth = if (isDrizzle) 2.6f else 4.0f
             strokeCap = Paint.Cap.ROUND
-            alpha = if (isDrizzle) 80 else 140
+            alpha = if (isDrizzle) 160 else 210
         }
-        val rng = java.util.Random(42)
-        val count = if (isDrizzle) 40 else 60
+        val count = if (isDrizzle) 55 else 70
+        val fallRange = h * 0.86f
+        val speed = if (isDrizzle) 230f else 360f
+        val angle = 0.12f
+        val sinA = sin(angle)
+        val cosA = cos(angle)
         for (i in 0 until count) {
-            val x = rng.nextFloat() * w
-            val y = rng.nextFloat() * h * 0.80f
-            val len = if (isDrizzle) 30f + rng.nextFloat() * 15f else 45f + rng.nextFloat() * 20f
-            val angle = 0.12f  // 接近垂直，微斜
-            canvas.drawLine(x, y, x + sin(angle) * len, y + cos(angle) * len, paint)
+            // 派生确定性伪随机属性（每滴不同相，避免全部对齐）
+            val seedX = ((i * 73 + 11) % 97) / 97f
+            val seedPhase = ((i * 131 + 7) % 97) / 97f * fallRange
+            val seedLen = ((i * 53 + 23) % 97) / 97f
+            val len = if (isDrizzle) 30f + seedLen * 15f else 45f + seedLen * 20f
+            val y = ((t * speed + seedPhase) % fallRange) + h * 0.04f
+            val x = seedX * w + sin(t * 1.3f + i * 0.7f) * 5f
+            canvas.drawLine(x, y, x + sinA * len, y + cosA * len, paint)
         }
     }
 
-    private fun drawLightningEffect(canvas: Canvas, w: Float, h: Float) {
+    private fun drawLightningEffect(canvas: Canvas, w: Float, h: Float, t: Float) {
+        // 闪电：周期性闪烁 —— 每 3.5s 闪一次，持续 ~200ms（前 60ms 渐亮，后 140ms 渐熄）
+        val cycle = 3.5f
+        val dur = 0.20f
+        val phase = t % cycle
+        if (phase > dur) return
+        val brightness = if (phase < 0.06f) phase / 0.06f else (1f - (phase - 0.06f) / (dur - 0.06f)).coerceIn(0f, 1f)
+        val b = brightness
         // 缩短的雷电：从天上劈下，2-3个折角，更垂直
         val mainPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE; color = Color.parseColor("#FFF5CC")
-            strokeWidth = 7.0f; alpha = 200; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
+            strokeWidth = 7.0f; alpha = (200 * b).toInt().coerceIn(0, 255); strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
         }
         val branchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE; color = Color.parseColor("#FFE880")
-            strokeWidth = 3.0f; alpha = 140; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
+            strokeWidth = 3.0f; alpha = (140 * b).toInt().coerceIn(0, 255); strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
         }
         val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE; color = Color.parseColor("#FFFFFF")
-            strokeWidth = 2.5f; alpha = 220; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
+            strokeWidth = 2.5f; alpha = (220 * b).toInt().coerceIn(0, 255); strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
         }
         val tipPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE; color = Color.parseColor("#FFE880")
-            strokeWidth = 1.5f; alpha = 100; strokeCap = Paint.Cap.ROUND
+            strokeWidth = 1.5f; alpha = (100 * b).toInt().coerceIn(0, 255); strokeCap = Paint.Cap.ROUND
         }
 
         // 闪电1（左侧主闪）：3个折角，减小水平摆动
@@ -982,39 +992,58 @@ object GardenRenderer {
         canvas.drawCircle(w * 0.74f, h * 0.08f, w * 0.025f, glowPaint)
     }
 
-    private fun drawSnowEffect(canvas: Canvas, w: Float, h: Float) {
-        // 大量密集雪花（120个普通 + 30个大雪花）
-        val rng = java.util.Random(12345)
+    private fun drawSnowEffect(canvas: Canvas, w: Float, h: Float, t: Float) {
+        // 雪花：随 t 下落 + 横向 sin 摆动；后三组（园圃/边缘/地面积雪斑块）为装饰积雪位置固定
+        val fallRange = h * 0.88f
+        val speedSmall = 70f
+        val speedBig = 55f
         val snowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#FFFFFF"); alpha = 200 }
         for (i in 0 until 120) {
-            canvas.drawCircle(rng.nextFloat() * w, rng.nextFloat() * h * 0.85f, 2.5f + rng.nextFloat() * 2.5f, snowPaint)
+            val seedX = ((i * 41 + 13) % 97) / 97f
+            val seedPhase = ((i * 89 + 5) % 97) / 97f * fallRange
+            val seedSway = 14f + ((i * 37 + 19) % 30)
+            val seedR = 0.6f + ((i * 17 + 3) % 14) / 10f
+            val r = 2.5f + seedR * 2.5f
+            val y = ((t * speedSmall + seedPhase) % fallRange) + h * 0.04f
+            val x = seedX * w + sin(t * 1.1f + i * 0.45f) * seedSway
+            canvas.drawCircle(x, y, r, snowPaint)
         }
         val bigPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#FFFFFF"); alpha = 160 }
         for (i in 0 until 30) {
-            canvas.drawCircle(rng.nextFloat() * w, rng.nextFloat() * h * 0.82f, 4.5f + rng.nextFloat() * 3.5f, bigPaint)
+            val seedX = ((i * 67 + 29) % 89) / 89f
+            val seedPhase = ((i * 53 + 11) % 89) / 89f * fallRange
+            val seedSway = 20f + ((i * 19 + 7) % 30)
+            val seedR = 0.5f + ((i * 23 + 5) % 18) / 10f
+            val r = 4.5f + seedR * 3.5f
+            val y = ((t * speedBig + seedPhase) % fallRange) + h * 0.06f
+            val x = seedX * w + sin(t * 0.85f + i * 0.7f) * seedSway
+            canvas.drawCircle(x, y, r, bigPaint)
         }
-        // 花圃积雪：在园圃区域(h*0.36~h*0.82)点缀积雪斑块，模拟落在植物上的雪
+        // 花圃积雪斑块（位置固定，保留为静态装饰）
         val snowCapPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F0F0F8"); alpha = 180 }
+        val rngCap = java.util.Random(98765)
         for (i in 0 until 50) {
-            val sx = rng.nextFloat() * w
-            val sy = h * 0.38f + rng.nextFloat() * h * 0.42f  // 园圃范围内
-            canvas.drawCircle(sx, sy, 3f + rng.nextFloat() * 7f, snowCapPaint)
+            val sx = rngCap.nextFloat() * w
+            val sy = h * 0.38f + rngCap.nextFloat() * h * 0.42f
+            canvas.drawCircle(sx, sy, 3f + rngCap.nextFloat() * 7f, snowCapPaint)
         }
-        // 花圃上缘积雪（沿园圃顶部边缘的小雪堆）
         val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F0F0F8"); alpha = 200 }
+        val rngEdge = java.util.Random(87654)
         for (i in 0 until 20) {
-            val ex = rng.nextFloat() * w
-            val ey = h * 0.36f + rng.nextFloat() * h * 0.04f  // 园圃顶部附近
-            canvas.drawCircle(ex, ey, 5f + rng.nextFloat() * 8f, edgePaint)
+            val ex = rngEdge.nextFloat() * w
+            val ey = h * 0.36f + rngEdge.nextFloat() * h * 0.04f
+            canvas.drawCircle(ex, ey, 5f + rngEdge.nextFloat() * 8f, edgePaint)
         }
-        // 地面积雪
         val groundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#F0F0F4"); alpha = 130 }
         canvas.drawRect(RectF(0f, h * 0.78f, w, h * 0.82f), groundPaint)
     }
 
-    private fun drawWindEffect(canvas: Canvas, w: Float, h: Float) {
+    private fun drawWindEffect(canvas: Canvas, w: Float, h: Float, t: Float) {
+        // 风：风线段与散点随 t 水平扫过（无尽平移），波形 sin 用 t 做相位流动
+        val windSpeed = 180f
+        val drift = (t * windSpeed) % (w + 200f)
+        val baseShift = drift - 100f
         val rng = java.util.Random(77)
-        // 旋风气流：S形扫过的带粒子效果
         val gustPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE; color = Color.parseColor("#78716C")
             strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; alpha = 130
@@ -1028,27 +1057,25 @@ object GardenRenderer {
 
         // 3道主风旋（S形扫过，起始粗末端细）
         val gusts = listOf(
-            Triple(h * 0.08f, 2.0f, 0.8f),   // (y, 起始线宽, 末端线宽)
+            Triple(h * 0.08f, 2.0f, 0.8f),
             Triple(h * 0.22f, 1.5f, 0.6f),
             Triple(h * 0.38f, 2.0f, 1.0f)
         )
         for ((gy, startW, endW) in gusts) {
-            // 用分段绘制模拟渐变线宽（Path不支持渐变strokeWidth）
             val segments = 6
             for (s in 0 until segments) {
-                val t = s.toFloat() / segments
-                val t2 = (s + 1).toFloat() / segments
-                val sw = startW + (endW - startW) * t
-                gustPaint.strokeWidth = sw
-                val x1 = w * t; val x2 = w * t2
-                val offset = h * 0.015f * sin(t * Math.PI.toFloat() * 4f)
-                val offset2 = h * 0.015f * sin(t2 * Math.PI.toFloat() * 4f)
+                val u = s.toFloat() / segments
+                val u2 = (s + 1).toFloat() / segments
+                gustPaint.strokeWidth = startW + (endW - startW) * u
+                val x1 = w * u + baseShift
+                val x2 = w * u2 + baseShift
+                val offset = h * 0.015f * sin(u * Math.PI.toFloat() * 4f - t * 2.5f)
+                val offset2 = h * 0.015f * sin(u2 * Math.PI.toFloat() * 4f - t * 2.5f)
                 canvas.drawLine(x1, gy + offset, x2, gy + offset2, gustPaint)
             }
-            // 沿风道散落小点（被风吹走的尘埃/叶片）
             for (d in 0 until 8) {
-                val dx = rng.nextFloat() * w
-                val dy = gy + h * 0.015f * sin(dx / w * Math.PI.toFloat() * 4f) + (rng.nextFloat() - 0.5f) * h * 0.02f
+                val dx = rng.nextFloat() * w + baseShift
+                val dy = gy + h * 0.015f * sin((dx / w) * Math.PI.toFloat() * 4f) + (rng.nextFloat() - 0.5f) * h * 0.02f
                 val dotSize = 1.5f + rng.nextFloat() * 2.5f
                 val p = if (rng.nextBoolean()) dotPaint else lightDot
                 canvas.drawCircle(dx, dy, dotSize, p)
@@ -1059,17 +1086,18 @@ object GardenRenderer {
         val subGusts = listOf(h * 0.15f, h * 0.30f, h * 0.45f)
         for (sy in subGusts) {
             for (s in 0 until 5) {
-                val t = s.toFloat() / 5
-                val t2 = (s + 1).toFloat() / 5
-                lightGust.strokeWidth = 0.8f + t * 0.6f
-                val x1 = w * t; val x2 = w * t2
-                val offset = h * 0.012f * sin(t * Math.PI.toFloat() * 5f + 1.0f)
-                val offset2 = h * 0.012f * sin(t2 * Math.PI.toFloat() * 5f + 1.0f)
+                val u = s.toFloat() / 5
+                val u2 = (s + 1).toFloat() / 5
+                lightGust.strokeWidth = 0.8f + u * 0.6f
+                val x1 = w * u + baseShift * 0.7f
+                val x2 = w * u2 + baseShift * 0.7f
+                val offset = h * 0.012f * sin(u * Math.PI.toFloat() * 5f + 1.0f - t * 1.8f)
+                val offset2 = h * 0.012f * sin(u2 * Math.PI.toFloat() * 5f + 1.0f - t * 1.8f)
                 canvas.drawLine(x1, sy + offset, x2, sy + offset2, lightGust)
             }
         }
 
-        // 飘散小旋风（螺旋状局部气流）
+        // 飘散小旋风（位置固定，本身为装饰性螺旋）
         for (i in 0 until 4) {
             val cx = w * (0.15f + rng.nextFloat() * 0.7f)
             val cy = h * (0.06f + rng.nextFloat() * 0.46f)
@@ -1086,8 +1114,8 @@ object GardenRenderer {
         }
     }
 
-    /** 云：蓬松白云（多椭圆簇），对齐 web 原型 drawClouds 风格（静态，无漂移） */
-    private fun drawCloudEffect(canvas: Canvas, w: Float, h: Float) {
+    /** 云：蓬松白云（多椭圆簇），对齐 web 原型 drawClouds 风格 —— 随 t 缓慢水平漂移（每朵速度不同） */
+    private fun drawCloudEffect(canvas: Canvas, w: Float, h: Float, t: Float) {
         val rng = java.util.Random(99)
         val cloudPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
@@ -1100,10 +1128,14 @@ object GardenRenderer {
             Triple(-48f, 10f, 40f),
             Triple(20f, -14f, 38f)
         )
+        val cloudSpeeds = listOf(18f, 12f, 22f)
+        val span = w * 1.6f
         for (i in 0 until 3) {
             val scale = 0.7f + i * 0.25f
-            val cx = w * (0.18f + rng.nextFloat() * 0.62f)
+            val baseCx = w * (0.18f + rng.nextFloat() * 0.62f)
             val cy = h * (0.06f + i * 0.05f)
+            val raw = baseCx + cloudSpeeds[i] * t
+            val cx = ((raw % span) + span) % span - w * 0.3f
             for ((dx, dy, r) in lobes) {
                 val rx = r * scale
                 val ry = r * scale * 0.62f
@@ -1115,8 +1147,8 @@ object GardenRenderer {
         }
     }
 
-    /** 雾（FOGGY 天气）：地面柔雾 + 多团径向软雾（边缘天然透明，无硬横条）—— 对齐 web 原型 v3.4i */
-    private fun drawFogEffect(canvas: Canvas, w: Float, h: Float) {
+    /** 雾（FOGGY 天气）：地面柔雾 + 多团径向软雾（每团随 t 缓慢水平漂移，无硬横条）—— 对齐 web 原型 v3.4i */
+    private fun drawFogEffect(canvas: Canvas, w: Float, h: Float, t: Float) {
         // 地面柔雾：竖向渐变，近地浓、向上淡出（顶/底 alpha→0，无水平硬带）
         val base = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             shader = LinearGradient(0f, h * 0.30f, 0f, h,
@@ -1126,10 +1158,15 @@ object GardenRenderer {
                 floatArrayOf(0f, 0.5f, 1f), Shader.TileMode.CLAMP)
         }
         canvas.drawRect(0f, h * 0.30f, w, h * 0.70f, base)
-        // 多团软雾（径向渐变，边缘天然透明），像真实雾团而非横条
+        // 多团软雾：x 随 t 缓慢水平漂移（每团速度不同）
+        val drifts = listOf(22f, 16f, 28f, 14f, 24f, 18f)
+        val span = w * 0.8f
         for (i in 0..5) {
+            val driftSpeed = drifts[i]
             val y = h * (0.34f + 0.11f * i)
-            val x = w * (0.10f + i * 0.21f)
+            val x0 = w * (0.10f + i * 0.21f)
+            val raw = x0 + driftSpeed * t
+            val x = ((raw % span) + span) % span - w * 0.05f
             val rw = w * (0.30f + (i % 3) * 0.06f)
             val rh = rw * (0.34f + (i % 2) * 0.05f)
             val a = (0.15f - i * 0.015f).coerceAtLeast(0.04f)
