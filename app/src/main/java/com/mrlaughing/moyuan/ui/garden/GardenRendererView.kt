@@ -57,6 +57,7 @@ class GardenRendererView @JvmOverloads constructor(
     private var ambientPhase = 0f
     private var sceneBitmap: Bitmap? = null
     private var sceneDirty = true
+    private var sceneHour = -1
     private var wateringProgress = 0f
     private var wateringAnimator: ValueAnimator? = null
     private val wateringPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -124,6 +125,10 @@ class GardenRendererView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (width <= 0 || height <= 0) return
 
+        // 跨小时则重烤静态场景缓存（让夜空压暗/星星随真实时间切换）
+        val hour = java.time.LocalTime.now().hour
+        if (hour != sceneHour) { sceneHour = hour; sceneDirty = true }
+
         GardenRenderer.gridCols = currentGridCols
         GardenRenderer.gridRows = currentGridRows
 
@@ -143,6 +148,16 @@ class GardenRendererView @JvmOverloads constructor(
             h = height.toFloat(),
             season = currentSeason,
             weather = currentWeather,
+            t = SystemClock.uptimeMillis() / 1000f
+        )
+        // 逐帧大气粒子（飞鸟/花瓣/落叶/萤火虫），对齐 web 原型
+        GardenRenderer.drawAtmosphere(
+            canvas = canvas,
+            w = width.toFloat(),
+            h = height.toFloat(),
+            season = currentSeason,
+            weather = currentWeather,
+            currentHour = hour,
             t = SystemClock.uptimeMillis() / 1000f
         )
         drawWateringFeedback(canvas)
