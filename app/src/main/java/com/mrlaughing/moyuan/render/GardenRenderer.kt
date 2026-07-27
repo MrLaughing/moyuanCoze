@@ -897,27 +897,38 @@ object GardenRenderer {
     }
 
     private fun drawRainEffect(canvas: Canvas, w: Float, h: Float, isDrizzle: Boolean, t: Float) {
-        // 雨：近乎垂直的斜线，随 t 持续下落（每滴不同相位）+ 微弱横向漂移
+        // 雨滴：sin-hash 替代模排列，每滴独立速度/角度/长度/透明度 → 打散锁步平行线
+        fun hash(n: Int, salt: Float): Float {
+            val v = sin(n * 12.9898f + salt * 78.233f) * 43758.5453f
+            return v - kotlin.math.floor(v)
+        }
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#5A534C")
             strokeWidth = if (isDrizzle) 2.6f else 4.0f
             strokeCap = Paint.Cap.ROUND
-            alpha = if (isDrizzle) 160 else 210
         }
         val count = if (isDrizzle) 55 else 70
-        val fallRange = h * 0.86f
-        val speed = if (isDrizzle) 230f else 360f
-        val angle = 0.12f
-        val sinA = sin(angle)
-        val cosA = cos(angle)
+        val fallRange = h * 0.92f
+        val baseSpeed = if (isDrizzle) 230f else 360f
+        val baseLen = if (isDrizzle) 30f else 45f
+        val baseAlpha = if (isDrizzle) 160 else 210
         for (i in 0 until count) {
-            // 派生确定性伪随机属性（每滴不同相，避免全部对齐）
-            val seedX = ((i * 73 + 11) % 97) / 97f
-            val seedPhase = ((i * 131 + 7) % 97) / 97f * fallRange
-            val seedLen = ((i * 53 + 23) % 97) / 97f
-            val len = if (isDrizzle) 30f + seedLen * 15f else 45f + seedLen * 20f
-            val y = ((t * speed + seedPhase) % fallRange) + h * 0.04f
-            val x = seedX * w + sin(t * 1.3f + i * 0.7f) * 5f
+            val r1 = hash(i, 1.0f)            // [0,1) x 起点
+            val r2 = hash(i, 2.0f)            // [0,1) 相位
+            val r3 = hash(i, 3.0f)            // [0,1) 长度抖动
+            val r4 = hash(i, 4.0f)            // [0,1) 速度抖动
+            val r5 = hash(i, 5.0f)            // [0,1) 角度抖动
+            val r6 = hash(i, 6.0f)            // [0,1) alpha 抖动
+            val speed = (0.55f + r4 * 0.90f) * baseSpeed   // 0.55x ~ 1.45x
+            val len = (0.65f + r3 * 0.55f) * baseLen       // 0.65x ~ 1.20x
+            val ang = 0.12f + (r5 - 0.5f) * 0.06f          // ±0.03 rad
+            val sinA = sin(ang)
+            val cosA = cos(ang)
+            val phase = r2 * fallRange
+            val y = ((t * speed + phase) % fallRange) + h * 0.02f
+            val driftX = sin(t * 1.2f + i * 0.7f) * (3f + r4 * 4f)
+            val x = r1 * w + driftX
+            paint.alpha = (baseAlpha * (0.55f + r6 * 0.55f)).toInt().coerceIn(0, 255)
             canvas.drawLine(x, y, x + sinA * len, y + cosA * len, paint)
         }
     }

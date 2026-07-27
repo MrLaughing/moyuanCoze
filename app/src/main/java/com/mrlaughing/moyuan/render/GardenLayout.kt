@@ -17,8 +17,8 @@ object GardenLayout {
     private const val HORIZONTAL_SPREAD = 0.47f
     private const val VERTICAL_SPREAD = 0.23f
     private const val WIDTH_USAGE = 0.90f
-    private const val HEIGHT_USAGE = 0.58f
-    private const val VERTICAL_CENTER = 0.46f
+    private const val HEIGHT_USAGE = 0.66f
+    private const val VERTICAL_CENTER = 0.58f
 
     fun calculate(columns: Int, rows: Int, width: Int, height: Int): List<GardenCell> {
         if (columns <= 0 || rows <= 0 || width <= 0 || height <= 0) return emptyList()
