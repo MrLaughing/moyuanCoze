@@ -759,7 +759,7 @@ object GardenRenderer {
         if (weather == Weather.RAIN || weather == Weather.DRIZZLE || weather == Weather.SNOW ||
             weather == Weather.THUNDERSTORM || weather == Weather.FOGGY) return
         val cols = if (season == Season.SPRING) arrayOf("#F2A8C4", "#E090B4") else arrayOf("#8CC0F0", "#6FA8E0")
-        val k = (w / 720f).coerceIn(1.0f, 1.5f) * 1.55f
+        val k = (w / 720f).coerceIn(1.0f, 1.30f) * 1.05f
         for (i in 0..1) {
             val st = bfState[i]
             // 飞行：频率更低 → 整体更慢、更悠游
@@ -797,12 +797,12 @@ object GardenRenderer {
             canvas.scale(dir * k, k)
 
             val wingCol = Color.parseColor(cols[i % 2])
-            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(165, 86, 74, 66) }   // 浅棕、半透，不再死黑
-            val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 245 }
-            val farPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 160 }
-            val spotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(180, 255, 255, 255) }
+            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(235, 244, 239, 224) }   // 浅米色、近乎不透明，身子换浅色
+            val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 255 }            // 近翅：实色不淡
+            val farPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 215 }            // 远翅：加实，不再发淡
+            val spotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(210, 255, 255, 255) }
             val antPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.argb(150, 86, 74, 66)
+                color = Color.argb(210, 150, 140, 124)
                 style = Paint.Style.STROKE; strokeWidth = 0.7f; strokeCap = Paint.Cap.ROUND
             }
 
