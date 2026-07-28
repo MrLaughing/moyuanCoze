@@ -336,7 +336,7 @@ object GardenRenderer {
         val ease = p / 0.38f
         val bx = w * (-0.12f + ease * 1.24f)
         val by = h * (0.17f - ease * 0.07f - (kotlin.math.sin(ease * Math.PI.toFloat())) * 0.015f)
-        val k = w / 800f * 2.2f
+        val k = w / 720f * 1.3f
         val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.parseColor("#56524C"); alpha = 184 }
         val wingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; color = Color.parseColor("#56524C"); alpha = 173; strokeCap = Paint.Cap.ROUND }
         val flock = listOf(Triple(0f, 0f, 1f), Triple(40f, 16f, 0.82f), Triple(-36f, 22f, 0.72f), Triple(74f, 34f, 0.58f))
