@@ -156,8 +156,8 @@ class WeatherRepository @Inject constructor(
      * 调用和风天气：经纬度 -> LocationID -> 实时天气 -> Weather 枚举
      */
     private suspend fun fetchQWeather(lat: Double, lon: Double): Weather = withContext(Dispatchers.IO) {
-        // 1. 经纬度转 LocationID（格式：经度,纬度）
-        val geo = qWeatherGeoApi.cityLookup("$lon,$lat")
+        // 1. 经纬度转 LocationID（格式：经度,纬度；GeoAPI 最多支持 2 位小数）
+        val geo = qWeatherGeoApi.cityLookup("%.2f,%.2f".format(lon, lat))
         val locationId = geo.location?.firstOrNull()?.id
         if (geo.code != "200" || locationId.isNullOrBlank()) {
             return@withContext Weather.CLEAR
@@ -167,7 +167,8 @@ class WeatherRepository @Inject constructor(
         if (resp.code != "200") {
             return@withContext Weather.CLEAR
         }
-        mapQWeatherCodeToWeather(resp.now?.code)
+        // 天气现象代码在 now.icon（API 返回的 now 对象只有 icon 没有独立的 code 字段，icon 值即现象代码）
+        mapQWeatherCodeToWeather(resp.now?.icon)
     }
 
     /**

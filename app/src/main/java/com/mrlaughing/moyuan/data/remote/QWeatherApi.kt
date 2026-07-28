@@ -20,7 +20,7 @@ interface QWeatherApi {
     ): QWeatherNowResponse
 
     companion object {
-        const val BASE_URL = "https://devapi.qweather.com/"
+        const val BASE_URL = "https://nv3yfu6yv4.re.qweatherapi.com/"
     }
 }
 
@@ -32,13 +32,13 @@ interface QWeatherApi {
  */
 interface QWeatherGeoApi {
 
-    @GET("geo/v2/city-lookup")
+    @GET("geo/v2/city/lookup")
     suspend fun cityLookup(
         @Query("location") location: String
     ): QWeatherGeoResponse
 
     companion object {
-        const val BASE_URL = "https://geoapi.qweather.com/"
+        const val BASE_URL = "https://nv3yfu6yv4.re.qweatherapi.com/"
     }
 }
 
