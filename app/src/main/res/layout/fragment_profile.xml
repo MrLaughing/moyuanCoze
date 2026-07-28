@@ -405,12 +405,12 @@
                 <FrameLayout
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/bg_icon_chip"
-                    android:gravity="center">
+                    android:background="@drawable/bg_icon_chip">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
                         android:src="@drawable/ic_book"
                         android:contentDescription="@null" />
                 </FrameLayout>
@@ -470,12 +470,12 @@
                 <FrameLayout
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/bg_icon_chip"
-                    android:gravity="center">
+                    android:background="@drawable/bg_icon_chip">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
                         android:src="@drawable/ic_info"
                         android:contentDescription="@null" />
                 </FrameLayout>

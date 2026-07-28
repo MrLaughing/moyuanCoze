@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <!-- 设置行图标底座：墨绿柔色圆角方块 -->
+    android:shape="oval">
+    <!-- 设置行图标底座：墨绿柔色圆形徽章 -->
     <solid android:color="@color/accent_green_soft" />
-    <corners android:radius="10dp" />
 </shape>
