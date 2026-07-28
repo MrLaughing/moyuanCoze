@@ -143,17 +143,10 @@ object GardenRenderer {
             isDither = true
             this.alpha = alpha
         }
-        // 裁掉植物 PNG 底部约 20% 的棕色土墩区域：原图下方常含独立泥土块,
-        // 截掉后只画植物(茎/叶/花)部分, 并让新底部对齐到 y (plant.y = 草坪表面),
-        // 植物看起来"种在花圃草坪里"而不是"浮在土墩上".
-        val bottomCrop = 0.30f
-        val srcH = (bmp.height * (1f - bottomCrop)).toInt().coerceAtLeast(1)
-        val dstH = size * (1f - bottomCrop)
-        val dstTop = y - dstH  // 底部对齐 y, 让植物底 = 草坪表面
         canvas.drawBitmap(
             bmp,
-            Rect(0, 0, bmp.width, srcH),
-            RectF(left, dstTop, left + size, y),
+            Rect(0, 0, bmp.width, bmp.height),
+            RectF(left, top, left + size, top + size),
             bitmapPaint
         )
     }
