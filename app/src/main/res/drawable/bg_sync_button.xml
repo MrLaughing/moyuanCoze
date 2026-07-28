@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 立即同步主按钮：墨绿实心圆角 -->
+    <solid android:color="@color/accent_green" />
+    <corners android:radius="12dp" />
+</shape>

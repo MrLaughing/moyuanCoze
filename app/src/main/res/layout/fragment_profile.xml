@@ -314,7 +314,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -335,99 +335,7 @@
 
             </LinearLayout>
 
-            <!-- 微信读书 — 京华老宋(结构阅读层) -->
-            <LinearLayout
-                android:id="@+id/card_weread"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingVertical="12dp"
-                android:background="?attr/selectableItemBackground">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/label_weread_auth"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/jinghua_laosong" />
-
-                <!-- 状态 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_weread_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    tools:text="已授权" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" →"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/border" />
-
-            <!-- 同步时间 — 京华老宋(结构阅读层) -->
-            <LinearLayout
-                android:id="@+id/layout_sync_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingVertical="12dp"
-                android:background="?attr/selectableItemBackground">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/label_sync_time"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/jinghua_laosong" />
-
-                <!-- 时间值 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_sync_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    tools:text="08:00" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" →"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/border" />
-
-            <!-- 立即同步 — 京华老宋(结构阅读层) -->
+            <!-- 立即同步 — 墨绿主按钮（开启应用已自动同步，这里保留手动触发） -->
             <LinearLayout
                 android:id="@+id/layout_sync_now"
                 android:layout_width="match_parent"
@@ -436,44 +344,119 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:paddingVertical="12dp"
-                android:background="?attr/selectableItemBackground">
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/bg_sync_button"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="13dp"
+                android:paddingBottom="13dp"
+                android:layout_marginBottom="14dp">
 
-                <TextView
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_sync"
+                    app:tint="@color/text_on_dark"
+                    android:contentDescription="@string/label_sync_now" />
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/label_sync_now"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
 
-                <!-- 上次同步 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_last_sync"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif"
-                    tools:text="上次: 2024-01-01" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_sync_now"
+                        android:textColor="@color/text_on_dark"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/jinghua_laosong" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <!-- 上次同步 — 思源黑体(功能数据层)，白字降透明度作副信息 -->
+                    <TextView
+                        android:id="@+id/text_last_sync"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#D9FFFFFF"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif"
+                        tools:text="上次同步：从未同步" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 微信读书 — 图标chip + 标题 + 副信息 + 右箭头 -->
+            <LinearLayout
+                android:id="@+id/card_weread"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:paddingVertical="14dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_icon_chip"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_study"
+                        app:tint="@color/accent_green"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text=" →"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_weread_auth"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/jinghua_laosong" />
+
+                    <TextView
+                        android:id="@+id/text_weread_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif"
+                        tools:text="已授权" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_tertiary"
+                    android:contentDescription="@null" />
 
             </LinearLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/border" />
+                android:background="@color/border_light" />
 
-            <!-- 关于墨园 — 京华老宋(结构阅读层) -->
+            <!-- 关于墨园 — 图标chip + 标题 + 版本 + 右箭头 -->
             <LinearLayout
                 android:id="@+id/layout_about"
                 android:layout_width="match_parent"
@@ -482,35 +465,55 @@
                 android:gravity="center_vertical"
                 android:clickable="true"
                 android:focusable="true"
-                android:paddingVertical="12dp"
-                android:background="?attr/selectableItemBackground">
+                android:background="?attr/selectableItemBackground"
+                android:paddingVertical="14dp">
 
-                <TextView
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_icon_chip"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_sprout"
+                        app:tint="@color/accent_green"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/label_about_moyuan"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
 
-                <!-- 版本号 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_about_version"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif"
-                    tools:text="v1.0.0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_about_moyuan"
+                        android:textColor="@color/ink_dark"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/jinghua_laosong" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" →"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
+                    <TextView
+                        android:id="@+id/text_about_version"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif"
+                        tools:text="v1.0.0" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/text_tertiary"
+                    android:contentDescription="@null" />
 
             </LinearLayout>
 

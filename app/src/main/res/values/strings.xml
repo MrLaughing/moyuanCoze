@@ -50,7 +50,6 @@
     <string name="label_authorized">已授权</string>
     <string name="label_unauthorized">未授权</string>
     <string name="label_last_sync">上次同步：%s</string>
-    <string name="label_sync_time">同步时间</string>
     <string name="label_sync_now">立即同步</string>
     <string name="label_about">关于</string>
     <string name="label_sync_settings">同步设置</string>

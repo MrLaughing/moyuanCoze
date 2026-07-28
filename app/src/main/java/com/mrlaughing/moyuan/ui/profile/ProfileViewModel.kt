@@ -124,10 +124,8 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 gardenRepository.observeGardenState(),
-                userPrefs.syncHour,
-                userPrefs.syncMinute,
                 userPrefs.wereadToken
-            ) { gardenState, syncHour, syncMinute, token ->
+            ) { gardenState, token ->
                 val unlockedCount = gardenState.plants.count {
                     !it.unlockDate.isNullOrEmpty()
                 }
@@ -139,9 +137,7 @@ class ProfileViewModel @Inject constructor(
                     unlockedCount = unlockedCount,
                     totalCount = PlantDefinitions.all.size,
                     wereadAuthorized = !token.isNullOrBlank(),
-                    lastSyncTime = meta?.lastSyncDate ?: "从未同步",
-                    syncHour = syncHour,
-                    syncMinute = syncMinute
+                    lastSyncTime = meta?.lastSyncDate ?: "从未同步"
                 )
             }
             .distinctUntilChanged()
@@ -213,19 +209,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateSyncTime(hour: Int, minute: Int) {
-        viewModelScope.launch {
-            userPrefs.setSyncHour(hour)
-            userPrefs.setSyncMinute(minute)
-            gardenMetaDao.getMeta().first()?.let { meta ->
-                gardenMetaDao.updateMeta(meta.copy(syncHour = hour, syncMinute = minute))
-            }
-            if (wereadRepository.isAuthorized()) {
-                SyncScheduler.scheduleDailySync(application, hour, minute)
-            }
-        }
-    }
-
     suspend fun authorize(token: String): UUID {
         wereadRepository.authorize(token)
         val hour = userPrefs.syncHour.first()
@@ -247,7 +230,5 @@ data class ProfileUiState(
     val unlockedCount: Int = 0,
     val totalCount: Int = 0,
     val wereadAuthorized: Boolean = false,
-    val lastSyncTime: String = "",
-    val syncHour: Int = 8,
-    val syncMinute: Int = 0
+    val lastSyncTime: String = ""
 )

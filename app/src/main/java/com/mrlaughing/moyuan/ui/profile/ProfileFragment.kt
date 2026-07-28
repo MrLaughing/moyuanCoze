@@ -56,7 +56,6 @@ class ProfileFragment : Fragment() {
     private lateinit var indicator: View
     private lateinit var wereadStatusText: TextView
     private lateinit var lastSyncText: TextView
-    private lateinit var syncTimeText: TextView
     private lateinit var aboutVersionText: TextView
     private lateinit var syncRow: View
     private lateinit var achievementAdapter: AchievementAdapter
@@ -102,7 +101,6 @@ class ProfileFragment : Fragment() {
         // 设置区
         wereadStatusText = view.findViewById(R.id.text_weread_status)
         lastSyncText = view.findViewById(R.id.text_last_sync)
-        syncTimeText = view.findViewById(R.id.text_sync_time)
         aboutVersionText = view.findViewById(R.id.text_about_version)
         syncRow = view.findViewById(R.id.layout_sync_now)
     }
@@ -183,11 +181,6 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        // 同步时间设置
-        view.findViewById<View>(R.id.layout_sync_time)?.setOnClickListener {
-            showSyncTimePicker()
-        }
-
         // 微信读书卡片点击事件
         view.findViewById<View>(R.id.card_weread)?.setOnClickListener {
             val state = viewModel.uiState.value
@@ -247,7 +240,6 @@ class ProfileFragment : Fragment() {
 
         // 同步信息
         lastSyncText.text = getString(R.string.label_last_sync, state.lastSyncTime)
-        syncTimeText.text = String.format("%02d:%02d", state.syncHour, state.syncMinute)
         aboutVersionText.text = BuildConfig.VERSION_NAME
     }
 
@@ -370,20 +362,6 @@ class ProfileFragment : Fragment() {
             }
             .setNegativeButton("取消", null)
             .show()
-    }
-
-    private fun showSyncTimePicker() {
-        val state = viewModel.uiState.value
-        val picker = android.app.TimePickerDialog(
-            requireContext(),
-            { _, hour, minute ->
-                viewModel.updateSyncTime(hour, minute)
-            },
-            state.syncHour,
-            state.syncMinute,
-            true
-        )
-        picker.show()
     }
 
     private fun showAboutDialog() {
