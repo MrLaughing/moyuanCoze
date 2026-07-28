@@ -751,21 +751,23 @@ object GardenRenderer {
     )
     private val bfState = List(2) { i -> ButterflyState(until = 3f + i * 2.5f) }
 
-    /** 蝴蝶：在 GardenRendererView.onDraw 中逐帧调用（背景场景为静态缓存），t 为秒。 */
+    /** 蝴蝶：在 GardenRendererView.onDraw 中逐帧调用（背景场景为静态缓存），t 为秒。
+     *  造型：四翅对称（上下左右），从身体向斜上/斜下展开；振翅 = y 方向缩放。
+     *  状态机：飞行 ↔ 停留 平滑过渡。 */
     fun drawButterflies(canvas: Canvas, w: Float, h: Float, season: Season, weather: Weather, t: Float) {
         if (weather == Weather.RAIN || weather == Weather.DRIZZLE || weather == Weather.SNOW ||
             weather == Weather.THUNDERSTORM || weather == Weather.FOGGY) return
-        val cols = if (season == Season.SPRING) arrayOf("#E5B8C8", "#D8A8B8") else arrayOf("#C8D8E8", "#B8CCE0")
-        val k = w / 800f * 1.4f // 原型以 800 宽为基准，略放大适配手机屏
+        val cols = if (season == Season.SPRING) arrayOf("#EC8FB4", "#D878A0") else arrayOf("#7BB0E8", "#5A98D8")
+        val k = (w / 720f).coerceIn(1.0f, 1.5f) * 1.85f
         for (i in 0..1) {
             val st = bfState[i]
             val fx = w * (0.30f + 0.40f * i) + sin(t * 0.45f + i * 2.4f) * w * 0.16f + sin(t * 1.3f + i) * 14f * (w / 800f)
-            val fy = h * (0.64f + 0.05f * i) + cos(t * 0.62f + i * 1.8f) * h * 0.05f
+            val fy = h * (0.50f + 0.05f * i) + cos(t * 0.62f + i * 1.8f) * h * 0.05f
             if (st.mode == "fly") {
                 if (t > st.until) {
                     st.mode = "rest"; st.until = t + 1.8f + kotlin.random.Random.nextFloat() * 0.6f
                     st.px = w * (0.22f + 0.56f * kotlin.random.Random.nextFloat())
-                    st.py = h * (0.70f + 0.14f * kotlin.random.Random.nextFloat())
+                    st.py = h * (0.72f + 0.14f * kotlin.random.Random.nextFloat())
                     st.dir = if (fx < st.px) 1f else -1f
                 }
             } else {
@@ -778,35 +780,64 @@ object GardenRenderer {
             val y = fy + (st.py - fy) * st.amt
             val dir = if (st.mode == "rest") st.dir else if (cos(t * 0.45f + i * 2.4f) > 0) 1f else -1f
             val fly = 1f - st.amt
-            val flap = sin(t * 10f + i * 3f)
-            val bank = flap * 0.7f * (0.15f + 0.85f * fly)
-            val foldY = 1f - 0.20f * st.amt
-            val restRot = -0.55f
+            val flap = 0.5f + 0.5f * sin(t * 9f + i * 2.7f)              // [0..1] 振翅
+
             canvas.save()
             canvas.translate(x, y)
-            canvas.rotate(0.16f * (0.4f + 0.6f * fly))
-            canvas.scale(dir * k, foldY * k)
-            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.85f * 255).toInt(), 90, 80, 76) }
-            // 身体（细长纺锤，头在 +x）+ 头 + 触角
-            canvas.drawOval(RectF(-7f, -1.7f, 7f, 1.7f), bodyPaint)
-            canvas.drawCircle(6.4f, 0f, 1.7f, bodyPaint)
-            val antPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.7f * 255).toInt(), 90, 80, 76); style = Paint.Style.STROKE; strokeWidth = 0.7f; strokeCap = Paint.Cap.ROUND }
-            canvas.drawLine(7f, 0f, 11f, -6f, antPaint)
-            canvas.drawLine(7f, 0f, 11f, 6f, antPaint)
-            // 翅膀：飞行角 ↔ 收拢角 插值（侧视，近翅 + 远翅）
+            canvas.rotate(0.10f * (0.4f + 0.6f * fly))
+            canvas.scale(dir * k, k)
+
             val wingCol = Color.parseColor(cols[i % 2])
-            val wingR = (-0.95f - bank * 0.5f) * (1f - st.amt) + restRot * st.amt
-            canvas.save(); canvas.translate(2f, 0f); canvas.rotate(wingR)
-            val farPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = (0.6f * 255).toInt() }
-            canvas.drawOval(RectF(-9.5f * (1f + 0.1f * st.amt), -4.6f * (1f + 0.1f * st.amt), 9.5f * (1f + 0.1f * st.amt), 4.6f * (1f + 0.1f * st.amt)), farPaint)
+            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(230, 50, 40, 35) }
+            val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 245 }
+            val farPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 160 }
+            val spotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(180, 255, 255, 255) }
+            val antPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.argb(220, 50, 40, 35)
+                style = Paint.Style.STROKE; strokeWidth = 0.9f; strokeCap = Paint.Cap.ROUND
+            }
+
+            // 翅膀开合：飞行时 y 方向随振翅 [0.55..1.0]；停留时翅膀略收
+            val wingY = if (fly > 0.5f) (0.55f + 0.45f * flap) else (0.85f - 0.45f * st.amt)
+            val wingX = if (fly > 0.5f) 1f else (1f - 0.12f * st.amt)
+
+            // 触角（先画，避免被翅膀盖住）
+            canvas.drawLine(-7f, -0.6f, -11f, -5.5f, antPaint)
+            canvas.drawLine(-7f,  0.6f, -11f,  5.5f, antPaint)
+
+            // 上左翅（远翅，淡）：身体左上，向外斜展（中心 x=-7，y=-3.5）
+            canvas.save()
+            canvas.scale(wingX, wingY)
+            canvas.rotate(-0.20f)
+            canvas.drawOval(RectF(-14f, -7.5f, 0f, 0.5f), farPaint)
             canvas.restore()
-            val wingN = (-0.45f - bank * 0.5f) * (1f - st.amt) + restRot * st.amt
-            canvas.save(); canvas.translate(2f, 0f); canvas.rotate(wingN)
-            val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = (0.95f * 255).toInt() }
-            canvas.drawOval(RectF(-12f * (1f + 0.1f * st.amt), -5.6f * (1f + 0.1f * st.amt), 12f * (1f + 0.1f * st.amt), 5.6f * (1f + 0.1f * st.amt)), nearPaint)
-            val spot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb((0.45f * 255).toInt(), 255, 255, 255) }
-            canvas.drawOval(RectF(-5f, -2.3f, -1f, 0.3f), spot)
+
+            // 下左翅（远翅，淡，小）：身体左下（中心 x=-5，y=3.5）
+            canvas.save()
+            canvas.scale(wingX * 0.78f, wingY * 0.82f)
+            canvas.rotate(0.18f)
+            canvas.drawOval(RectF(-10f, 0.5f, 0f, 6f), farPaint)
             canvas.restore()
+
+            // 上右翅（近翅，实）：身体右上（中心 x=+7，y=-3.5）
+            canvas.save()
+            canvas.scale(wingX, wingY)
+            canvas.rotate(0.20f)
+            canvas.drawOval(RectF(0f, -7.5f, 14f, 0.5f), nearPaint)
+            canvas.drawCircle(4f, -3f, 1.8f, spotPaint)                   // 翅斑
+            canvas.restore()
+
+            // 下右翅（近翅，实，小）：身体右下（中心 x=+5，y=3.5）
+            canvas.save()
+            canvas.scale(wingX * 0.78f, wingY * 0.82f)
+            canvas.rotate(-0.18f)
+            canvas.drawOval(RectF(0f, 0.5f, 10f, 6f), nearPaint)
+            canvas.restore()
+
+            // 身体（细长纺锤，-x 是头）+ 头（在翅膀之后画，确保在中央清晰可见）
+            canvas.drawOval(RectF(-7f, -1.6f, 7f, 1.6f), bodyPaint)
+            canvas.drawCircle(-6.5f, 0f, 1.9f, bodyPaint)
+
             canvas.restore()
         }
     }
