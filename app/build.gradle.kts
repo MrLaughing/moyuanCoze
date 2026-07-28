@@ -19,6 +19,22 @@ android {
         ksp {
             arg("room.schemaLocation", "${projectDir}/schemas")
         }
+
+        // 从 local.properties 注入和风天气 JWT 凭据（私钥不入库）
+        val qweatherMap = run {
+            val f = rootProject.file("local.properties")
+            if (!f.exists()) return@run emptyMap<String, String>()
+            f.readLines().mapNotNull { line ->
+                val i = line.indexOf('=')
+                if (i > 0 && !line.startsWith("#") && !line.startsWith("!")) {
+                    line.substring(0, i).trim() to line.substring(i + 1).trim()
+                } else null
+            }.toMap()
+        }
+        val qwPrivKey = (qweatherMap["QWEATHER_PRIVATE_KEY"] ?: "").replace("\\n", "")
+        buildConfigField("String", "QWEATHER_PROJECT_ID", "\"${qweatherMap["QWEATHER_PROJECT_ID"] ?: ""}\"")
+        buildConfigField("String", "QWEATHER_KEY_ID", "\"${qweatherMap["QWEATHER_KEY_ID"] ?: ""}\"")
+        buildConfigField("String", "QWEATHER_PRIVATE_KEY", "\"$qwPrivKey\"")
     }
 
     buildTypes {
@@ -83,6 +99,9 @@ dependencies {
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // 和风天气 JWT 签名（Ed25519），本地 gradle 缓存已有，离线可构建
+    implementation("org.bouncycastle:bcprov-jdk18on:1.77")
 
     // Image
     implementation("com.github.bumptech.glide:glide:4.16.0")

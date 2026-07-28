@@ -63,3 +63,7 @@
 -keep class com.mrlaughing.moyuan.sync.WereadSyncData { *; }
 -keep class com.mrlaughing.moyuan.sync.WereadBookData { *; }
 -keep class com.mrlaughing.moyuan.sync.IncrementData { *; }
+
+# ── BouncyCastle（和风天气 JWT Ed25519 签名，release 需保留所有类） ──
+-keep class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**

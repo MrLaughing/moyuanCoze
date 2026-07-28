@@ -9,6 +9,10 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
@@ -64,6 +68,29 @@ class GardenFragment : Fragment() {
     private var lastGardenPlants = emptyList<PlantUiItem>()
     private var lastDormantStage = 0
     private var lastSeenBonusSeedlings = -1
+
+    /** 运行时申请定位权限（真机定位用） */
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            || results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            viewModel.refreshWeather()
+        } else {
+            android.widget.Toast.makeText(
+                requireContext(),
+                "未授予定位权限，将使用 IP 定位（城市级）",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun hasLocationPermission(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarse = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+        return fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -121,9 +148,18 @@ class GardenFragment : Fragment() {
             if (w > 0 && h > 0) renderPlants(lastGardenPlants, lastDormantStage)
         }
 
-        // 点击天气刷新（重新获取天气并更新花园）
+        // 点击天气刷新（有定位权限用真机定位，否则先申请权限）
         tagWeather.setOnClickListener {
-            viewModel.refreshWeather()
+            if (hasLocationPermission()) {
+                viewModel.refreshWeather()
+            } else {
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
             android.widget.Toast.makeText(requireContext(), "正在刷新天气...", android.widget.Toast.LENGTH_SHORT).show()
         }
 

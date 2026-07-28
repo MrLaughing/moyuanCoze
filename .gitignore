@@ -42,3 +42,6 @@ garden_screenshot.png
 .websrv.log
 web-prototype/test-shots/
 lawn-backgrounds/
+
+# 和风天气 Ed25519 密钥对（私钥不入库；公钥 PEM 仅本地参考，按需上传控制台后删除）
+qweather_ed25519_*.pem
