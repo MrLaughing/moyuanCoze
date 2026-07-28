@@ -411,8 +411,7 @@
                     <ImageView
                         android:layout_width="22dp"
                         android:layout_height="22dp"
-                        android:src="@drawable/ic_study"
-                        app:tint="@color/accent_green"
+                        android:src="@drawable/ic_book"
                         android:contentDescription="@null" />
                 </FrameLayout>
 
@@ -477,8 +476,7 @@
                     <ImageView
                         android:layout_width="22dp"
                         android:layout_height="22dp"
-                        android:src="@drawable/ic_sprout"
-                        app:tint="@color/accent_green"
+                        android:src="@drawable/ic_info"
                         android:contentDescription="@null" />
                 </FrameLayout>
 
