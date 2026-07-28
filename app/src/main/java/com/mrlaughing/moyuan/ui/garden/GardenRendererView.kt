@@ -148,7 +148,8 @@ class GardenRendererView @JvmOverloads constructor(
             h = height.toFloat(),
             season = currentSeason,
             weather = currentWeather,
-            t = SystemClock.uptimeMillis() / 1000f
+            t = SystemClock.uptimeMillis() / 1000f,
+            restTargets = renderPlants.map { Pair(it.x, it.y) }
         )
         // 逐帧大气粒子（飞鸟/花瓣/落叶/萤火虫），对齐 web 原型
         GardenRenderer.drawAtmosphere(

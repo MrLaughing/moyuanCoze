@@ -754,31 +754,40 @@ object GardenRenderer {
     /** 蝴蝶：在 GardenRendererView.onDraw 中逐帧调用（背景场景为静态缓存），t 为秒。
      *  造型：四翅对称（上下左右），从身体向斜上/斜下展开；振翅 = y 方向缩放。
      *  状态机：飞行 ↔ 停留 平滑过渡。 */
-    fun drawButterflies(canvas: Canvas, w: Float, h: Float, season: Season, weather: Weather, t: Float) {
+    fun drawButterflies(canvas: Canvas, w: Float, h: Float, season: Season, weather: Weather, t: Float,
+                        restTargets: List<Pair<Float, Float>> = emptyList()) {
         if (weather == Weather.RAIN || weather == Weather.DRIZZLE || weather == Weather.SNOW ||
             weather == Weather.THUNDERSTORM || weather == Weather.FOGGY) return
-        val cols = if (season == Season.SPRING) arrayOf("#EC8FB4", "#D878A0") else arrayOf("#7BB0E8", "#5A98D8")
-        val k = (w / 720f).coerceIn(1.0f, 1.5f) * 1.85f
+        val cols = if (season == Season.SPRING) arrayOf("#F2A8C4", "#E090B4") else arrayOf("#8CC0F0", "#6FA8E0")
+        val k = (w / 720f).coerceIn(1.0f, 1.5f) * 1.55f
         for (i in 0..1) {
             val st = bfState[i]
-            val fx = w * (0.30f + 0.40f * i) + sin(t * 0.45f + i * 2.4f) * w * 0.16f + sin(t * 1.3f + i) * 14f * (w / 800f)
-            val fy = h * (0.50f + 0.05f * i) + cos(t * 0.62f + i * 1.8f) * h * 0.05f
+            // 飞行：频率更低 → 整体更慢、更悠游
+            val fx = w * (0.30f + 0.40f * i) + sin(t * 0.28f + i * 2.4f) * w * 0.13f + sin(t * 0.8f + i) * 10f * (w / 800f)
+            val fy = h * (0.50f + 0.05f * i) + cos(t * 0.40f + i * 1.8f) * h * 0.045f
             if (st.mode == "fly") {
                 if (t > st.until) {
-                    st.mode = "rest"; st.until = t + 1.8f + kotlin.random.Random.nextFloat() * 0.6f
-                    st.px = w * (0.22f + 0.56f * kotlin.random.Random.nextFloat())
-                    st.py = h * (0.72f + 0.14f * kotlin.random.Random.nextFloat())
+                    st.mode = "rest"; st.until = t + 1.0f + kotlin.random.Random.nextFloat() * 0.6f
+                    // 停在某一株植物上（取植物坐标；无植物则落在花园区域）
+                    if (restTargets.isNotEmpty()) {
+                        val (tx, ty) = restTargets[kotlin.random.Random.nextInt(restTargets.size)]
+                        st.px = tx
+                        st.py = ty - h * 0.03f
+                    } else {
+                        st.px = w * (0.22f + 0.56f * kotlin.random.Random.nextFloat())
+                        st.py = h * (0.55f + 0.12f * kotlin.random.Random.nextFloat())
+                    }
                     st.dir = if (fx < st.px) 1f else -1f
                 }
             } else {
-                if (t > st.until) { st.mode = "fly"; st.until = t + 4f + kotlin.random.Random.nextFloat() * 5f }
+                if (t > st.until) { st.mode = "fly"; st.until = t + 3f + kotlin.random.Random.nextFloat() * 4f }
             }
             val target = if (st.mode == "rest") 1f else 0f
             st.amt += (target - st.amt) * 0.07f
             if (st.amt < 0.001f) st.amt = 0f else if (st.amt > 0.999f) st.amt = 1f
             val x = fx + (st.px - fx) * st.amt
             val y = fy + (st.py - fy) * st.amt
-            val dir = if (st.mode == "rest") st.dir else if (cos(t * 0.45f + i * 2.4f) > 0) 1f else -1f
+            val dir = if (st.mode == "rest") st.dir else if (cos(t * 0.28f + i * 2.4f) > 0) 1f else -1f
             val fly = 1f - st.amt
             val flap = 0.5f + 0.5f * sin(t * 9f + i * 2.7f)              // [0..1] 振翅
 
@@ -788,22 +797,22 @@ object GardenRenderer {
             canvas.scale(dir * k, k)
 
             val wingCol = Color.parseColor(cols[i % 2])
-            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(230, 50, 40, 35) }
+            val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(165, 86, 74, 66) }   // 浅棕、半透，不再死黑
             val nearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 245 }
             val farPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = wingCol; alpha = 160 }
             val spotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(180, 255, 255, 255) }
             val antPaint  = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.argb(220, 50, 40, 35)
-                style = Paint.Style.STROKE; strokeWidth = 0.9f; strokeCap = Paint.Cap.ROUND
+                color = Color.argb(150, 86, 74, 66)
+                style = Paint.Style.STROKE; strokeWidth = 0.7f; strokeCap = Paint.Cap.ROUND
             }
 
-            // 翅膀开合：飞行时 y 方向随振翅 [0.55..1.0]；停留时翅膀略收
-            val wingY = if (fly > 0.5f) (0.55f + 0.45f * flap) else (0.85f - 0.45f * st.amt)
+            // 翅膀开合：飞行时 y 方向随振翅 [0.55..1.0]；停留时翅膀收拢（像停栖）
+            val wingY = if (fly > 0.5f) (0.55f + 0.45f * flap) else (0.80f - 0.42f * st.amt)
             val wingX = if (fly > 0.5f) 1f else (1f - 0.12f * st.amt)
 
-            // 触角（先画，避免被翅膀盖住）
-            canvas.drawLine(-7f, -0.6f, -11f, -5.5f, antPaint)
-            canvas.drawLine(-7f,  0.6f, -11f,  5.5f, antPaint)
+            // 触角（先画，避免被翅膀盖住）—— 缩短、变细
+            canvas.drawLine(-5f, -0.5f, -8.5f, -4.5f, antPaint)
+            canvas.drawLine(-5f,  0.5f, -8.5f,  4.5f, antPaint)
 
             // 上左翅（远翅，淡）：身体左上，向外斜展（中心 x=-7，y=-3.5）
             canvas.save()
@@ -834,9 +843,9 @@ object GardenRenderer {
             canvas.drawOval(RectF(0f, 0.5f, 10f, 6f), nearPaint)
             canvas.restore()
 
-            // 身体（细长纺锤，-x 是头）+ 头（在翅膀之后画，确保在中央清晰可见）
-            canvas.drawOval(RectF(-7f, -1.6f, 7f, 1.6f), bodyPaint)
-            canvas.drawCircle(-6.5f, 0f, 1.9f, bodyPaint)
+            // 身体（缩短的纺锤，-x 是头）+ 头（在翅膀之后画，确保在中央清晰可见）
+            canvas.drawOval(RectF(-5f, -1.2f, 5f, 1.2f), bodyPaint)
+            canvas.drawCircle(-4.5f, 0f, 1.4f, bodyPaint)
 
             canvas.restore()
         }
