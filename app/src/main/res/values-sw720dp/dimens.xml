@@ -59,10 +59,7 @@
     <!-- 图表 -->
     <dimen name="week_chart_height">100dp</dimen>
     <dimen name="heatmap_height">240dp</dimen>
-    
-    <!-- 成就 -->
-    <dimen name="achievement_seal_size">64dp</dimen>
-    
+
     <!-- 按钮 -->
     <dimen name="water_button_height">56dp</dimen>
     

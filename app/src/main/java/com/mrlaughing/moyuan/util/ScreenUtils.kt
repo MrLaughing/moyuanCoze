@@ -72,15 +72,6 @@ object ScreenUtils {
     }
 
     /**
-     * 获取成就推荐网格列数
-     * 成就列数比图鉴多1列
-     */
-    fun getAchievementGridColumns(context: Context): Int {
-        val smallestWidth = getSmallestScreenWidthDp(context)
-        return if (smallestWidth < 360) 4 else 5
-    }
-
-    /**
      * 判断是否为平板设备
      */
     fun isTablet(context: Context): Boolean {

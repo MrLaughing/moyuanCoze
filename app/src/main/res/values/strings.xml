@@ -64,18 +64,9 @@
     <string name="label_about_moyuan">关于墨园</string>
     <string name="brand_tagline">让阅读，在时间里生长</string>
 
-    <!-- 成就系统 -->
-    <string name="label_achievements">成就</string>
-    <string name="label_achievements_count">%d枚</string>
-    <string name="label_achievement_count_format">%1$d/%2$d</string>
     <string name="label_view_catalog">查看图鉴</string>
     <string name="label_settings">设置</string>
-    <string name="label_unlocked_date">✓ 已解锁于%s</string>
-    <string name="label_remaining">距解锁还需%d</string>
     <string name="label_cat_all">全部</string>
-    <string name="label_cat_reading">阅读</string>
-    <string name="label_cat_growth">养成</string>
-    <string name="label_cat_milestone">里程碑</string>
     <string name="label_plants_progress" formatted="false">%d / %d 植物</string>
 
     <!-- 植物详情 -->

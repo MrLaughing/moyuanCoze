@@ -25,7 +25,7 @@
     <!-- 霞鹜文楷(文学温度层) / 京华老宋(结构阅读层) / 思源黑体(功能数据层) -->
     <!-- ============================================ -->
 
-    <!-- 文学温度层 — 霞鹜文楷：品牌名、植物名、诗词名句、成就名 -->
+    <!-- 文学温度层 — 霞鹜文楷：品牌名、植物名、诗词名句 -->
     <style name="TextAppearance.Moyuan.Literary" parent="TextAppearance.AppCompat">
         <item name="android:fontFamily">@font/lxgw_wenkai</item>
         <item name="fontFamily">@font/lxgw_wenkai</item>

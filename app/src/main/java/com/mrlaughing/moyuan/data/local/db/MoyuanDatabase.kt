@@ -8,13 +8,11 @@ import com.mrlaughing.moyuan.data.local.db.dao.BookTrackingDao
 import com.mrlaughing.moyuan.data.local.db.dao.DailyRecordDao
 import com.mrlaughing.moyuan.data.local.db.dao.GardenMetaDao
 import com.mrlaughing.moyuan.data.local.db.dao.PlantStateDao
-import com.mrlaughing.moyuan.data.local.db.dao.AchievementDao
 import com.mrlaughing.moyuan.data.local.db.entity.BaseSnapshotEntity
 import com.mrlaughing.moyuan.data.local.db.entity.BookTrackingEntity
 import com.mrlaughing.moyuan.data.local.db.entity.DailyRecordEntity
 import com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity
 import com.mrlaughing.moyuan.data.local.db.entity.PlantStateEntity
-import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
 
 /**
  * 墨园 Room Database
@@ -30,6 +28,7 @@ import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
  * - v10: garden_meta 新增 totalReadDays（持久化累计总阅读天数，权威值来自微信读书 API）
  * - v11: garden_meta 新增 lastReadDate，并清理历史明文微信读书 Token
  * - v12: 从数据库结构中彻底移除废弃的 wereadToken 列
+ * - v13: 移除成就体系，删除 achievement 表
  */
 @Database(
     entities = [
@@ -37,10 +36,9 @@ import com.mrlaughing.moyuan.data.local.db.entity.AchievementEntity
         DailyRecordEntity::class,
         PlantStateEntity::class,
         GardenMetaEntity::class,
-        BookTrackingEntity::class,
-        AchievementEntity::class
+        BookTrackingEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = true
 )
 @TypeConverters(MoyuanTypeConverters::class)
@@ -51,7 +49,6 @@ abstract class MoyuanDatabase : RoomDatabase() {
     abstract fun plantStateDao(): PlantStateDao
     abstract fun gardenMetaDao(): GardenMetaDao
     abstract fun bookTrackingDao(): BookTrackingDao
-    abstract fun achievementDao(): AchievementDao
 
     companion object {
         const val DATABASE_NAME = "moyuan.db"
@@ -162,6 +159,15 @@ abstract class MoyuanDatabase : RoomDatabase() {
                 )
                 db.execSQL("DROP TABLE garden_meta")
                 db.execSQL("ALTER TABLE garden_meta_new RENAME TO garden_meta")
+            }
+        }
+
+        /**
+         * v12 -> v13: 成就体系下线，删除 achievement 表
+         */
+        val MIGRATION_12_13 = object : androidx.room.migration.Migration(12, 13) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS achievement")
             }
         }
     }

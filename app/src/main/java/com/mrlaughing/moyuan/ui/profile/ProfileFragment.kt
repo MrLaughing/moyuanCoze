@@ -22,15 +22,9 @@ import com.bumptech.glide.Glide
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.mrlaughing.moyuan.ui.common.GridSpacingItemDecoration
-import com.mrlaughing.moyuan.util.ScreenUtils
 import androidx.work.WorkManager
 import androidx.work.WorkInfo
 import com.mrlaughing.moyuan.R
-import com.mrlaughing.moyuan.data.model.AchievementDefinitions
 import com.mrlaughing.moyuan.sync.SyncScheduler
 import com.mrlaughing.moyuan.sync.SyncWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,19 +41,10 @@ class ProfileFragment : Fragment() {
     ) { }
     private lateinit var totalPlantsText: TextView
     private lateinit var plantsProgress: ProgressBar
-    private lateinit var achievementCountText: TextView
-    private lateinit var recyclerAchievements: RecyclerView
-    private lateinit var tabAll: TextView
-    private lateinit var tabReading: TextView
-    private lateinit var tabGrowth: TextView
-    private lateinit var tabMilestone: TextView
-    private lateinit var indicator: View
     private lateinit var wereadStatusText: TextView
     private lateinit var lastSyncText: TextView
     private lateinit var aboutVersionText: TextView
     private lateinit var syncRow: View
-    private lateinit var achievementAdapter: AchievementAdapter
-    private var currentCategory = AchievementDefinitions.CATEGORY_ALL
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,8 +58,6 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initViews(view)
-        setupAchievementRecycler()
-        setupTabListeners()
         setupClickListeners(view)
         observeData()
     }
@@ -89,79 +72,11 @@ class ProfileFragment : Fragment() {
         totalPlantsText = view.findViewById(R.id.text_total_plants)
         plantsProgress = view.findViewById(R.id.progress_plants)
 
-        // 成就列表
-        achievementCountText = view.findViewById(R.id.text_achievement_count)
-        recyclerAchievements = view.findViewById(R.id.recycler_achievements)
-        tabAll = view.findViewById(R.id.tab_all)
-        tabReading = view.findViewById(R.id.tab_reading)
-        tabGrowth = view.findViewById(R.id.tab_growth)
-        tabMilestone = view.findViewById(R.id.tab_milestone)
-        indicator = view.findViewById(R.id.indicator)
-
         // 设置区
         wereadStatusText = view.findViewById(R.id.text_weread_status)
         lastSyncText = view.findViewById(R.id.text_last_sync)
         aboutVersionText = view.findViewById(R.id.text_about_version)
         syncRow = view.findViewById(R.id.layout_sync_now)
-    }
-
-    private fun setupAchievementRecycler() {
-        achievementAdapter = AchievementAdapter()
-        
-        // 计算网格列数
-        val spanCount = ScreenUtils.getAchievementGridColumns(requireContext())
-        
-        // 转换为 px
-        val spacingPx = (6 * resources.displayMetrics.density).toInt()
-        
-        recyclerAchievements.apply {
-            layoutManager = GridLayoutManager(requireContext(), spanCount)
-            adapter = achievementAdapter
-            isNestedScrollingEnabled = false
-            // 添加网格间距装饰器
-            addItemDecoration(GridSpacingItemDecoration(spanCount, spacingPx, false))
-        }
-    }
-
-    private fun setupTabListeners() {
-        View.OnClickListener { clickedView ->
-            val category = when (clickedView.id) {
-                R.id.tab_all -> AchievementDefinitions.CATEGORY_ALL
-                R.id.tab_reading -> AchievementDefinitions.CATEGORY_READING
-                R.id.tab_growth -> AchievementDefinitions.CATEGORY_GROWTH
-                R.id.tab_milestone -> AchievementDefinitions.CATEGORY_MILESTONE
-                else -> AchievementDefinitions.CATEGORY_ALL
-            }
-            currentCategory = category
-            updateTabSelection(clickedView)
-            updateAchievementList()
-        }.also { listener ->
-            tabAll.setOnClickListener(listener)
-            tabReading.setOnClickListener(listener)
-            tabGrowth.setOnClickListener(listener)
-            tabMilestone.setOnClickListener(listener)
-        }
-
-        // 默认选中全部
-        updateTabSelection(tabAll)
-    }
-
-    private fun updateTabSelection(selectedView: View) {
-        val allTabs = listOf(tabAll, tabReading, tabGrowth, tabMilestone)
-        allTabs.forEach { tab ->
-            if (tab == selectedView) {
-                tab.setTextColor(requireContext().getColor(R.color.ink_dark))
-                tab.setBackgroundResource(R.drawable.bg_tab_selected)
-            } else {
-                tab.setTextColor(requireContext().getColor(R.color.text_secondary))
-                tab.background = null
-            }
-        }
-    }
-
-    private fun updateAchievementList() {
-        val achievements = viewModel.getAchievementsByCategory(currentCategory)
-        achievementAdapter.submitList(achievements)
     }
 
     private fun setupClickListeners(view: View) {
@@ -203,20 +118,6 @@ class ProfileFragment : Fragment() {
                 launch {
                     viewModel.uiState.collect { state ->
                         renderProfileState(state)
-                    }
-                }
-                launch {
-                    viewModel.achievements.collect { _ ->
-                        updateAchievementList()
-                    }
-                }
-                launch {
-                    viewModel.unlockedCount.collect { unlockedCount ->
-                        achievementCountText.text = getString(
-                            R.string.label_achievement_count_format,
-                            unlockedCount,
-                            AchievementDefinitions.ALL_ACHIEVEMENTS.size
-                        )
                     }
                 }
             }

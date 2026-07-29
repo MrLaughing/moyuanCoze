@@ -8,7 +8,6 @@ import com.mrlaughing.moyuan.data.local.db.dao.BookTrackingDao
 import com.mrlaughing.moyuan.data.local.db.dao.DailyRecordDao
 import com.mrlaughing.moyuan.data.local.db.dao.GardenMetaDao
 import com.mrlaughing.moyuan.data.local.db.dao.PlantStateDao
-import com.mrlaughing.moyuan.data.local.db.dao.AchievementDao
 import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
 import com.mrlaughing.moyuan.data.remote.WereadApi
 import com.mrlaughing.moyuan.data.remote.WereadApiClient
@@ -48,7 +47,8 @@ object AppModule {
                 MoyuanDatabase.MIGRATION_8_9,
                 MoyuanDatabase.MIGRATION_9_10,
                 MoyuanDatabase.MIGRATION_10_11,
-                MoyuanDatabase.MIGRATION_11_12
+                MoyuanDatabase.MIGRATION_11_12,
+                MoyuanDatabase.MIGRATION_12_13
             )
             .fallbackToDestructiveMigrationFrom(1, 2, 3, 4)
             .build()
@@ -68,9 +68,6 @@ object AppModule {
 
     @Provides
     fun provideBookTrackingDao(db: MoyuanDatabase): BookTrackingDao = db.bookTrackingDao()
-
-    @Provides
-    fun provideAchievementDao(db: MoyuanDatabase): AchievementDao = db.achievementDao()
 
     // ─── UserPrefs ──────────────────────────────────────────
 

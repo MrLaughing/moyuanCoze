@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/paper_bg"
-    android:fillViewport="true">
+    android:fillViewport="false">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -167,140 +167,7 @@
 
         </FrameLayout>
 
-        <!-- ========== 第二层：成就区域 ========== -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <!-- 成就标题行 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-
-                <!-- "成就"标题 — 京华老宋(结构阅读层) -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_achievements"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="18sp"
-                    android:fontFamily="@font/jinghua_laosong"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" │ "
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif" />
-
-                <!-- 成就计数 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_achievement_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    tools:text="3枚" />
-
-            </LinearLayout>
-
-            <!-- 分类Tab — 思源黑体(功能数据层) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:id="@+id/tab_all"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_cat_all"
-                    android:textColor="@color/ink_dark"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
-                    android:paddingBottom="4dp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="12dp"
-                    android:background="@color/border"
-                    android:layout_marginHorizontal="8dp" />
-
-                <TextView
-                    android:id="@+id/tab_reading"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_cat_reading"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    android:paddingBottom="4dp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="12dp"
-                    android:background="@color/border"
-                    android:layout_marginHorizontal="8dp" />
-
-                <TextView
-                    android:id="@+id/tab_growth"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_cat_growth"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    android:paddingBottom="4dp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="12dp"
-                    android:background="@color/border"
-                    android:layout_marginHorizontal="8dp" />
-
-                <TextView
-                    android:id="@+id/tab_milestone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_cat_milestone"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif"
-                    android:paddingBottom="4dp" />
-
-            </LinearLayout>
-
-            <!-- 指示条 -->
-            <View
-                android:id="@+id/indicator"
-                android:layout_width="0dp"
-                android:layout_height="2dp"
-                android:background="@color/ink_dark"
-                android:layout_marginBottom="8dp" />
-
-            <!-- 成就列表 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_achievements"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:listitem="@layout/item_achievement"
-                tools:itemCount="3" />
-
-        </LinearLayout>
-
-        <!-- ========== 第三层：底部设置区 ========== -->
+        <!-- ========== 第二层：底部设置区 ========== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
