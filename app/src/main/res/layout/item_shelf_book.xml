@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 书架封面项：封面 + 书名（竖版，横向滚动） -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/book_cover_width"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="@dimen/book_cover_width"
+        android:layout_height="@dimen/book_cover_height">
+
+        <ImageView
+            android:id="@+id/image_cover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_book_cover"
+            android:contentDescription="@null" />
+
+        <!-- 读完角标 -->
+        <TextView
+            android:id="@+id/text_finished_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="6dp"
+            android:paddingStart="7dp"
+            android:paddingEnd="7dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:background="@drawable/bg_pill_full"
+            android:text="@string/label_book_finished"
+            android:textColor="@color/white"
+            android:textSize="9sp"
+            android:fontFamily="sans-serif-medium"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <!-- 书名 — 京华老宋(结构阅读层) -->
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/text_primary"
+        android:textSize="12sp"
+        android:fontFamily="@font/jinghua_laosong"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:lineSpacingExtra="2dp" />
+
+</LinearLayout>

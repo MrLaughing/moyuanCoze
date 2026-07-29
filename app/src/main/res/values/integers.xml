@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 动效体系：统一时长（毫秒），供代码/动画引用 -->
+    <integer name="motion_fast">200</integer>
+    <integer name="motion_std">320</integer>
+    <integer name="motion_slow">480</integer>
+</resources>

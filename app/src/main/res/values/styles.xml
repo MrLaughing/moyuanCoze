@@ -111,4 +111,110 @@
         <item name="backgroundTint">@color/ink_dark</item>
         <item name="cornerRadius">8dp</item>
     </style>
+
+    <!-- ============================================================ -->
+    <!-- 设计系统 · 统一组件样式（书案 / 图鉴 / 我的 共用，不改动花园） -->
+    <!-- 圆角统一引用 radius_* token；字体三层分工严格 -->
+    <!-- ============================================================ -->
+
+    <!-- 基样式（供点号命名的子样式隐式继承，本身为空） -->
+    <style name="Moyuan" />
+    <style name="Moyuan.Button" />
+
+    <!-- 分区标题：京华老宋 + 墨点（带左侧装饰） -->
+    <style name="Moyuan.SectionTitle">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">@dimen/section_title_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:drawableStart">@drawable/ic_section_dot</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <!-- 统计数值（功能数据层，加粗） -->
+    <style name="Moyuan.StatValue">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 统计标签（结构阅读层） -->
+    <style name="Moyuan.StatLabel">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- 正文（结构阅读层） -->
+    <style name="Moyuan.Body">
+        <item name="android:fontFamily">@font/jinghua_laosong</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- 辅助说明（功能数据层） -->
+    <style name="Moyuan.Caption">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- 主按钮：墨绿实心（radius_sm） -->
+    <style name="Moyuan.Button.Primary">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- 次按钮：表面描边 -->
+    <style name="Moyuan.Button.Secondary">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:background">@drawable/bg_button_secondary</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- 胶囊标签（选中：墨绿实心 / 未选：表面描边） -->
+    <style name="Moyuan.Tag">
+        <item name="android:fontFamily">@font/lxgw_wenkai</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:paddingStart">@dimen/pill_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/pill_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/pill_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/pill_padding_vertical</item>
+        <item name="android:background">@drawable/bg_pill_light</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="Moyuan.Tag.Dark">
+        <item name="android:background">@drawable/bg_pill_dark</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+    </style>
+
+    <!-- 对话框：大圆角 + 软阴影（Mac 质感） -->
+    <style name="Moyuan.Dialog" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:background">@drawable/bg_dialog</item>
+    </style>
+
+    <!-- 统一卡片（书案/图鉴/我的 改用，不带阴影） -->
+    <style name="Moyuan.Card">
+        <item name="android:background">@drawable/bg_card_md</item>
+        <item name="android:padding">@dimen/card_padding</item>
+    </style>
+
+    <!-- 带柔和投影的卡片（Mac 层次感） -->
+    <style name="Moyuan.Card.Elevated">
+        <item name="android:background">@drawable/bg_card_md_elevated</item>
+        <item name="android:padding">@dimen/card_padding</item>
+    </style>
 </resources>

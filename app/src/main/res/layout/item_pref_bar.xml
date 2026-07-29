@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 阅读偏好条：分类名 + 比例条 + 时长 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingTop="7dp"
+    android:paddingBottom="7dp">
+
+    <!-- 分类名 — 京华老宋(结构阅读层) -->
+    <TextView
+        android:id="@+id/text_pref_label"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:fontFamily="@font/jinghua_laosong"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <!-- 比例条 -->
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="@dimen/pref_bar_height"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/bg_pref_bar_track">
+
+        <View
+            android:id="@+id/view_pref_fill"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_pref_bar_fill" />
+
+    </FrameLayout>
+
+    <!-- 时长 — 思源黑体(功能数据层) -->
+    <TextView
+        android:id="@+id/text_pref_value"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_tertiary"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif"
+        android:gravity="end"
+        android:maxLines="1" />
+
+</LinearLayout>

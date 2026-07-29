@@ -18,6 +18,14 @@ import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.data.local.db.entity.BookTrackingEntity
 import com.mrlaughing.moyuan.data.local.db.entity.DailyRecordEntity
 import com.mrlaughing.moyuan.data.local.db.entity.PlantStateEntity
+import com.mrlaughing.moyuan.data.local.study.FavoriteBookItem
+import com.mrlaughing.moyuan.data.local.study.MedalSnapshotItem
+import com.mrlaughing.moyuan.data.local.study.NoteSnapshotItem
+import com.mrlaughing.moyuan.data.local.study.PreferAuthorItem
+import com.mrlaughing.moyuan.data.local.study.PreferCategoryItem
+import com.mrlaughing.moyuan.data.local.study.ShelfCoverItem
+import com.mrlaughing.moyuan.data.local.study.StudyExtraSnapshot
+import com.mrlaughing.moyuan.data.local.study.StudyExtraStore
 import com.mrlaughing.moyuan.data.mapper.EntityMapper
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.data.remote.dto.ShelfBook
@@ -89,6 +97,7 @@ class SyncWorker(
             val plantRepository = entryPoint.plantRepository()
             val readStatsRepository = entryPoint.readStatsRepository()
             val weatherRepository = entryPoint.weatherRepository()
+            val studyExtraStore = entryPoint.studyExtraStore()
 
             // 预检：确认 Token 存在
             if (!wereadRepository.isAuthorized()) {
@@ -201,6 +210,18 @@ class SyncWorker(
                 apiTotalMinutes = totalReadMinutes,
                 booksReadFromShelf = booksReadFromShelf  // 传递书架准确总数，引擎运行后覆盖
             )
+
+            // 8.5 构建并持久化书案富数据快照（书架封面/偏好/最爱书/勋章/书摘）
+            try {
+                saveStudyExtraSnapshot(
+                    studyExtraStore = studyExtraStore,
+                    wereadRepository = wereadRepository,
+                    overallData = overallData,
+                    shelfData = shelfData
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "书案富数据快照失败（不影响主流程): ${e.message}")
+            }
 
             // 9. 历史数据精确补算（放在最末尾执行，不阻塞主流程）
             try {
@@ -452,6 +473,122 @@ class SyncWorker(
         Log.d(TAG, "已保存${recentBooks.size}本书目追踪（含${readTimeMap.size}本真实阅读时长）")
     }
 
+    /**
+     * 构建书案富数据快照
+     * - 书架封面（按最近阅读排序，含听书专辑）
+     * - 阅读偏好（分类/时段用语/作者）
+     * - 读得最久的书（readLongest）
+     * - 勋章
+     * - 书摘（笔记本 top 书籍的划线，最多 6 条）
+     */
+    private suspend fun saveStudyExtraSnapshot(
+        studyExtraStore: StudyExtraStore,
+        wereadRepository: WereadRepository,
+        overallData: com.mrlaughing.moyuan.data.remote.dto.ReadDataResponse,
+        shelfData: com.mrlaughing.moyuan.data.remote.dto.ShelfResponse?
+    ) {
+        // 书架封面：优先展示读过的书，最多 20 本
+        val shelfCovers = shelfData?.books.orEmpty()
+            .sortedWith(compareByDescending<com.mrlaughing.moyuan.data.remote.dto.ShelfBook> { it.readUpdateTime }
+                .thenByDescending { it.updateTime })
+            .take(20)
+            .map { book ->
+                ShelfCoverItem(
+                    bookId = book.bookId,
+                    title = book.title,
+                    author = book.author,
+                    cover = book.cover,
+                    finished = book.finishReading == 1,
+                    readUpdateTime = book.readUpdateTime
+                )
+            }
+        val shelfTotal = shelfData?.books.orEmpty().size +
+            shelfData?.albums.orEmpty().size +
+            (if (shelfData?.mp?.show == 1) 1 else 0)
+
+        // 阅读偏好
+        val categories = overallData.preferCategory
+            .sortedByDescending { it.readingTime }
+            .take(5)
+            .map { PreferCategoryItem(it.categoryTitle, it.readingTime, it.readingCount) }
+        val authors = overallData.preferAuthor
+            .take(5)
+            .map { PreferAuthorItem(it.name, it.count, it.readTime) }
+
+        // 读得最久的书
+        val favorites = overallData.readLongest
+            .filter { it.book != null }
+            .take(5)
+            .map { item ->
+                FavoriteBookItem(
+                    bookId = item.book!!.bookId,
+                    title = item.book.title,
+                    author = item.book.author,
+                    cover = item.book.cover,
+                    readSeconds = item.readTime,
+                    tags = item.tags
+                )
+            }
+
+        // 勋章
+        val medals = overallData.medals.map {
+            MedalSnapshotItem(
+                name = it.name.ifBlank { it.title },
+                hint = it.hint,
+                displayText = it.displayText,
+                level = it.level
+            )
+        }
+
+        // 书摘：笔记本 top 3 书籍，各取 2 条最新划线
+        val notes = mutableListOf<NoteSnapshotItem>()
+        var totalNoteCount = 0
+        val notebooksResult = wereadRepository.fetchNotebooks()
+        val notebooks = notebooksResult.getOrNull()
+        if (notebooks != null) {
+            totalNoteCount = notebooks.books.sumOf { it.totalCount }
+            val topBooks = notebooks.books
+                .filter { it.bookmarkCount > 0 || it.noteCount > 0 }
+                .sortedByDescending { it.totalCount }
+                .take(3)
+            for (nb in topBooks) {
+                val bookId = nb.book?.bookId?.ifBlank { nb.bookId } ?: nb.bookId
+                if (bookId.isBlank()) continue
+                val bookmarks = wereadRepository.fetchBookmarks(bookId).getOrNull() ?: continue
+                bookmarks.updated
+                    .filter { it.markText.isNotBlank() }
+                    .sortedByDescending { it.createTime }
+                    .take(2)
+                    .forEach { bm ->
+                        notes.add(NoteSnapshotItem(
+                            bookTitle = nb.book?.title ?: "",
+                            text = bm.markText,
+                            chapter = bm.chapterName,
+                            createTime = bm.createTime
+                        ))
+                    }
+            }
+        } else {
+            Log.w(TAG, "笔记本获取失败: ${notebooksResult.exceptionOrNull()?.message}")
+        }
+
+        studyExtraStore.save(StudyExtraSnapshot(
+            shelfBooks = shelfCovers,
+            shelfTotal = shelfTotal,
+            preferCategories = categories,
+            preferCategoryWord = overallData.preferCategoryWord,
+            preferTimeWord = overallData.preferTimeWord,
+            preferAuthors = authors,
+            favoriteBooks = favorites,
+            medals = medals,
+            notes = notes,
+            totalNoteCount = totalNoteCount,
+            rankText = overallData.rank?.text,
+            updatedAt = System.currentTimeMillis()
+        ))
+        Log.d(TAG, "书案快照已保存: 书架${shelfCovers.size}本, 偏好${categories.size}类, 最爱${favorites.size}本, 勋章${medals.size}枚, 书摘${notes.size}条")
+    }
+
     private suspend fun triggerGardenEngine(
         gardenRepository: GardenRepository,
         plantRepository: PlantRepository,
@@ -574,4 +711,5 @@ interface SyncWorkerEntryPoint {
     fun plantRepository(): PlantRepository
     fun readStatsRepository(): ReadStatsRepository
     fun weatherRepository(): WeatherRepository
+    fun studyExtraStore(): StudyExtraStore
 }

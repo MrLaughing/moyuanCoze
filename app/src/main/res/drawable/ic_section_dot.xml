@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <!-- 主按钮：墨绿实心 + 10dp 圆角 -->
+    <!-- 分区标题左侧墨点装饰：细竖条 -->
     <solid android:color="@color/accent_green" />
-    <corners android:radius="@dimen/radius_sm" />
+    <corners android:radius="2dp" />
 </shape>

@@ -34,7 +34,6 @@
     <dimen name="text_size_micro">10sp</dimen>
     
     <!-- 卡片 -->
-    <dimen name="card_corner_radius">8dp</dimen>
     <dimen name="card_padding">16dp</dimen>
     
     <!-- 进度条 -->
@@ -79,4 +78,52 @@
     <dimen name="nav_text_size">11sp</dimen>
 <!-- 统计卡片最小高度（保证等高） -->
     <dimen name="stat_card_min_height">72dp</dimen>
+
+    <!-- ============================================================ -->
+    <!-- 设计系统 · 圆角体系（统一为三档，向 Mac 精品应用质感靠拢） -->
+    <!-- 小元素/按钮/标签/进度 -> sm；卡片/列表行 -> md；大卡/对话框 -> lg -->
+    <!-- ============================================================ -->
+    <dimen name="radius_sm">10dp</dimen>
+    <dimen name="radius_md">16dp</dimen>
+    <dimen name="radius_lg">22dp</dimen>
+    <dimen name="radius_full">999dp</dimen>
+    <!-- 兼容旧引用：卡片默认用 md -->
+    <dimen name="card_corner_radius">16dp</dimen>
+
+    <!-- 统一软阴影标高（Mac 质感：低透明、多层叠出空气感） -->
+    <dimen name="elevation_card">2dp</dimen>
+    <dimen name="elevation_dialog">8dp</dimen>
+    <dimen name="elevation_fab">4dp</dimen>
+
+    <!-- 分区标题（京华老宋，带墨点） -->
+    <dimen name="section_title_size">17sp</dimen>
+    <dimen name="section_title_margin_top">28dp</dimen>
+
+    <!-- 书籍封面卡（书架横滑 / 最爱书） -->
+    <dimen name="book_cover_width">92dp</dimen>
+    <dimen name="book_cover_height">128dp</dimen>
+    <dimen name="book_cover_radius">8dp</dimen>
+    <dimen name="shelf_item_gap">12dp</dimen>
+
+    <!-- 统计网格间距 -->
+    <dimen name="stat_grid_gap">10dp</dimen>
+
+    <!-- 偏好条形高度 -->
+    <dimen name="pref_bar_height">8dp</dimen>
+    <dimen name="pref_bar_radius">4dp</dimen>
+
+    <!-- 勋章尺寸 -->
+    <dimen name="medal_size">52dp</dimen>
+    <dimen name="medal_gap">12dp</dimen>
+
+    <!-- 书摘卡缩进 -->
+    <dimen name="note_accent_width">3dp</dimen>
+
+    <!-- 内容左右安全边距（统一页面骨架） -->
+    <dimen name="screen_margin">16dp</dimen>
+    <dimen name="screen_margin_lg">20dp</dimen>
+
+    <!-- 列表项高度 -->
+    <dimen name="list_item_min_height">56dp</dimen>
+    <dimen name="list_icon_size">40dp</dimen>
 </resources>

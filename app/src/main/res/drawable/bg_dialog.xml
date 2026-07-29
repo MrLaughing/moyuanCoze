@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 对话框：柔和投影 + 白底大圆角（Mac 质感） -->
+    <item
+        android:left="0dp"
+        android:top="4dp"
+        android:right="0dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/shadow_soft" />
+            <corners android:radius="@dimen/radius_lg" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/xuan_paper" />
+            <corners android:radius="@dimen/radius_lg" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/border_light" />
+        </shape>
+    </item>
+</layer-list>

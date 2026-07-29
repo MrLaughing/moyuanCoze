@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  书案 · 分区卡片流
+  区块：概览数据 → 每周阅读 → 我的书架 → 阅读偏好 → 读得最久 → 阅读勋章 → 书摘拾遗 → 最近阅读
+  设计系统：bg_card_md(16dp圆角) / Moyuan.SectionTitle / 三层字体
+-->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,26 +11,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/paper_bg"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
 
-        <!-- 标题行：书案 + 日期 -->
+        <!-- ═══ 标题行：书案 + 日期 ═══ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="@dimen/screen_margin_lg"
+            android:paddingEnd="@dimen/screen_margin_lg"
             android:paddingTop="16dp"
             android:paddingBottom="12dp"
             android:background="@color/white">
 
-            <!-- "书案"页面标题 — 京华老宋(结构阅读层) -->
+            <!-- "书案" — 京华老宋(结构阅读层) -->
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -47,44 +54,41 @@
 
         </LinearLayout>
 
-        <!-- 4个数据卡片：2×2网格 -->
+        <!-- ═══ 概览：2×2 数据卡片 ═══ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:baselineAligned="false"
-            android:padding="12dp">
+            android:paddingStart="@dimen/screen_margin"
+            android:paddingEnd="@dimen/screen_margin"
+            android:paddingTop="@dimen/screen_margin">
 
             <!-- 今日阅读 -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginEnd="5dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:minHeight="@dimen/stat_card_min_height"
-                android:background="@drawable/bg_card"
-                android:padding="12dp"
-                android:layout_margin="4dp">
+                android:background="@drawable/bg_card_md"
+                android:padding="14dp">
 
-                <!-- "今日阅读"标签 — 京华老宋(结构阅读层) -->
                 <TextView
+                    style="@style/Moyuan.StatLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_today_read"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:text="@string/label_today_read" />
 
-                <!-- 数值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_today_read"
+                    style="@style/Moyuan.StatValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:textSize="16sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -95,31 +99,26 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="5dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:minHeight="@dimen/stat_card_min_height"
-                android:background="@drawable/bg_card"
-                android:padding="12dp"
-                android:layout_margin="4dp">
+                android:background="@drawable/bg_card_md"
+                android:padding="14dp">
 
-                <!-- "连续天数"标签 — 京华老宋(结构阅读层) -->
                 <TextView
+                    style="@style/Moyuan.StatLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_streak_days"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:text="@string/label_streak_days" />
 
-                <!-- 数值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_streak"
+                    style="@style/Moyuan.StatValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:textSize="16sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -132,40 +131,35 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:baselineAligned="false"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="8dp">
+            android:paddingStart="@dimen/screen_margin"
+            android:paddingEnd="@dimen/screen_margin"
+            android:paddingTop="@dimen/stat_grid_gap">
 
             <!-- 累计阅读 -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginEnd="5dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:minHeight="@dimen/stat_card_min_height"
-                android:background="@drawable/bg_card"
-                android:padding="12dp"
-                android:layout_margin="4dp">
+                android:background="@drawable/bg_card_md"
+                android:padding="14dp">
 
-                <!-- "累计阅读"标签 — 京华老宋(结构阅读层) -->
                 <TextView
+                    style="@style/Moyuan.StatLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_total_read"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:text="@string/label_total_read" />
 
-                <!-- 数值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_total_read"
+                    style="@style/Moyuan.StatValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:textSize="16sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -176,31 +170,26 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="5dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:minHeight="@dimen/stat_card_min_height"
-                android:background="@drawable/bg_card"
-                android:padding="12dp"
-                android:layout_margin="4dp">
+                android:background="@drawable/bg_card_md"
+                android:padding="14dp">
 
-                <!-- "已读书目"标签 — 京华老宋(结构阅读层) -->
                 <TextView
+                    style="@style/Moyuan.StatLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_books_read"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/jinghua_laosong" />
+                    android:text="@string/label_books_read" />
 
-                <!-- 数值 — 思源黑体(功能数据层) -->
                 <TextView
                     android:id="@+id/text_books_read"
+                    style="@style/Moyuan.StatValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:textSize="16sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -208,156 +197,389 @@
 
         </LinearLayout>
 
-        <!-- 图鉴进度卡片（整行） -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:baselineAligned="false"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="8dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:minHeight="@dimen/stat_card_min_height"
-                android:background="@drawable/bg_card"
-                android:padding="12dp"
-                android:layout_margin="4dp">
-
-                <!-- "图鉴进度"标签 — 京华老宋(结构阅读层) -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_catalog_progress"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/jinghua_laosong" />
-
-                <!-- 数值 — 思源黑体(功能数据层) -->
-                <TextView
-                    android:id="@+id/text_catalog_progress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:fontFamily="sans-serif"
-                    android:textStyle="bold"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="4/50 (8%)" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 每周阅读标题 + 周导航（水墨风格横条） -->
+        <!-- 图鉴进度（整行） -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/bg_card"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginTop="@dimen/stat_grid_gap"
+            android:background="@drawable/bg_card_md"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
 
-            <!-- 周导航左箭头（墨色） -->
-            <ImageButton
-                android:id="@+id/btn_prev_week"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_chevron_left"
-                android:contentDescription="上一周"
-                android:scaleType="centerInside"
-                app:tint="@color/ink_dark" />
-
-            <!-- 周范围/标题 — 京华老宋(结构阅读层)，居中显示 -->
             <TextView
-                android:id="@+id/text_week_range"
+                style="@style/Moyuan.StatLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/label_weekly_overview"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:fontFamily="@font/jinghua_laosong"
-                android:gravity="center"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp" />
+                android:text="@string/label_catalog_progress" />
 
-            <!-- 周导航右箭头（墨色） -->
-            <ImageButton
-                android:id="@+id/btn_next_week"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_chevron_right"
-                android:contentDescription="下一周"
-                android:scaleType="centerInside"
-                app:tint="@color/ink_dark" />
+            <TextView
+                android:id="@+id/text_catalog_progress"
+                style="@style/Moyuan.StatValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:maxLines="1"
+                tools:text="4/50 (8%)" />
 
         </LinearLayout>
 
-        <!-- 每周阅读柱状图 -->
-        <com.mrlaughing.moyuan.ui.study.WeekOverviewView
-            android:id="@+id/week_overview"
+        <!-- ═══ 每周阅读 ═══ -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/week_chart_height"
-            android:background="@drawable/bg_card"
-            android:padding="8dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginTop="@dimen/section_title_margin_top"
+            android:background="@drawable/bg_card_md"
+            android:paddingBottom="8dp">
 
-        <!-- "最近阅读"标题 — 京华老宋(结构阅读层) -->
+            <!-- 周导航行 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="6dp">
+
+                <ImageButton
+                    android:id="@+id/btn_prev_week"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_left"
+                    android:contentDescription="上一周"
+                    android:scaleType="centerInside"
+                    app:tint="@color/ink_dark" />
+
+                <!-- 周范围 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:id="@+id/text_week_range"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_weekly_overview"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/jinghua_laosong"
+                    android:gravity="center"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_next_week"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_right"
+                    android:contentDescription="下一周"
+                    android:scaleType="centerInside"
+                    app:tint="@color/ink_dark" />
+
+            </LinearLayout>
+
+            <!-- 每周阅读柱状图 -->
+            <com.mrlaughing.moyuan.ui.study.WeekOverviewView
+                android:id="@+id/week_overview"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/week_chart_height"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+
+        </LinearLayout>
+
+        <!-- ═══ 我的书架 ═══ -->
+        <LinearLayout
+            android:id="@+id/section_shelf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="@dimen/screen_margin_lg"
+                android:layout_marginEnd="@dimen/screen_margin_lg"
+                android:layout_marginTop="@dimen/section_title_margin_top">
+
+                <TextView
+                    style="@style/Moyuan.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_bookshelf" />
+
+                <!-- 书架数量 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_shelf_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif"
+                    tools:text="共 42 本" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_shelf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </LinearLayout>
+
+        <!-- ═══ 阅读偏好 ═══ -->
+        <LinearLayout
+            android:id="@+id/section_prefs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/Moyuan.SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin_lg"
+                android:layout_marginTop="@dimen/section_title_margin_top"
+                android:text="@string/label_reading_taste" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card_md"
+                android:padding="16dp">
+
+                <!-- 偏好用语标签行 -->
+                <LinearLayout
+                    android:id="@+id/row_pref_words"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/text_tag_category"
+                        style="@style/Moyuan.Tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        tools:text="偏爱 文学" />
+
+                    <TextView
+                        android:id="@+id/text_tag_time"
+                        style="@style/Moyuan.Tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        tools:text="夜读人" />
+
+                </LinearLayout>
+
+                <!-- 分类偏好条容器（动态填充 item_pref_bar） -->
+                <LinearLayout
+                    android:id="@+id/container_pref_bars"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp" />
+
+                <!-- 常读作者 — 京华老宋(结构阅读层) -->
+                <TextView
+                    android:id="@+id/text_pref_authors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong"
+                    android:lineSpacingExtra="3dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="常读作者：史铁生 · 余华 · 汪曾祺" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ═══ 读得最久 ═══ -->
+        <LinearLayout
+            android:id="@+id/section_favorites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/Moyuan.SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin_lg"
+                android:layout_marginTop="@dimen/section_title_margin_top"
+                android:text="@string/label_favorite_books" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_favorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card_md"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </LinearLayout>
+
+        <!-- ═══ 阅读勋章 ═══ -->
+        <LinearLayout
+            android:id="@+id/section_medals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/Moyuan.SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin_lg"
+                android:layout_marginTop="@dimen/section_title_margin_top"
+                android:text="@string/label_medals" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_medals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </LinearLayout>
+
+        <!-- ═══ 书摘拾遗 ═══ -->
+        <LinearLayout
+            android:id="@+id/section_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="@dimen/screen_margin_lg"
+                android:layout_marginEnd="@dimen/screen_margin_lg"
+                android:layout_marginTop="@dimen/section_title_margin_top">
+
+                <TextView
+                    style="@style/Moyuan.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_excerpts" />
+
+                <!-- 笔记总数 — 思源黑体(功能数据层) -->
+                <TextView
+                    android:id="@+id/text_note_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif"
+                    tools:text="86 条笔记" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_margin"
+                android:layout_marginEnd="@dimen/screen_margin"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </LinearLayout>
+
+        <!-- ═══ 最近阅读 ═══ -->
         <TextView
+            style="@style/Moyuan.SectionTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/label_recent_books"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:fontFamily="@font/jinghua_laosong"
-            android:textStyle="bold" />
+            android:layout_marginStart="@dimen/screen_margin_lg"
+            android:layout_marginTop="@dimen/section_title_margin_top"
+            android:text="@string/label_recent_books" />
 
         <TextView
             android:id="@+id/text_empty_books"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginTop="12dp"
             android:padding="20dp"
             android:gravity="center"
             android:text="@string/empty_recent_books"
             android:textColor="@color/text_tertiary"
             android:textSize="13sp"
             android:fontFamily="@font/jinghua_laosong"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_card_md"
             android:visibility="gone" />
 
-        <!-- 最近阅读书目列表 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_books"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_card"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="16dp"
-            android:nestedScrollingEnabled="false" />
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card_md"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:nestedScrollingEnabled="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </LinearLayout>
 

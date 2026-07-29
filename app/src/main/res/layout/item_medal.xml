@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 阅读勋章：圆形墨玉底 + 数值 + 名称 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="72dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <FrameLayout
+        android:layout_width="@dimen/medal_size"
+        android:layout_height="@dimen/medal_size"
+        android:background="@drawable/bg_medal">
+
+        <!-- 勋章数值/等级 — 思源黑体(功能数据层) -->
+        <TextView
+            android:id="@+id/text_medal_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/accent_green"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1" />
+
+    </FrameLayout>
+
+    <!-- 勋章名称 — 京华老宋(结构阅读层) -->
+    <TextView
+        android:id="@+id/text_medal_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:fontFamily="@font/jinghua_laosong"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:lineSpacingExtra="1dp" />
+
+</LinearLayout>

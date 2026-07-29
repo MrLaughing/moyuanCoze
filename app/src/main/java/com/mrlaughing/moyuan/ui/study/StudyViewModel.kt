@@ -3,6 +3,8 @@ package com.mrlaughing.moyuan.ui.study
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlaughing.moyuan.data.local.db.entity.GardenMetaEntity
+import com.mrlaughing.moyuan.data.local.study.StudyExtraSnapshot
+import com.mrlaughing.moyuan.data.local.study.StudyExtraStore
 import com.mrlaughing.moyuan.data.repository.ReadStats
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.ReadStatsRepository
@@ -27,9 +29,9 @@ import javax.inject.Inject
  * 书案 ViewModel
  *
  * 数据来源：
- * - totalReadMinutes / booksRead：从 GardenMeta 读取（由同步直接填充微信读书历史数据）
- * - todayReadMinutes / weeklyRecords：从 daily_record 读取
- * - streakDays：从 GardenMeta 读取
+ * - totalReadMinutes / booksRead / streakDays：GardenMeta（同步填充微信读书历史数据）
+ * - todayReadMinutes / weeklyRecords：daily_record
+ * - extra（书架封面/偏好/最爱书/勋章/书摘）：StudyExtraStore JSON 快照
  *
  * 每周阅读支持前后翻周
  */
@@ -37,7 +39,8 @@ import javax.inject.Inject
 @OptIn(kotlinx.coroutines.FlowPreview::class, kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class StudyViewModel @Inject constructor(
     private val readStatsRepository: ReadStatsRepository,
-    private val gardenRepository: GardenRepository
+    private val gardenRepository: GardenRepository,
+    private val studyExtraStore: StudyExtraStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StudyUiState())
@@ -52,13 +55,13 @@ class StudyViewModel @Inject constructor(
     private val monthDayFormatter = DateTimeFormatter.ofPattern("M月d日")
 
     init {
+        viewModelScope.launch { studyExtraStore.ensureLoaded() }
         loadStats()
     }
 
     /**
      * 加载统计数据
-     * 组合：阅读统计 + 花园元数据 + 周偏移 → 再用 flatMapLatest 切换周记录 + 最近书目
-     * 使用 flatMapLatest 确保每次 outer 变化时自动取消旧的内层订阅，避免协程泄漏
+     * 组合：阅读统计 + 花园元数据 + 周偏移 + 富数据快照 → flatMapLatest 切换周记录 + 最近书目
      */
     private fun loadStats() {
         loadJob?.cancel()
@@ -67,8 +70,9 @@ class StudyViewModel @Inject constructor(
                 readStatsRepository.observeReadStats(),
                 gardenRepository.observeMeta(),
                 gardenRepository.observeGardenState(),
-                currentWeekOffset
-            ) { stats, meta, gardenState, weekOffset ->
+                currentWeekOffset,
+                studyExtraStore.snapshot
+            ) { stats, meta, gardenState, weekOffset, extra ->
                 val totalReadMinutes = meta?.accumulatedMinutes ?: 0
                 val booksRead = meta?.booksRead ?: 0
                 val streakDays = meta?.streakDays ?: 0
@@ -88,7 +92,8 @@ class StudyViewModel @Inject constructor(
                     totalPlantCount,
                     weekStart,
                     weekEnd,
-                    firstRecordDate
+                    firstRecordDate,
+                    extra
                 )
             }   // 防抖，避免同步时DB连续写入导致UI频繁刷新
                 .distinctUntilChanged()
@@ -137,7 +142,8 @@ class StudyViewModel @Inject constructor(
                             recentBooks = books,
                             weekRangeLabel = weekRangeLabel,
                             canGoToPreviousWeek = canGoPrevious,
-                            canGoToNextWeek = canGoNext
+                            canGoToNextWeek = canGoNext,
+                            extra = data.extra
                         )
                     }
                 }
@@ -195,7 +201,8 @@ data class StudyUiState(
     val recentBooks: List<BookItem> = emptyList(),
     val weekRangeLabel: String = "本周",
     val canGoToPreviousWeek: Boolean = true,
-    val canGoToNextWeek: Boolean = false
+    val canGoToNextWeek: Boolean = false,
+    val extra: StudyExtraSnapshot? = null
 )
 
 data class DailyRecord(
@@ -224,8 +231,6 @@ private data class WeekData(
     val totalPlantCount: Int,
     val weekStart: LocalDate,
     val weekEnd: LocalDate,
-    val firstRecordDate: LocalDate
+    val firstRecordDate: LocalDate,
+    val extra: StudyExtraSnapshot?
 )
-
-
-

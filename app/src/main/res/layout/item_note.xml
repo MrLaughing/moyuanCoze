@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 书摘卡片：左侧墨绿引线 + 摘句 + 出处 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_note"
+    android:paddingEnd="16dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp"
+    android:layout_marginBottom="10dp">
+
+    <!-- 左侧墨绿引线 -->
+    <View
+        android:layout_width="3dp"
+        android:layout_height="match_parent"
+        android:background="@color/accent_green" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="15dp">
+
+        <!-- 摘句正文 — 霞鹜文楷(品牌文学层) -->
+        <TextView
+            android:id="@+id/text_note_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:fontFamily="@font/lxgw_wenkai"
+            android:lineSpacingExtra="5dp"
+            android:maxLines="4"
+            android:ellipsize="end" />
+
+        <!-- 出处 — 京华老宋(结构阅读层) -->
+        <TextView
+            android:id="@+id/text_note_source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/text_tertiary"
+            android:textSize="11sp"
+            android:fontFamily="@font/jinghua_laosong"
+            android:maxLines="1"
+            android:ellipsize="start" />
+
+    </LinearLayout>
+
+</LinearLayout>

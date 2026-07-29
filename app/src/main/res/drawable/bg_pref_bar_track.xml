@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 偏好条形轨道 -->
+    <solid android:color="@color/surface" />
+    <corners android:radius="@dimen/pref_bar_radius" />
+</shape>

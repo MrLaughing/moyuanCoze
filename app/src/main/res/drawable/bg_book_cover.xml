@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 书籍封面容器：轻投影 + 8dp 圆角（封面图由 Glide 加载到上层 ImageView） -->
+    <item
+        android:left="0dp"
+        android:top="2dp"
+        android:right="0dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/shadow_soft" />
+            <corners android:radius="@dimen/book_cover_radius" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_light" />
+            <corners android:radius="@dimen/book_cover_radius" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/border_light" />
+        </shape>
+    </item>
+</layer-list>

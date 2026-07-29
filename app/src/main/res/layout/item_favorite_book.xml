@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 读得最久：小封面 + 书名/作者 + 累计时长 -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <!-- 名次 — 思源黑体(功能数据层) -->
+    <TextView
+        android:id="@+id/text_rank"
+        android:layout_width="22dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_tertiary"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center" />
+
+    <ImageView
+        android:id="@+id/image_cover"
+        android:layout_width="40dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="10dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_book_cover"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:orientation="vertical">
+
+        <!-- 书名 — 京华老宋(结构阅读层) -->
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:fontFamily="@font/jinghua_laosong"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- 作者 -->
+        <TextView
+            android:id="@+id/text_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/text_tertiary"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <!-- 累计时长 — 思源黑体(功能数据层) -->
+    <TextView
+        android:id="@+id/text_read_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/accent_green"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif-medium" />
+
+</LinearLayout>

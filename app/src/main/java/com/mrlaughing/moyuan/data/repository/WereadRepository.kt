@@ -6,6 +6,8 @@ import com.mrlaughing.moyuan.data.remote.ReadDataRequest
 import com.mrlaughing.moyuan.data.remote.WereadApiClient
 import com.mrlaughing.moyuan.data.remote.dto.BookProgressResponse
 import com.mrlaughing.moyuan.data.remote.dto.BookResponse
+import com.mrlaughing.moyuan.data.remote.dto.BookmarkListResponse
+import com.mrlaughing.moyuan.data.remote.dto.NotebookResponse
 import com.mrlaughing.moyuan.data.remote.dto.ReadDataResponse
 import com.mrlaughing.moyuan.data.remote.dto.ShelfResponse
 import kotlinx.coroutines.flow.first
@@ -127,9 +129,66 @@ class WereadRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 获取笔记本列表（有笔记/划线的书）
+     */
+    suspend fun fetchNotebooks(): Result<NotebookResponse> {
+        return try {
+            val token = getToken()
+                ?: return Result.failure(IllegalStateException("未授权"))
+            val request = mapOf(
+                "api_name" to "/user/notebooks",
+                "skill_version" to "1.0.3"
+            )
+            val response = wereadApiClient.retrofit.create(WereadNotebookApi::class.java)
+                .getNotebooks("Bearer $token", request)
+            if (response.isSuccess) Result.success(response)
+            else Result.failure(WereadApiException("API 错误: ${response.errMsg} (code=${response.errCode})"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 获取指定书籍的划线列表
+     */
+    suspend fun fetchBookmarks(bookId: String): Result<BookmarkListResponse> {
+        return try {
+            val token = getToken()
+                ?: return Result.failure(IllegalStateException("未授权"))
+            val request = mapOf(
+                "api_name" to "/book/bookmarklist",
+                "bookId" to bookId,
+                "skill_version" to "1.0.3"
+            )
+            val response = wereadApiClient.retrofit.create(WereadBookmarkApi::class.java)
+                .getBookmarks("Bearer $token", request)
+            if (response.isSuccess) Result.success(response)
+            else Result.failure(WereadApiException("API 错误: ${response.errMsg} (code=${response.errCode})"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
 class WereadApiException(message: String) : Exception(message)
+
+private interface WereadNotebookApi {
+    @retrofit2.http.POST("agent/gateway")
+    suspend fun getNotebooks(
+        @retrofit2.http.Header("Authorization") auth: String,
+        @retrofit2.http.Body body: Map<String, @JvmSuppressWildcards Any>
+    ): NotebookResponse
+}
+
+private interface WereadBookmarkApi {
+    @retrofit2.http.POST("agent/gateway")
+    suspend fun getBookmarks(
+        @retrofit2.http.Header("Authorization") auth: String,
+        @retrofit2.http.Body body: Map<String, @JvmSuppressWildcards Any>
+    ): BookmarkListResponse
+}
 
 private interface WereadBookApi {
     @retrofit2.http.POST("agent/gateway")
