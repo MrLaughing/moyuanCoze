@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mrlaughing.moyuan.R
 import com.mrlaughing.moyuan.data.local.study.PreferCategoryItem
 import com.mrlaughing.moyuan.data.local.study.StudyExtraSnapshot
+import com.mrlaughing.moyuan.util.WereadLauncher
 import com.mrlaughing.moyuan.util.formatMinutes
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -152,12 +153,16 @@ class StudyFragment : Fragment() {
     private fun setupRecyclers() {
         val gap = resources.getDimensionPixelSize(R.dimen.shelf_item_gap)
 
-        shelfAdapter = ShelfBookAdapter()
+        shelfAdapter = ShelfBookAdapter { book ->
+            WereadLauncher.openBook(requireContext(), book.bookId)
+        }
         shelfRecycler.adapter = shelfAdapter
         shelfRecycler.itemAnimator = null
         shelfRecycler.addItemDecoration(HorizontalGapDecoration(gap))
 
-        favoriteAdapter = FavoriteBookAdapter()
+        favoriteAdapter = FavoriteBookAdapter { book ->
+            WereadLauncher.openBook(requireContext(), book.bookId)
+        }
         favoritesRecycler.adapter = favoriteAdapter
         favoritesRecycler.itemAnimator = null
 

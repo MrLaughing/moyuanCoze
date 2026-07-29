@@ -16,8 +16,11 @@ import com.mrlaughing.moyuan.data.local.study.ShelfCoverItem
 
 /**
  * 书架封面横向列表适配器
+ * @param onBookClick 点击书籍回调（跳转微信读书）
  */
-class ShelfBookAdapter : ListAdapter<ShelfCoverItem, ShelfBookAdapter.ViewHolder>(DIFF) {
+class ShelfBookAdapter(
+    private val onBookClick: (ShelfCoverItem) -> Unit = {}
+) : ListAdapter<ShelfCoverItem, ShelfBookAdapter.ViewHolder>(DIFF) {
 
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<ShelfCoverItem>() {
@@ -36,7 +39,7 @@ class ShelfBookAdapter : ListAdapter<ShelfCoverItem, ShelfBookAdapter.ViewHolder
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onBookClick)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -44,7 +47,8 @@ class ShelfBookAdapter : ListAdapter<ShelfCoverItem, ShelfBookAdapter.ViewHolder
         private val title: TextView = itemView.findViewById(R.id.text_title)
         private val finishedBadge: TextView = itemView.findViewById(R.id.text_finished_badge)
 
-        fun bind(item: ShelfCoverItem) {
+        fun bind(item: ShelfCoverItem, onBookClick: (ShelfCoverItem) -> Unit) {
+            itemView.setOnClickListener { onBookClick(item) }
             title.text = item.title
             finishedBadge.visibility = if (item.finished) View.VISIBLE else View.GONE
             val radius = itemView.resources.getDimensionPixelSize(R.dimen.book_cover_radius)

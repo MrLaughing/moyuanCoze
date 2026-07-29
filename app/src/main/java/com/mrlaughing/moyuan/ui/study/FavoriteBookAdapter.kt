@@ -17,8 +17,11 @@ import com.mrlaughing.moyuan.util.formatMinutes
 
 /**
  * 读得最久的书列表适配器
+ * @param onBookClick 点击书籍回调（跳转微信读书）
  */
-class FavoriteBookAdapter : ListAdapter<FavoriteBookItem, FavoriteBookAdapter.ViewHolder>(DIFF) {
+class FavoriteBookAdapter(
+    private val onBookClick: (FavoriteBookItem) -> Unit = {}
+) : ListAdapter<FavoriteBookItem, FavoriteBookAdapter.ViewHolder>(DIFF) {
 
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<FavoriteBookItem>() {
@@ -37,7 +40,7 @@ class FavoriteBookAdapter : ListAdapter<FavoriteBookItem, FavoriteBookAdapter.Vi
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position), position)
+        holder.bind(getItem(position), position, onBookClick)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -47,7 +50,8 @@ class FavoriteBookAdapter : ListAdapter<FavoriteBookItem, FavoriteBookAdapter.Vi
         private val author: TextView = itemView.findViewById(R.id.text_author)
         private val readTime: TextView = itemView.findViewById(R.id.text_read_time)
 
-        fun bind(item: FavoriteBookItem, position: Int) {
+        fun bind(item: FavoriteBookItem, position: Int, onBookClick: (FavoriteBookItem) -> Unit) {
+            itemView.setOnClickListener { onBookClick(item) }
             rank.text = (position + 1).toString().padStart(2, '0')
             title.text = item.title
             author.text = item.author

@@ -9,7 +9,10 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:paddingBottom="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <!-- 名次 — 思源黑体(功能数据层) -->
     <TextView
