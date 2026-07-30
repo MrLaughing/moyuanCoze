@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   书案 · 分区卡片流
-  区块：概览数据 → 每周阅读 → 我的书架 → 阅读偏好 → 读得最久 → 阅读勋章 → 书摘拾遗 → 最近阅读
+  区块：概览数据 → 每周阅读 → 我的书架 → 阅读偏好 → 读得最久 → 书摘拾遗 → 最近阅读
   设计系统：bg_card_md(16dp圆角) / Moyuan.SectionTitle / 三层字体
 -->
 <ScrollView
@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/paper_bg"
-    android:fillViewport="true"
+    android:fillViewport="false"
     android:scrollbars="none">
 
     <LinearLayout
@@ -194,39 +194,6 @@
                     android:ellipsize="end" />
 
             </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 图鉴进度（整行） -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginStart="@dimen/screen_margin"
-            android:layout_marginEnd="@dimen/screen_margin"
-            android:layout_marginTop="@dimen/stat_grid_gap"
-            android:background="@drawable/bg_card_md"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp">
-
-            <TextView
-                style="@style/Moyuan.StatLabel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_catalog_progress" />
-
-            <TextView
-                android:id="@+id/text_catalog_progress"
-                style="@style/Moyuan.StatValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:maxLines="1"
-                tools:text="4/50 (8%)" />
 
         </LinearLayout>
 
@@ -458,37 +425,6 @@
                 android:background="@drawable/bg_card_md"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        </LinearLayout>
-
-        <!-- ═══ 阅读勋章 ═══ -->
-        <LinearLayout
-            android:id="@+id/section_medals"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                style="@style/Moyuan.SectionTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/screen_margin_lg"
-                android:layout_marginTop="@dimen/section_title_margin_top"
-                android:text="@string/label_medals" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_medals"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:paddingStart="@dimen/screen_margin"
-                android:paddingEnd="@dimen/screen_margin"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
                 android:nestedScrollingEnabled="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 

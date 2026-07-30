@@ -69,15 +69,12 @@ class StudyViewModel @Inject constructor(
             combine(
                 readStatsRepository.observeReadStats(),
                 gardenRepository.observeMeta(),
-                gardenRepository.observeGardenState(),
                 currentWeekOffset,
                 studyExtraStore.snapshot
-            ) { stats, meta, gardenState, weekOffset, extra ->
+            ) { stats, meta, weekOffset, extra ->
                 val totalReadMinutes = meta?.accumulatedMinutes ?: 0
                 val booksRead = meta?.booksRead ?: 0
                 val streakDays = meta?.streakDays ?: 0
-                val unlockedCount = gardenState.plants.count { !it.unlockDate.isNullOrEmpty() }
-                val totalPlantCount = gardenState.plants.size
                 val (weekStart, weekEnd) = getWeekRange(weekOffset)
                 val firstRecordDate = meta?.installDate
                     ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
@@ -88,8 +85,6 @@ class StudyViewModel @Inject constructor(
                     totalReadMinutes,
                     booksRead,
                     streakDays,
-                    unlockedCount,
-                    totalPlantCount,
                     weekStart,
                     weekEnd,
                     firstRecordDate,
@@ -136,8 +131,6 @@ class StudyViewModel @Inject constructor(
                             streakDays = data.streakDays,
                             totalReadMinutes = data.totalReadMinutes,
                             booksRead = data.booksRead,
-                            unlockedCount = data.unlockedCount,
-                            totalPlantCount = data.totalPlantCount,
                             weeklyRecords = weekly,
                             recentBooks = books,
                             weekRangeLabel = weekRangeLabel,
@@ -195,8 +188,6 @@ data class StudyUiState(
     val streakDays: Int = 0,
     val totalReadMinutes: Int = 0,
     val booksRead: Int = 0,
-    val unlockedCount: Int = 0,
-    val totalPlantCount: Int = 0,
     val weeklyRecords: List<DailyRecord> = emptyList(),
     val recentBooks: List<BookItem> = emptyList(),
     val weekRangeLabel: String = "本周",
@@ -227,8 +218,6 @@ private data class WeekData(
     val totalReadMinutes: Int,
     val booksRead: Int,
     val streakDays: Int,
-    val unlockedCount: Int,
-    val totalPlantCount: Int,
     val weekStart: LocalDate,
     val weekEnd: LocalDate,
     val firstRecordDate: LocalDate,

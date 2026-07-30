@@ -28,7 +28,7 @@ import java.util.Locale
 /**
  * 书案统计 Fragment · 分区卡片流
  *
- * 区块：概览数据 → 每周阅读 → 我的书架 → 阅读偏好 → 读得最久 → 阅读勋章 → 书摘拾遗 → 最近阅读
+ * 区块：概览数据 → 每周阅读 → 我的书架 → 阅读偏好 → 读得最久 → 书摘拾遗 → 最近阅读
  */
 @AndroidEntryPoint
 class StudyFragment : Fragment() {
@@ -40,7 +40,6 @@ class StudyFragment : Fragment() {
     private lateinit var streakText: TextView
     private lateinit var totalReadText: TextView
     private lateinit var booksReadText: TextView
-    private lateinit var catalogProgressText: TextView
     private lateinit var weekOverview: WeekOverviewView
     private lateinit var weekRangeText: TextView
     private lateinit var btnPrevWeek: ImageButton
@@ -64,11 +63,6 @@ class StudyFragment : Fragment() {
     private lateinit var sectionFavorites: View
     private lateinit var favoritesRecycler: RecyclerView
     private lateinit var favoriteAdapter: FavoriteBookAdapter
-
-    // 勋章
-    private lateinit var sectionMedals: View
-    private lateinit var medalsRecycler: RecyclerView
-    private lateinit var medalAdapter: MedalAdapter
 
     // 书摘
     private lateinit var sectionNotes: View
@@ -119,7 +113,6 @@ class StudyFragment : Fragment() {
         streakText = view.findViewById(R.id.text_streak)
         totalReadText = view.findViewById(R.id.text_total_read)
         booksReadText = view.findViewById(R.id.text_books_read)
-        catalogProgressText = view.findViewById(R.id.text_catalog_progress)
         weekOverview = view.findViewById(R.id.week_overview)
         weekRangeText = view.findViewById(R.id.text_week_range)
         btnPrevWeek = view.findViewById(R.id.btn_prev_week)
@@ -138,9 +131,6 @@ class StudyFragment : Fragment() {
 
         sectionFavorites = view.findViewById(R.id.section_favorites)
         favoritesRecycler = view.findViewById(R.id.recycler_favorites)
-
-        sectionMedals = view.findViewById(R.id.section_medals)
-        medalsRecycler = view.findViewById(R.id.recycler_medals)
 
         sectionNotes = view.findViewById(R.id.section_notes)
         noteCountText = view.findViewById(R.id.text_note_count)
@@ -166,11 +156,6 @@ class StudyFragment : Fragment() {
         favoritesRecycler.adapter = favoriteAdapter
         favoritesRecycler.itemAnimator = null
 
-        medalAdapter = MedalAdapter()
-        medalsRecycler.adapter = medalAdapter
-        medalsRecycler.itemAnimator = null
-        medalsRecycler.addItemDecoration(HorizontalGapDecoration(gap))
-
         noteAdapter = NoteAdapter()
         notesRecycler.adapter = noteAdapter
         notesRecycler.itemAnimator = null
@@ -185,12 +170,6 @@ class StudyFragment : Fragment() {
         streakText.text = "${state.streakDays}天"
         totalReadText.text = state.totalReadMinutes.formatMinutes()
         booksReadText.text = "${state.booksRead}本"
-        catalogProgressText.text = if (state.totalPlantCount > 0) {
-            val percent = (state.unlockedCount * 100f / state.totalPlantCount).toInt()
-            "${state.unlockedCount}/${state.totalPlantCount} ($percent%)"
-        } else {
-            "0/0"
-        }
 
         // 更新周范围显示
         weekRangeText.text = state.weekRangeLabel
@@ -249,11 +228,6 @@ class StudyFragment : Fragment() {
         val hasFavorites = !extra?.favoriteBooks.isNullOrEmpty()
         sectionFavorites.visibility = if (hasFavorites) View.VISIBLE else View.GONE
         if (hasFavorites) favoriteAdapter.submitList(extra!!.favoriteBooks)
-
-        // 勋章
-        val hasMedals = !extra?.medals.isNullOrEmpty()
-        sectionMedals.visibility = if (hasMedals) View.VISIBLE else View.GONE
-        if (hasMedals) medalAdapter.submitList(extra!!.medals)
 
         // 书摘
         val hasNotes = !extra?.notes.isNullOrEmpty()
