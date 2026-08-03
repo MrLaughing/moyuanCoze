@@ -99,6 +99,13 @@ class MoyuanApp : Application() {
     ) {
         val installDate = LocalDate.now().toString()
 
+        // 记录首次启动时间戳，供「阅读时光印记」计算应用陪伴天数
+        try {
+            userPrefs.setFirstLaunchTime(System.currentTimeMillis())
+        } catch (e: Exception) {
+            android.util.Log.e("MoyuanApp", "设置首启时间戳失败", e)
+        }
+
         // 1. 检查是否已有元数据
         val existingMeta = gardenRepository.observeMeta().first()
         if (existingMeta == null) {

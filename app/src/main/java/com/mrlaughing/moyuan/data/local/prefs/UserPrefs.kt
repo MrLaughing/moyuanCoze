@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,6 +40,7 @@ class UserPrefs @Inject constructor(
         val KEY_SYNC_HOUR = intPreferencesKey("sync_hour")
         val KEY_SYNC_MINUTE = intPreferencesKey("sync_minute")
         val KEY_FIRST_LAUNCH = booleanPreferencesKey("first_launch")
+        val KEY_FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
     }
 
     // ---- Weread Token ----
@@ -97,6 +99,17 @@ class UserPrefs @Inject constructor(
     suspend fun setFirstLaunch(first: Boolean) {
         dataStore.edit { prefs ->
             prefs[KEY_FIRST_LAUNCH] = first
+        }
+    }
+
+    /** 首次启动时间戳（毫秒），用于「应用陪伴天数」计算 */
+    val firstLaunchTime: Flow<Long> = dataStore.data.map { prefs ->
+        prefs[KEY_FIRST_LAUNCH_TIME] ?: 0L
+    }
+
+    suspend fun setFirstLaunchTime(time: Long) {
+        dataStore.edit { prefs ->
+            prefs[KEY_FIRST_LAUNCH_TIME] = time
         }
     }
 }

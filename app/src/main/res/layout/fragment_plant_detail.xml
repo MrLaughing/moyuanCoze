@@ -155,6 +155,75 @@
 
             </LinearLayout>
 
+            <!-- 阅读时光印记 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/paper_bg"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="阅读时光"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/border" />
+
+                <TextView
+                    android:id="@+id/text_plant_discovery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/ink_medium"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/jinghua_laosong"
+                    android:lineSpacingExtra="4dp" />
+
+                <TextView
+                    android:id="@+id/text_plant_weread"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/ink_medium"
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="2dp" />
+
+                <TextView
+                    android:id="@+id/text_plant_app_days"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/jinghua_laosong" />
+
+                <!-- 书摘拾遗 -->
+                <TextView
+                    android:id="@+id/text_plant_readnote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textColor="@color/ink_medium"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/lxgw_wenkai"
+                    android:lineSpacingExtra="4dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="@color/accent_green_soft" />
+
+            </LinearLayout>
+
             <!-- 放入花园 / 移出花园 按钮（仅已解锁植物显示） -->
             <TextView
                 android:id="@+id/button_garden_toggle"

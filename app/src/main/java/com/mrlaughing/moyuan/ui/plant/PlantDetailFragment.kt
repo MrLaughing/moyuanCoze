@@ -40,6 +40,10 @@ class PlantDetailFragment : Fragment() {
     private lateinit var unlockCondition: TextView
     private lateinit var gardenToggleButton: TextView
     private lateinit var backButton: View
+    private lateinit var discoveryText: TextView
+    private lateinit var wereadText: TextView
+    private lateinit var appDaysText: TextView
+    private lateinit var readNoteText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,6 +66,10 @@ class PlantDetailFragment : Fragment() {
             unlockCondition = view.findViewById(R.id.text_unlock_condition)
             gardenToggleButton = view.findViewById(R.id.button_garden_toggle)
             backButton = view.findViewById(R.id.button_back)
+            discoveryText = view.findViewById(R.id.text_plant_discovery)
+            wereadText = view.findViewById(R.id.text_plant_weread)
+            appDaysText = view.findViewById(R.id.text_plant_app_days)
+            readNoteText = view.findViewById(R.id.text_plant_readnote)
             Log.d("PlantDetail", "视图初始化完成")
         } catch (e: Exception) {
             Log.e("PlantDetail", "视图初始化失败!!!", e)
@@ -130,6 +138,10 @@ class PlantDetailFragment : Fragment() {
                 unlockCondition.text = state.unlockDate?.let {
                     getString(R.string.plant_discovered_on, it)
                 } ?: getString(R.string.plant_discovered)
+                discoveryText.text = state.discoveryLine
+                wereadText.text = state.wereadLine
+                appDaysText.text = state.appDaysLine
+                readNoteText.text = state.readNoteLine
                 gardenToggleButton?.visibility = View.VISIBLE
                 gardenToggleButton?.text = if (state.isInGarden) {
                     getString(R.string.label_remove_from_garden)
