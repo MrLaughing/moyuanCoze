@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
@@ -44,6 +46,12 @@ class PlantDetailFragment : Fragment() {
     private lateinit var wereadText: TextView
     private lateinit var appDaysText: TextView
     private lateinit var readNoteText: TextView
+    private lateinit var readingBody: LinearLayout
+    private lateinit var durationValue: TextView
+    private lateinit var highlightValue: TextView
+    private lateinit var categoriesLayout: LinearLayout
+    private lateinit var booksLayout: LinearLayout
+    private lateinit var unauthorizedText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,6 +78,12 @@ class PlantDetailFragment : Fragment() {
             wereadText = view.findViewById(R.id.text_plant_weread)
             appDaysText = view.findViewById(R.id.text_plant_app_days)
             readNoteText = view.findViewById(R.id.text_plant_readnote)
+            readingBody = view.findViewById(R.id.layout_reading_body)
+            durationValue = view.findViewById(R.id.text_reading_duration_value)
+            highlightValue = view.findViewById(R.id.text_reading_highlight_value)
+            categoriesLayout = view.findViewById(R.id.layout_reading_categories)
+            booksLayout = view.findViewById(R.id.layout_reading_books)
+            unauthorizedText = view.findViewById(R.id.text_weread_unauthorized)
             Log.d("PlantDetail", "视图初始化完成")
         } catch (e: Exception) {
             Log.e("PlantDetail", "视图初始化失败!!!", e)
@@ -139,8 +153,9 @@ class PlantDetailFragment : Fragment() {
                     getString(R.string.plant_discovered_on, it)
                 } ?: getString(R.string.plant_discovered)
                 discoveryText.text = state.discoveryLine
-                wereadText.text = state.wereadLine
+                wereadText.text = state.readingWindowLabel
                 appDaysText.text = state.appDaysLine
+                renderReadingTime(state)
                 readNoteText.text = state.readNoteLine
                 gardenToggleButton?.visibility = View.VISIBLE
                 gardenToggleButton?.text = if (state.isInGarden) {
@@ -165,6 +180,88 @@ class PlantDetailFragment : Fragment() {
         } catch (e: Exception) {
             Log.e("PlantDetail", "renderState异常", e)
         }
+    }
+
+    /**
+     * 渲染「阅读时光」窗口化区块：时长 / 划线 / 偏爱类型 / 书目。
+     * 三态：加载中(…) / 未连接(提示) / 已加载(真实数据)。
+     */
+    private fun renderReadingTime(state: PlantDetailUiState) {
+        if (!state.wereadLoaded) {
+            readingBody.visibility = View.VISIBLE
+            unauthorizedText.visibility = View.GONE
+            durationValue.text = "…"
+            highlightValue.text = "…"
+            categoriesLayout.removeAllViews()
+            booksLayout.removeAllViews()
+            return
+        }
+        if (!state.wereadAuthorized) {
+            readingBody.visibility = View.GONE
+            unauthorizedText.visibility = View.VISIBLE
+            return
+        }
+        readingBody.visibility = View.VISIBLE
+        unauthorizedText.visibility = View.GONE
+        durationValue.text = state.readingDurationText.ifBlank { "暂未记录" }
+        highlightValue.text = state.readingHighlightText.ifBlank { "0 条划线" }
+        renderCategories(state.readingCategories)
+        renderBooks(state.readingBookTitles)
+    }
+
+    private fun renderCategories(cats: List<CategoryStat>) {
+        categoriesLayout.removeAllViews()
+        val ctx = context ?: return
+        if (cats.isEmpty()) {
+            categoriesLayout.addView(makeLine(ctx, "· 这段时间还没留下分类偏好"))
+            return
+        }
+        cats.forEach { cat ->
+            val pill = TextView(ctx).apply {
+                text = "${cat.name} · ${cat.count} 本"
+                textSize = 12f
+                setTextColor(ContextCompat.getColor(ctx, R.color.ink_medium))
+                setPadding(dpip(10), dpip(4), dpip(10), dpip(4))
+                background = ContextCompat.getDrawable(ctx, R.drawable.bg_chip)
+            }
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.bottomMargin = dpip(6)
+            pill.layoutParams = lp
+            categoriesLayout.addView(pill)
+        }
+    }
+
+    private fun renderBooks(titles: List<String>) {
+        booksLayout.removeAllViews()
+        val ctx = context ?: return
+        if (titles.isEmpty()) {
+            booksLayout.addView(makeLine(ctx, "· 这段时间还没翻过书"))
+            return
+        }
+        titles.forEach { title ->
+            booksLayout.addView(makeLine(ctx, "· 《$title》", dpip(4)))
+        }
+    }
+
+    private fun makeLine(ctx: android.content.Context, text: String, bottomMargin: Int = 0): TextView {
+        return TextView(ctx).apply {
+            this.text = text
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(ctx, R.color.ink_medium))
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.bottomMargin = bottomMargin
+            layoutParams = lp
+        }
+    }
+
+    private fun dpip(dp: Int): Int {
+        return (dp * (resources?.displayMetrics?.density ?: 1f)).toInt()
     }
 
     private fun loadPlantImage(state: PlantDetailUiState) {

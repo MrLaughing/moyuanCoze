@@ -29,6 +29,25 @@ class PlantRepository @Inject constructor(
     }
 
     /**
+     * 取「上一株解锁」的锚点日期（用于阅读时光时间窗）。
+     *
+     * 规则：在全部已解锁植物中，取比 [currentPlantId] 解锁日更早、且最接近的那一天。
+     * 返回格式 "YYYY-MM-DD"；若当前植物本身未解锁、或它就是最早解锁的一株，则返回 null
+     * （调用方此时退化为「自开启墨园以来」的全量口径）。
+     *
+     * 注：unlockDate 为 "YYYY-MM-DD" 字符串，字典序即时间序，可直接比较。
+     */
+    suspend fun getPreviousUnlockDate(currentPlantId: String): String? {
+        val plants = plantStateDao.getAllPlants().first()
+        val current = plants.firstOrNull { it.plantId == currentPlantId }?.unlockDate
+        val candidates = plants
+            .mapNotNull { it.unlockDate }
+            .filter { it != current }
+            .filter { current == null || it < current }
+        return candidates.maxOrNull()
+    }
+
+    /**
      * 观察单棵植物
      */
     fun observePlant(plantId: String): Flow<PlantStateEntity?> {

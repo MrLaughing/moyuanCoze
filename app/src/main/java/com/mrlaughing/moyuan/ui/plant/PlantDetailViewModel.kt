@@ -3,6 +3,8 @@ package com.mrlaughing.moyuan.ui.plant
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlaughing.moyuan.data.model.PlantDefinitions
+import com.mrlaughing.moyuan.data.remote.dto.ApiPreferCategory
+import com.mrlaughing.moyuan.data.remote.dto.ShelfBook
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.WereadRepository
 import com.mrlaughing.moyuan.data.local.prefs.UserPrefs
@@ -19,11 +21,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * 植物详情 ViewModel
  *
- * v2.0：简化，只展示植物名、大图、描述、诗文引用（lore）、解锁条件
+ * v2.0：展示植物名、大图、描述、诗文引用（lore）、解锁条件。
+ * 阅读时光：结合「上一株解锁」锚点，从微信读书拉取时间窗内的
+ * 阅读时长 / 书目 / 偏爱类型 / 划线数，形成「用阅读养花园」的轻养成档案。
  */
 @HiltViewModel
 @OptIn(kotlinx.coroutines.FlowPreview::class)
@@ -53,6 +59,10 @@ class PlantDetailViewModel @Inject constructor(
 
                 Log.d("PlantDetailVM", "加载植物: $plantStringId (${plantDef.name})")
 
+                // 上一株解锁锚点（只与 plantId 相关，collect 前算一次即可）
+                val prevDate = runCatching { plantRepository.getPreviousUnlockDate(plantStringId) }
+                    .getOrNull()
+
                 plantRepository.observePlant(plantStringId)
                     .distinctUntilChanged()
                     .debounce(150)
@@ -60,16 +70,16 @@ class PlantDetailViewModel @Inject constructor(
                         try {
                             val isUnlocked = entity != null && !entity.unlockDate.isNullOrEmpty()
 
-                            // 阅读时光印记：结合发现时间 + 应用陪伴 + 微信读书阅读量
+                            // 发现印记
                             val discoveryDate = entity?.unlockDate
                             val discoveryLine = if (discoveryDate != null) {
                                 "你于 $discoveryDate 发现这株「${plantDef.name}」"
                             } else {
                                 "这株植物尚未与你相遇"
                             }
-                            val (wereadLine, readNoteLine) = buildWereadContext()
                             val appDaysLine = buildAppDaysLine()
 
+                            // 先给基础状态（不依赖微信读书网络），保证画面即时可见
                             _uiState.value = PlantDetailUiState(
                                 plantIdStr = plantStringId,
                                 name = plantDef.name,
@@ -80,10 +90,34 @@ class PlantDetailViewModel @Inject constructor(
                                 isInGarden = entity?.isInGarden ?: false,
                                 unlockDate = entity?.unlockDate,
                                 discoveryLine = discoveryLine,
-                                wereadLine = wereadLine,
                                 appDaysLine = appDaysLine,
-                                readNoteLine = readNoteLine
+                                readNoteLine = "每一次翻开书页，都为这座花园添了一缕墨香"
                             )
+
+                            // 解锁后才去拉阅读时光（可能稍慢，异步回填）
+                            if (isUnlocked) {
+                                viewModelScope.launch {
+                                    try {
+                                        val wr = buildWindowedReadingContext(prevDate)
+                                        _uiState.value = _uiState.value.copy(
+                                            wereadLoaded = true,
+                                            wereadAuthorized = wr.authorized,
+                                            readingWindowLabel = wr.windowLabel,
+                                            readingDurationText = wr.durationText,
+                                            readingHighlightText = wr.highlightText,
+                                            readingCategories = wr.categories,
+                                            readingBookTitles = wr.bookTitles,
+                                            readNoteLine = wr.readNoteLine
+                                        )
+                                    } catch (e: Exception) {
+                                        Log.e("PlantDetailVM", "阅读时光加载失败", e)
+                                        _uiState.value = _uiState.value.copy(
+                                            wereadLoaded = true,
+                                            wereadAuthorized = false
+                                        )
+                                    }
+                                }
+                            }
                         } catch (e: Exception) {
                             Log.e("PlantDetailVM", "处理植物状态失败", e)
                         }
@@ -133,32 +167,129 @@ class PlantDetailViewModel @Inject constructor(
     }
 
     /**
-     * 阅读时光印记 · 微信读书累计阅读量 + 书摘拾遗文案
-     * 一次取数，返回（陪伴行，书摘拾遗行）两句话
+     * 阅读时光 · 上一株解锁之后的窗口化阅读档案。
+     *
+     * 口径（混合方案）：
+     * - 阅读时长：readTimes 按天粒度，可精确累加锚点日(含)之后的秒数。
+     * - 读了哪些书：书架 readUpdateTime >= 锚点 的书。
+     * - 划线数：窗口内书目在笔记本里的 bookmarkCount 之和。
+     * - 偏爱类型：窗口内书的 category 汇总（最多查前 12 本）；窗口内无书时退化为全量 preferCategory。
      */
-    private suspend fun buildWereadContext(): Pair<String, String> {
-        val resp = try {
-            wereadRepository.fetchReadDataOverall().getOrNull()
-        } catch (e: Exception) {
-            null
+    private suspend fun buildWindowedReadingContext(prevDate: String?): WindowedReading {
+        val authorized = runCatching { wereadRepository.isAuthorized() }.getOrDefault(false)
+        if (!authorized) {
+            return WindowedReading(
+                authorized = false,
+                readNoteLine = "墨园静候，待你在书页间拾得第一枚落款"
+            )
         }
-        val totalSec = resp?.totalReadTime ?: 0L
-        val readDays = resp?.readDays ?: 0
-        val minutes = (totalSec / 60).toInt()
-        val hours = minutes / 60
-        val remMin = minutes % 60
-        val timeText = if (hours > 0) "${hours}小时${remMin}分" else "${remMin}分"
-        val wereadLine = "微信读书已陪伴你读过 $readDays 天 · 累计 $timeText"
 
-        // 书摘拾遗：由阅读数据生成的轻养成文案，区别于「文化小传」
-        val readNoteLine = when {
+        val anchorSec = prevDate?.let { parseDateToStartOfDayEpochSec(it) }
+
+        val readResp = runCatching { wereadRepository.fetchReadDataOverall().getOrNull() }.getOrNull()
+        val windowSec = readResp?.readTimes
+            ?.filterKeys { anchorSec == null || (it.toLongOrNull() ?: 0L) >= anchorSec }
+            ?.values
+            ?.sum() ?: 0L
+
+        val shelf = runCatching { wereadRepository.fetchShelf().getOrNull() }.getOrNull()
+        val windowedBooks = shelf?.books
+            ?.filter { anchorSec == null || it.readUpdateTime >= anchorSec }
+            ?.sortedByDescending { it.readUpdateTime }
+            ?.take(MAX_BOOKS_SHOWN)
+            ?: emptyList()
+        val bookTitles = windowedBooks.mapNotNull { it.title.takeIf { t -> t.isNotBlank() } }
+
+        val notebooks = runCatching { wereadRepository.fetchNotebooks().getOrNull() }.getOrNull()
+        val windowedIds = windowedBooks.map { it.bookId }.toSet()
+        val highlightCount = notebooks?.books
+            ?.filter { it.bookId in windowedIds }
+            ?.sumOf { it.bookmarkCount } ?: 0
+
+        val categories = deriveCategories(windowedBooks, readResp?.preferCategory ?: emptyList())
+
+        val durationText = formatDuration(windowSec)
+        val highlightText = "${highlightCount} 条划线"
+        val windowLabel = prevDate?.let { "自 ${formatMonthDay(it)} 种下上一株以来" }
+            ?: "自你开启墨园阅读以来"
+        val readNoteLine = buildReadNoteLine(readResp?.readDays ?: 0, windowSec)
+
+        return WindowedReading(
+            authorized = true,
+            windowLabel = windowLabel,
+            durationText = durationText,
+            highlightText = highlightText,
+            categories = categories,
+            bookTitles = bookTitles,
+            readNoteLine = readNoteLine
+        )
+    }
+
+    /**
+     * 偏爱类型：优先用窗口内书的 category 汇总；窗口内无书时退化为全量 preferCategory。
+     */
+    private suspend fun deriveCategories(
+        books: List<ShelfBook>,
+        fallback: List<ApiPreferCategory>
+    ): List<CategoryStat> {
+        val fromBooks = if (books.isNotEmpty()) {
+            val counts = mutableMapOf<String, Int>()
+            books.take(MAX_CATEGORY_LOOKUP).forEach { b ->
+                val cat = runCatching {
+                    wereadRepository.fetchBookInfo(b.bookId).getOrNull()?.category
+                }.getOrNull()
+                if (!cat.isNullOrBlank()) counts[cat] = counts.getOrDefault(cat, 0) + 1
+            }
+            counts.entries
+                .sortedByDescending { it.value }
+                .take(3)
+                .map { CategoryStat(it.key, it.value) }
+        } else {
+            emptyList()
+        }
+        if (fromBooks.isNotEmpty()) return fromBooks
+        return fallback.take(3).map { CategoryStat(it.categoryTitle, it.readingCount) }
+    }
+
+    /**
+     * 书摘拾遗：由阅读体量生成的轻养成文案，区别于「文化小传」
+     */
+    private fun buildReadNoteLine(readDays: Int, windowSec: Long): String {
+        val hours = (windowSec / 3600)
+        return when {
             readDays <= 0 -> "墨园静候，待你在书页间拾得第一枚落款"
             hours >= 100 -> "百小时的书香，已在这座花园里长成看不见的根须"
             hours >= 24 -> "廿四小时的阅读，足够让一株草木记住你的温度"
             readDays >= 30 -> "三十个读书的夜，是这座花园最绵长的春雨"
             else -> "每一次翻开书页，都为这座花园添了一缕墨香"
         }
-        return wereadLine to readNoteLine
+    }
+
+    private fun formatDuration(sec: Long): String {
+        if (sec <= 0) return "暂未记录"
+        val minutes = (sec / 60).toInt()
+        val hours = minutes / 60
+        val remMin = minutes % 60
+        return if (hours > 0) "${hours} 小时 ${remMin} 分" else "${remMin} 分"
+    }
+
+    private fun formatMonthDay(dateStr: String): String {
+        return try {
+            val d = LocalDate.parse(dateStr)
+            "${d.monthValue} 月 ${d.dayOfMonth} 日"
+        } catch (e: Exception) {
+            dateStr
+        }
+    }
+
+    private fun parseDateToStartOfDayEpochSec(dateStr: String): Long? {
+        return try {
+            LocalDate.parse(dateStr)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toEpochSecond()
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /**
@@ -177,11 +308,33 @@ class PlantDetailViewModel @Inject constructor(
         }
         return "墨园已陪你走过 $days 天"
     }
+
+    companion object {
+        /** 阅读时光卡中最多展示的书目数 */
+        private const val MAX_BOOKS_SHOWN = 8
+
+        /** 为汇总偏爱类型，最多回溯的书详情数（控制额外请求量） */
+        private const val MAX_CATEGORY_LOOKUP = 12
+    }
 }
+
+/** 偏爱类型统计（窗口内书的分类汇总） */
+data class CategoryStat(val name: String, val count: Int)
+
+/** 阅读时光窗口化聚合结果（ViewModel 内部使用） */
+private data class WindowedReading(
+    val authorized: Boolean = false,
+    val windowLabel: String = "",
+    val durationText: String = "",
+    val highlightText: String = "",
+    val categories: List<CategoryStat> = emptyList(),
+    val bookTitles: List<String> = emptyList(),
+    val readNoteLine: String = ""
+)
 
 /**
  * 植物详情 UI 状态
- * v2.0：精简，移除等级、稀有度、枯萎等废弃字段
+ * v2.0：精简，移除等级、稀有度、枯萎等废弃字段；新增阅读时光窗口化字段。
  */
 data class PlantDetailUiState(
     val plantIdStr: String = "",
@@ -193,7 +346,14 @@ data class PlantDetailUiState(
     val isInGarden: Boolean = false,
     val unlockDate: String? = null,
     val discoveryLine: String = "",
-    val wereadLine: String = "",
     val appDaysLine: String = "",
-    val readNoteLine: String = ""
+    val readNoteLine: String = "",
+    // —— 阅读时光（上一株解锁之后） ——
+    val wereadLoaded: Boolean = false,
+    val wereadAuthorized: Boolean = false,
+    val readingWindowLabel: String = "",
+    val readingDurationText: String = "",
+    val readingHighlightText: String = "",
+    val readingCategories: List<CategoryStat> = emptyList(),
+    val readingBookTitles: List<String> = emptyList()
 )
