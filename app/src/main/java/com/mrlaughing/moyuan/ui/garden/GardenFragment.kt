@@ -238,11 +238,18 @@ class GardenFragment : Fragment() {
     /**
      * 更新布局选项的高亮样式
      */
-    private fun updateGridOptionStyles(selectedIndex: Int, unlockedCount: Int = 0, visibleCount: Int = 0) {
+    private fun updateGridOptionStyles(
+        selectedIndex: Int,
+        unlockedCount: Int = 0,
+        visibleCount: Int = 0,
+        customMode: Boolean = false
+    ) {
         for (i in 0 until layoutOptions.childCount) {
             val btn = layoutOptions.getChildAt(i) as? TextView ?: continue
             val config = GRID_LAYOUTS[i]
-            val enabled = unlockedCount >= config.minUnlockedPlants && config.totalSlots >= visibleCount
+            // 自定义模式不限制解锁门槛；两种模式都要求花圃能装下当前植物
+            val enabled = config.totalSlots >= visibleCount &&
+                (customMode || unlockedCount >= config.minUnlockedPlants)
             btn.isEnabled = enabled
             btn.alpha = if (enabled) 1f else 0.42f
             if (i == selectedIndex) {
@@ -307,7 +314,10 @@ class GardenFragment : Fragment() {
         rendererView.setEditingEnabled(state.gardenMode == GardenMode.CUSTOM)
 
         // 更新布局选择器高亮
-        updateGridOptionStyles(state.gridLayoutIndex, state.totalUnlocked, state.requiredSlots)
+        updateGridOptionStyles(
+            state.gridLayoutIndex, state.totalUnlocked, state.requiredSlots,
+            state.gardenMode == GardenMode.CUSTOM
+        )
 
         // 更新花园模式切换高亮
         updateModeStyles(state.gardenMode)

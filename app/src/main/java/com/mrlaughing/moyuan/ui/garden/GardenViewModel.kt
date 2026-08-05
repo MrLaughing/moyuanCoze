@@ -204,7 +204,8 @@ class GardenViewModel @Inject constructor(
             _messages.tryEmit("当前植物数量需要更大的花圃")
             return
         }
-        if (state.totalUnlocked < config.minUnlockedPlants) {
+        // 自定义模式下用户已主动管理布局，不再受「解锁数门槛」限制
+        if (_gardenMode.value != GardenMode.CUSTOM && state.totalUnlocked < config.minUnlockedPlants) {
             _messages.tryEmit("再发现一些植物后，这座花圃会自然展开")
             return
         }
