@@ -224,9 +224,9 @@ class GardenFragment : Fragment() {
             btn.tag = index
             btn.setOnClickListener { v ->
                 val idx = v.tag as Int
+                // 选中后由 StateFlow → renderState 统一刷新高亮与可用性，
+                // 这里不要再调 updateGridOptionStyles（默认 customMode=false 会把所有按钮置灰）
                 viewModel.setGridLayout(idx)
-                // 高亮当前选中
-                updateGridOptionStyles(idx)
             }
             val lp = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
