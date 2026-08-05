@@ -46,6 +46,8 @@ data class GardenUiState(
     val requiredSlots: Int = 0,
     /** 休眠阶段(规范第7节)：由最近阅读日推演，仅用于花园植物视觉淡出，不触动数值 */
     val dormantStage: Int = 0,
+    /** 距最近一次阅读的天数，用于向用户解释植物为何淡出 */
+    val dormantDays: Int = 0,
     /** 全收集后已获得的「培育新苗」机会数（设计文稿 2.0 §2.4），未全收集恒为 0 */
     val bonusSeedlings: Int = 0,
     /** 当前选中的园圃布局索引（在 GRID_LAYOUTS 中的位置） */

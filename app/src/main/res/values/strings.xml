@@ -108,4 +108,13 @@
 
     <!-- 全收集奖励：培育新苗 -->
     <string name="bonus_seedling_earned">图鉴已圆满，又获得 %1$d 次「培育新苗」机会，可在图鉴挑选一株同种副本放入花园</string>
+
+    <!-- 草木休眠说明（规范第7节）：解释花园植物为何淡出 -->
+    <string name="garden_dormant_tier_1">草木微眠</string>
+    <string name="garden_dormant_tier_2">草木渐淡</string>
+    <string name="garden_dormant_tier_3">草木沉眠</string>
+    <string name="garden_dormant_hint">%1$s · 已 %2$d 日未共读，轻触了解</string>
+    <string name="garden_dormant_dialog_title">草木为何淡了颜色</string>
+    <string name="garden_dormant_dialog_message">墨园里的草木跟着你的阅读节奏呼吸：\n\n· 3 日内有阅读 — 枝叶如常\n· 4~6 日未读 — 微眠，颜色轻淡\n· 7~14 日未读 — 渐淡\n· 15 日以上 — 沉眠，叶间结起薄薄蛛网\n\n这只是颜色上的变化。植物不会枯死，图鉴、累计时长与解锁记录都不会减少。\n下一次翻开书并完成浇灌，它们就会重新舒展。</string>
+    <string name="garden_dormant_dialog_positive">知道了</string>
 </resources>

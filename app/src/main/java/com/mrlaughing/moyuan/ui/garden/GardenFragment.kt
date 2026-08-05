@@ -56,6 +56,7 @@ class GardenFragment : Fragment() {
     private lateinit var textStreak: TextView
     private lateinit var textCollectionStat: TextView
     private lateinit var textReadingProgress: TextView
+    private lateinit var textDormantHint: TextView
     private lateinit var waterButton: MaterialButton
     private lateinit var panelHeader: LinearLayout
     private lateinit var panelArrow: TextView
@@ -111,6 +112,8 @@ class GardenFragment : Fragment() {
         textStreak = view.findViewById(R.id.text_streak)
         textCollectionStat = view.findViewById(R.id.text_collection_stat)
         textReadingProgress = view.findViewById(R.id.text_reading_progress)
+        textDormantHint = view.findViewById(R.id.text_dormant_hint)
+        textDormantHint.setOnClickListener { showDormantExplainDialog() }
         waterButton = view.findViewById(R.id.water_button)
         waterButton.setOnClickListener {
             triggerWatering()
@@ -307,6 +310,9 @@ class GardenFragment : Fragment() {
             textReadingProgress.text = "五十株植物已经全部来到你的墨园"
         }
 
+        // 草木休眠提示：植物淡出时告诉用户原因，避免"以为植物出问题了"
+        renderDormantHint(state.dormantStage, state.dormantDays)
+
         // 设置 GardenRenderer 网格行列数（用于位置计算）
         GardenRenderer.gridCols = state.gridCols
         GardenRenderer.gridRows = state.gridRows
@@ -340,6 +346,41 @@ class GardenFragment : Fragment() {
             ).show()
         }
         lastSeenBonusSeedlings = state.bonusSeedlings
+    }
+
+    /**
+     * 草木休眠提示（规范第7节）
+     * 植物淡出只是视觉表达，用户看不到原因会误以为出了 bug，
+     * 因此在 stage>=1 时于顶栏下方浮出一条柔和说明，轻触展开完整解释。
+     */
+    private fun renderDormantHint(stage: Int, days: Int) {
+        if (stage <= 0) {
+            textDormantHint.visibility = View.GONE
+            return
+        }
+        val tier = when (stage) {
+            1 -> getString(R.string.garden_dormant_tier_1)
+            2 -> getString(R.string.garden_dormant_tier_2)
+            else -> getString(R.string.garden_dormant_tier_3)
+        }
+        textDormantHint.text = getString(R.string.garden_dormant_hint, tier, days)
+        // 提示条自身的透明度跟随休眠深浅，越久越淡，但保持可读
+        textDormantHint.alpha = when (stage) {
+            1 -> 1f
+            2 -> 0.94f
+            else -> 0.88f
+        }
+        textDormantHint.visibility = View.VISIBLE
+    }
+
+    /** 休眠说明弹窗：讲清"只淡颜色、不掉数据、读书即复原" */
+    private fun showDormantExplainDialog() {
+        val activity = requireActivity()
+        android.app.AlertDialog.Builder(activity)
+            .setTitle(R.string.garden_dormant_dialog_title)
+            .setMessage(R.string.garden_dormant_dialog_message)
+            .setPositiveButton(R.string.garden_dormant_dialog_positive, null)
+            .show()
     }
 
     /**

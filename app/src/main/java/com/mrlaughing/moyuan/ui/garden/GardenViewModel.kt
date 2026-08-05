@@ -96,6 +96,10 @@ class GardenViewModel @Inject constructor(
                     ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                     ?: LocalDate.now().minusDays(1)
                 val dormantStage = GardenEngine.dormantStage(lastReadDate, LocalDate.now())
+                val dormantDays = java.time.temporal.ChronoUnit.DAYS
+                    .between(lastReadDate, LocalDate.now())
+                    .coerceAtLeast(0L)
+                    .toInt()
                 val todayReadMinutes = meta?.todayReadMinutes ?: 0
                 val streakDays = meta?.streakDays ?: 0
                 val accumulatedMinutes = meta?.accumulatedMinutes ?: 0
@@ -164,6 +168,7 @@ class GardenViewModel @Inject constructor(
                     isAuthorized = !token.isNullOrBlank(),
                     requiredSlots = requiredSlots,
                     dormantStage = dormantStage,
+                    dormantDays = dormantDays,
                     bonusSeedlings = bonusSeedlings
                 )
             }.collect { state ->
