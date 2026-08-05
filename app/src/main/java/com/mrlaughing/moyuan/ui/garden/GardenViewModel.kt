@@ -9,6 +9,7 @@ import com.mrlaughing.moyuan.data.model.PlantDefinitions
 import com.mrlaughing.moyuan.data.model.PlantHeightTiers
 import com.mrlaughing.moyuan.data.model.Season
 import com.mrlaughing.moyuan.data.model.Weather
+import com.mrlaughing.moyuan.data.repository.GardenPlacementResult
 import com.mrlaughing.moyuan.data.repository.GardenRepository
 import com.mrlaughing.moyuan.data.repository.PlantRepository
 import com.mrlaughing.moyuan.data.repository.WeatherRepository
@@ -140,7 +141,13 @@ class GardenViewModel @Inject constructor(
                 val requiredGridIndex = GRID_LAYOUTS.indexOfFirst {
                     it.totalSlots >= requiredSlots
                 }.takeIf { it >= 0 } ?: GRID_LAYOUTS.lastIndex
-                val effectiveGridIndex = maxOf(_uiState.value.gridLayoutIndex, requiredGridIndex)
+                val effectiveGridIndex = if (mode == GardenMode.CUSTOM) {
+                    // 自定义模式尊重用户选择的密度，不够装时只渲染能装下的植物
+                    _uiState.value.gridLayoutIndex.coerceIn(0, GRID_LAYOUTS.lastIndex)
+                } else {
+                    // 自动模式随解锁数量自然扩张
+                    maxOf(_uiState.value.gridLayoutIndex, requiredGridIndex)
+                }
                 GardenUiState(
                     season = _uiState.value.season,
                     weather = _uiState.value.weather,
@@ -200,14 +207,16 @@ class GardenViewModel @Inject constructor(
         val clamped = index.coerceIn(0, GRID_LAYOUTS.lastIndex)
         val config = GRID_LAYOUTS[clamped]
         val state = _uiState.value
-        if (config.totalSlots < state.requiredSlots) {
-            _messages.tryEmit("当前植物数量需要更大的花圃")
-            return
-        }
-        // 自定义模式下用户已主动管理布局，不再受「解锁数门槛」限制
-        if (_gardenMode.value != GardenMode.CUSTOM && state.totalUnlocked < config.minUnlockedPlants) {
-            _messages.tryEmit("再发现一些植物后，这座花圃会自然展开")
-            return
+        // 自定义模式下密度完全由用户决定：装不下时只显示能装下的植物
+        if (_gardenMode.value != GardenMode.CUSTOM) {
+            if (config.totalSlots < state.requiredSlots) {
+                _messages.tryEmit("当前植物数量需要更大的花圃")
+                return
+            }
+            if (state.totalUnlocked < config.minUnlockedPlants) {
+                _messages.tryEmit("再发现一些植物后，这座花圃会自然展开")
+                return
+            }
         }
         _uiState.value = _uiState.value.copy(gridLayoutIndex = clamped)
         application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -225,6 +234,16 @@ class GardenViewModel @Inject constructor(
         viewModelScope.launch {
             if (plantRepository.movePlantToSlot(plantStringId, targetSlot)) {
                 _messages.emit("花圃布局已保存")
+            }
+        }
+    }
+
+    fun removePlantFromGarden(plantId: Long) {
+        val plantStringId = PlantDefinitions.getByLongIndex(plantId)?.id ?: return
+        viewModelScope.launch {
+            val result = plantRepository.updateGardenStatus(plantStringId, false)
+            if (result == GardenPlacementResult.REMOVED || result == GardenPlacementResult.ADDED) {
+                _messages.emit("已将植物移出花园")
             }
         }
     }

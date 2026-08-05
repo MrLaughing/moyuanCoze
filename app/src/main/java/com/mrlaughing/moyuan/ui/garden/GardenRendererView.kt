@@ -40,6 +40,7 @@ class GardenRendererView @JvmOverloads constructor(
     private var onPlantClickListener: ((Long) -> Unit)? = null
     private var onEmptyPlotClickListener: (() -> Unit)? = null
     private var onPlantMoveListener: ((Long, Int) -> Unit)? = null
+    private var onPlantRemoveListener: ((Long) -> Unit)? = null
     private var editingEnabled = false
     private var dragCandidate: PlantRenderInfo? = null
     private var dragOriginalPlants: List<PlantRenderInfo>? = null
@@ -114,6 +115,10 @@ class GardenRendererView @JvmOverloads constructor(
 
     fun setOnPlantMoveListener(listener: (Long, Int) -> Unit) {
         onPlantMoveListener = listener
+    }
+
+    fun setOnPlantRemoveListener(listener: (Long) -> Unit) {
+        onPlantRemoveListener = listener
     }
 
     fun setEditingEnabled(enabled: Boolean) {
@@ -266,11 +271,18 @@ class GardenRendererView @JvmOverloads constructor(
                 if (isDragging) {
                     val movingId = dragCandidate?.plantId
                     val target = findLawnAt(event.x, event.y)
+                    val removed = movingId != null && target == null && !isInGardenBounds(event.x, event.y)
                     dragOriginalPlants?.let { renderPlants = it }
                     cancelDrag(clearOriginal = true)
-                    if (movingId != null && target != null) {
-                        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                        onPlantMoveListener?.invoke(movingId, target.fillRank)
+                    when {
+                        removed -> {
+                            performHapticFeedback(HapticFeedbackConstants.REJECT)
+                            onPlantRemoveListener?.invoke(movingId!!)
+                        }
+                        movingId != null && target != null -> {
+                            performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            onPlantMoveListener?.invoke(movingId, target.fillRank)
+                        }
                     }
                     postInvalidateOnAnimation()
                     return true
@@ -310,6 +322,17 @@ class GardenRendererView @JvmOverloads constructor(
                 val dy = kotlin.math.abs(y - cell.centerY) / (cell.tileSize * 0.24f)
                 dx + dy <= 1.15f
             }
+
+    private fun isInGardenBounds(x: Float, y: Float): Boolean {
+        val cells = GardenLayout.calculate(currentGridCols, currentGridRows, width, height)
+        if (cells.isEmpty()) return false
+        val tile = cells.first().tileSize
+        val minX = cells.minOf { it.centerX } - tile * 0.65f
+        val maxX = cells.maxOf { it.centerX } + tile * 0.65f
+        val minY = cells.minOf { it.centerY } - tile * 0.65f
+        val maxY = cells.maxOf { it.centerY } + tile * 0.65f
+        return x in minX..maxX && y in minY..maxY
+    }
 
     private fun cancelDrag(clearOriginal: Boolean = false) {
         removeCallbacks(beginDrag)

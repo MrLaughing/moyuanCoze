@@ -140,6 +140,9 @@ class GardenFragment : Fragment() {
         rendererView.setOnPlantMoveListener { plantId, targetSlot ->
             viewModel.movePlantToSlot(plantId, targetSlot)
         }
+        rendererView.setOnPlantRemoveListener { plantId ->
+            viewModel.removePlantFromGarden(plantId)
+        }
 
         // 首次布局完成后再渲染一次，避免宽高为 0 时花园空白（首帧竞态）
         rendererView.addOnLayoutChangeListener { _, left, top, right, bottom, _, _, _, _ ->
@@ -248,8 +251,8 @@ class GardenFragment : Fragment() {
             val btn = layoutOptions.getChildAt(i) as? TextView ?: continue
             val config = GRID_LAYOUTS[i]
             // 自定义模式不限制解锁门槛；两种模式都要求花圃能装下当前植物
-            val enabled = config.totalSlots >= visibleCount &&
-                (customMode || unlockedCount >= config.minUnlockedPlants)
+            val enabled = customMode ||
+                (config.totalSlots >= visibleCount && unlockedCount >= config.minUnlockedPlants)
             btn.isEnabled = enabled
             btn.alpha = if (enabled) 1f else 0.42f
             if (i == selectedIndex) {
@@ -371,18 +374,27 @@ class GardenFragment : Fragment() {
             if (w <= 0 || h <= 0) return@post
 
             val isAutoMode = plants.all { it.gardenSlot == null }
+            val gridSlotCount = GardenRenderer.gridCols * GardenRenderer.gridRows
+            // 自定义模式：按用户选择的密度只渲染放得下的植物（低密摆满，高密留空）
+            val visiblePlants = if (isAutoMode) {
+                plants
+            } else {
+                plants
+                    .filter { (it.gardenSlot ?: Int.MAX_VALUE) < gridSlotCount }
+                    .take(gridSlotCount)
+            }
             val renderInfo = if (isAutoMode) {
                 // 自动排列：中心向外环形填充 + 高大后排、低矮前排（规范第 3 节）
                 val cells = GardenLayout.calculate(
                     GardenRenderer.gridCols, GardenRenderer.gridRows, w, h
                 )
-                GardenArranger.arrangeByHeight(plants, cells) { it.heightRank }
+                GardenArranger.arrangeByHeight(visiblePlants, cells) { it.heightRank }
                     .map { (plant, cell) ->
                         PlantRenderInfo(
                             bitmap = plant.bitmap,
                             x = cell.centerX,
                             y = cell.centerY,
-                            scale = cell.tileSize * 0.60f / 10f,
+                            scale = cell.tileSize * 0.68f / 10f,
                             plantId = plant.plantId,
                             plantName = plant.name,
                             level = plant.level,
@@ -392,11 +404,11 @@ class GardenFragment : Fragment() {
             } else {
                 // 自定义模式：严格按用户指定的 gardenSlot（fillRank 序）摆放
                 val positions = GardenRenderer.calculateGridPositions(
-                    GardenRenderer.gridCols * GardenRenderer.gridRows,
+                    gridSlotCount,
                     w,
                     h
                 )
-                plants.mapIndexed { index, plant ->
+                visiblePlants.mapIndexed { index, plant ->
                     val positionIndex = plant.gardenSlot ?: index
                     positions.getOrNull(positionIndex)?.copy(
                         bitmap = plant.bitmap,
