@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
@@ -51,6 +52,8 @@ class PlantDetailFragment : Fragment() {
     private lateinit var highlightValue: TextView
     private lateinit var categoriesLayout: LinearLayout
     private lateinit var booksLayout: LinearLayout
+    private lateinit var excerptsLayout: LinearLayout
+    private lateinit var excerptsLabel: TextView
     private lateinit var unauthorizedText: TextView
 
     override fun onCreateView(
@@ -83,6 +86,8 @@ class PlantDetailFragment : Fragment() {
             highlightValue = view.findViewById(R.id.text_reading_highlight_value)
             categoriesLayout = view.findViewById(R.id.layout_reading_categories)
             booksLayout = view.findViewById(R.id.layout_reading_books)
+            excerptsLayout = view.findViewById(R.id.layout_reading_excerpts)
+            excerptsLabel = view.findViewById(R.id.text_excerpts_label)
             unauthorizedText = view.findViewById(R.id.text_weread_unauthorized)
             Log.d("PlantDetail", "视图初始化完成")
         } catch (e: Exception) {
@@ -207,9 +212,13 @@ class PlantDetailFragment : Fragment() {
         highlightValue.text = state.readingHighlightText.ifBlank { "0 条划线" }
         renderCategories(state.readingCategories)
         renderBooks(state.readingBookTitles)
+        renderExcerpts(state.readingExcerpts)
     }
 
-    private fun renderCategories(cats: List<CategoryStat>) {
+    /**
+     * 偏爱类型：每个类型是一枚可点击的浅绿胶囊，点击展开该类在窗口内的书目列表。
+     */
+    private fun renderCategories(cats: List<CategoryDetail>) {
         categoriesLayout.removeAllViews()
         val ctx = context ?: return
         if (cats.isEmpty()) {
@@ -217,12 +226,31 @@ class PlantDetailFragment : Fragment() {
             return
         }
         cats.forEach { cat ->
+            val container = LinearLayout(ctx).apply {
+                orientation = LinearLayout.VERTICAL
+            }
             val pill = TextView(ctx).apply {
                 text = "${cat.name} · ${cat.count} 本"
                 textSize = 12f
                 setTextColor(ContextCompat.getColor(ctx, R.color.ink_medium))
                 setPadding(dpip(10), dpip(4), dpip(10), dpip(4))
                 background = ContextCompat.getDrawable(ctx, R.drawable.bg_chip)
+                isClickable = true
+                isFocusable = true
+                applyFont(this, R.font.jinghua_laosong)
+            }
+            val detail = LinearLayout(ctx).apply {
+                orientation = LinearLayout.VERTICAL
+                visibility = View.GONE
+                setPadding(dpip(6), dpip(6), 0, dpip(4))
+            }
+            if (cat.books.isNotEmpty()) {
+                cat.books.forEach { t -> detail.addView(makeLine(ctx, "· 《$t》", dpip(3))) }
+            } else {
+                detail.addView(makeLine(ctx, "（全量阅读偏好，未限定窗口）"))
+            }
+            pill.setOnClickListener {
+                detail.visibility = if (detail.visibility == View.VISIBLE) View.GONE else View.VISIBLE
             }
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -230,7 +258,9 @@ class PlantDetailFragment : Fragment() {
             )
             lp.bottomMargin = dpip(6)
             pill.layoutParams = lp
-            categoriesLayout.addView(pill)
+            container.addView(pill)
+            container.addView(detail)
+            categoriesLayout.addView(container)
         }
     }
 
@@ -246,17 +276,61 @@ class PlantDetailFragment : Fragment() {
         }
     }
 
+    /**
+     * 书页拾光：窗口内真实划线，以浅绿引文胶囊呈现，文凯字体。
+     */
+    private fun renderExcerpts(items: List<ExcerptItem>) {
+        if (items.isEmpty()) {
+            excerptsLabel.visibility = View.GONE
+            excerptsLayout.visibility = View.GONE
+            excerptsLayout.removeAllViews()
+            return
+        }
+        excerptsLabel.visibility = View.VISIBLE
+        excerptsLayout.visibility = View.VISIBLE
+        excerptsLayout.removeAllViews()
+        val ctx = context ?: return
+        items.forEach { ex ->
+            val box = TextView(ctx).apply {
+                text = "「${ex.text}」\n—— 《${ex.source}》"
+                textSize = 13f
+                setLineSpacing(dpip(4).toFloat(), 1f)
+                setTextColor(ContextCompat.getColor(ctx, R.color.ink_medium))
+                setPadding(dpip(10), dpip(8), dpip(10), dpip(8))
+                background = ContextCompat.getDrawable(ctx, R.drawable.bg_chip)
+                applyFont(this, R.font.lxgw_wenkai)
+            }
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.bottomMargin = dpip(8)
+            box.layoutParams = lp
+            excerptsLayout.addView(box)
+        }
+    }
+
     private fun makeLine(ctx: android.content.Context, text: String, bottomMargin: Int = 0): TextView {
         return TextView(ctx).apply {
             this.text = text
             textSize = 13f
             setTextColor(ContextCompat.getColor(ctx, R.color.ink_medium))
+            applyFont(this, R.font.lxgw_wenkai)
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             lp.bottomMargin = bottomMargin
             layoutParams = lp
+        }
+    }
+
+    /** 给动态创建的 TextView 应用 res/font 下的字体（XML 里用 fontFamily，代码里需手动 setTypeface） */
+    private fun applyFont(tv: TextView, fontRes: Int) {
+        try {
+            tv.typeface = ResourcesCompat.getFont(requireContext(), fontRes)
+        } catch (_: Exception) {
+            // 字体缺失时退化为系统默认，不影响功能
         }
     }
 

@@ -96,7 +96,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@color/paper_bg"
+                android:background="@drawable/bg_card"
+                android:elevation="3dp"
                 android:orientation="vertical"
                 android:padding="16dp">
 
@@ -160,7 +161,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@color/paper_bg"
+                android:background="@drawable/bg_card"
+                android:elevation="3dp"
                 android:orientation="vertical"
                 android:padding="16dp">
 
@@ -309,9 +311,29 @@
                         android:layout_marginTop="8dp"
                         android:orientation="vertical" />
 
-                </LinearLayout>
+                    <!-- 书页拾光（真实划线，动态渲染，默认隐藏） -->
+                    <TextView
+                        android:id="@+id/text_excerpts_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="书页拾光"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/jinghua_laosong"
+                        android:visibility="gone" />
 
-                <!-- 未连接微信读书提示 -->
+                    <LinearLayout
+                        android:id="@+id/layout_reading_excerpts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <!-- 未连接微信读书提示 -->
                 <TextView
                     android:id="@+id/text_weread_unauthorized"
                     android:layout_width="match_parent"

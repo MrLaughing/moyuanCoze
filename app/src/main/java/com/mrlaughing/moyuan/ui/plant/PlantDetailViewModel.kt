@@ -29,7 +29,7 @@ import java.time.ZoneId
  *
  * v2.0：展示植物名、大图、描述、诗文引用（lore）、解锁条件。
  * 阅读时光：结合「上一株解锁」锚点，从微信读书拉取时间窗内的
- * 阅读时长 / 书目 / 偏爱类型 / 划线数，形成「用阅读养花园」的轻养成档案。
+ * 阅读时长 / 书目 / 偏爱类型 / 划线数 / 真实书摘，形成「用阅读养花园」的轻养成档案。
  */
 @HiltViewModel
 @OptIn(kotlinx.coroutines.FlowPreview::class)
@@ -107,6 +107,7 @@ class PlantDetailViewModel @Inject constructor(
                                             readingHighlightText = wr.highlightText,
                                             readingCategories = wr.categories,
                                             readingBookTitles = wr.bookTitles,
+                                            readingExcerpts = wr.excerpts,
                                             readNoteLine = wr.readNoteLine
                                         )
                                     } catch (e: Exception) {
@@ -173,7 +174,8 @@ class PlantDetailViewModel @Inject constructor(
      * - 阅读时长：readTimes 按天粒度，可精确累加锚点日(含)之后的秒数。
      * - 读了哪些书：书架 readUpdateTime >= 锚点 的书。
      * - 划线数：窗口内书目在笔记本里的 bookmarkCount 之和。
-     * - 偏爱类型：窗口内书的 category 汇总（最多查前 12 本）；窗口内无书时退化为全量 preferCategory。
+     * - 偏爱类型：窗口内书的 category 汇总（最多查前 12 本），并保留该类下的书目列表供展开。
+     * - 真实书摘：窗口内前若干本书的 bookmarklist，按 createTime 切窗取真实划线文本。
      */
     private suspend fun buildWindowedReadingContext(prevDate: String?): WindowedReading {
         val authorized = runCatching { wereadRepository.isAuthorized() }.getOrDefault(false)
@@ -207,6 +209,7 @@ class PlantDetailViewModel @Inject constructor(
             ?.sumOf { it.bookmarkCount } ?: 0
 
         val categories = deriveCategories(windowedBooks, readResp?.preferCategory ?: emptyList())
+        val excerpts = buildExcerpts(windowedBooks, anchorSec)
 
         val durationText = formatDuration(windowSec)
         val highlightText = "${highlightCount} 条划线"
@@ -221,34 +224,62 @@ class PlantDetailViewModel @Inject constructor(
             highlightText = highlightText,
             categories = categories,
             bookTitles = bookTitles,
+            excerpts = excerpts,
             readNoteLine = readNoteLine
         )
     }
 
     /**
-     * 偏爱类型：优先用窗口内书的 category 汇总；窗口内无书时退化为全量 preferCategory。
+     * 偏爱类型：优先用窗口内书的 category 汇总，并保留该类下的书目（供点击展开）；
+     * 窗口内无书时退化为全量 preferCategory（无书目列表）。
      */
     private suspend fun deriveCategories(
         books: List<ShelfBook>,
         fallback: List<ApiPreferCategory>
-    ): List<CategoryStat> {
+    ): List<CategoryDetail> {
         val fromBooks = if (books.isNotEmpty()) {
             val counts = mutableMapOf<String, Int>()
+            val catBooks = mutableMapOf<String, MutableList<String>>()
             books.take(MAX_CATEGORY_LOOKUP).forEach { b ->
                 val cat = runCatching {
                     wereadRepository.fetchBookInfo(b.bookId).getOrNull()?.category
                 }.getOrNull()
-                if (!cat.isNullOrBlank()) counts[cat] = counts.getOrDefault(cat, 0) + 1
+                if (!cat.isNullOrBlank()) {
+                    counts[cat] = counts.getOrDefault(cat, 0) + 1
+                    b.title.takeIf { it.isNotBlank() }
+                        ?.let { catBooks.getOrPut(cat) { mutableListOf() }.add(it) }
+                }
             }
             counts.entries
                 .sortedByDescending { it.value }
                 .take(3)
-                .map { CategoryStat(it.key, it.value) }
+                .map { CategoryDetail(it.key, it.value, catBooks[it.key] ?: emptyList()) }
         } else {
             emptyList()
         }
         if (fromBooks.isNotEmpty()) return fromBooks
-        return fallback.take(3).map { CategoryStat(it.categoryTitle, it.readingCount) }
+        return fallback.take(3).map { CategoryDetail(it.categoryTitle, it.readingCount) }
+    }
+
+    /**
+     * 真实书摘：窗口内前若干本书的 bookmarklist，按 createTime 切窗取真实划线文本。
+     */
+    private suspend fun buildExcerpts(
+        books: List<ShelfBook>,
+        anchorSec: Long?
+    ): List<ExcerptItem> {
+        val result = mutableListOf<ExcerptItem>()
+        books.take(MAX_EXCERPT_BOOKS).forEach { b ->
+            val bm = runCatching { wereadRepository.fetchBookmarks(b.bookId).getOrNull() }.getOrNull()
+            bm?.updated
+                ?.filter { anchorSec == null || it.createTime >= anchorSec }
+                ?.take(MAX_EXCERPTS_PER_BOOK)
+                ?.forEach { item ->
+                    val text = item.markText.trim()
+                    if (text.isNotBlank()) result.add(ExcerptItem(text, b.title))
+                }
+        }
+        return result.take(MAX_EXCERPTS_TOTAL)
     }
 
     /**
@@ -315,11 +346,30 @@ class PlantDetailViewModel @Inject constructor(
 
         /** 为汇总偏爱类型，最多回溯的书详情数（控制额外请求量） */
         private const val MAX_CATEGORY_LOOKUP = 12
+
+        /** 为取真实书摘，最多回溯的书数（控制 bookmarklist 请求量） */
+        private const val MAX_EXCERPT_BOOKS = 4
+
+        /** 每本书最多取的真实划线条数 */
+        private const val MAX_EXCERPTS_PER_BOOK = 3
+
+        /** 书页拾光最多展示的真实划线条数 */
+        private const val MAX_EXCERPTS_TOTAL = 6
     }
 }
 
-/** 偏爱类型统计（窗口内书的分类汇总） */
-data class CategoryStat(val name: String, val count: Int)
+/** 偏爱类型统计（窗口内书的分类汇总，附带该类下的书目供展开） */
+data class CategoryDetail(
+    val name: String,
+    val count: Int,
+    val books: List<String> = emptyList()
+)
+
+/** 真实书摘（划线文本 + 来源书名） */
+data class ExcerptItem(
+    val text: String,
+    val source: String
+)
 
 /** 阅读时光窗口化聚合结果（ViewModel 内部使用） */
 private data class WindowedReading(
@@ -327,8 +377,9 @@ private data class WindowedReading(
     val windowLabel: String = "",
     val durationText: String = "",
     val highlightText: String = "",
-    val categories: List<CategoryStat> = emptyList(),
+    val categories: List<CategoryDetail> = emptyList(),
     val bookTitles: List<String> = emptyList(),
+    val excerpts: List<ExcerptItem> = emptyList(),
     val readNoteLine: String = ""
 )
 
@@ -354,6 +405,7 @@ data class PlantDetailUiState(
     val readingWindowLabel: String = "",
     val readingDurationText: String = "",
     val readingHighlightText: String = "",
-    val readingCategories: List<CategoryStat> = emptyList(),
-    val readingBookTitles: List<String> = emptyList()
+    val readingCategories: List<CategoryDetail> = emptyList(),
+    val readingBookTitles: List<String> = emptyList(),
+    val readingExcerpts: List<ExcerptItem> = emptyList()
 )
